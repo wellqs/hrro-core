@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Análise de Indicadores{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">{{ page_title|default:"Análise de Indicadores" }}</h1>
+    <a href="{% url 'indicator_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-pencil-square me-2"></i>
+        Voltar para Entrada de Dados
+    </a>
+</div>
+
+<form method="get" id="analysis-filter-form">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Filtros de Análise</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="start-date" class="form-label">Data Inicial</label>
+                    <input type="date" name="start_date" id="start-date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end-date" class="form-label">Data Final</label>
+                    <input type="date" name="end_date" id="end-date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="sector-filter" class="form-label">Setor (Opcional)</label>
+                    <select name="sector" id="sector-filter" class="form-select">
+                        <option value="">Todos os Setores</option>
+                        {% for sector in all_sectors %}
+                            <option value="{{ sector.id }}" {% if sector.id == selected_sector_id %}selected{% endif %}>{{ sector.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel me-2"></i>
+                        Aplicar Filtros e Analisar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0">Resultados Compilados</h5>
+        {% if start_date and end_date %}
+            <small class="text-muted">Período: {{ start_date|date:"d/m/Y" }} a {{ end_date|date:"d/m/Y" }}</small>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if results %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Indicador</th>
+                            <th>Setor</th>
+                            <th>Total no Período</th>
+                            <th>Média Diária</th>
+                            <th>Dias Preenchidos</th>
+                            </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                            <tr>
+                                <td>{{ result.indicator_name }}</td>
+                                <td>{{ result.sector_name }}</td>
+                                <td>{{ result.total_value|floatformat:2|default:"N/A" }}</td>
+                                <td>{{ result.average_value|floatformat:2|default:"N/A" }}</td>
+                                <td>{{ result.days_count|default:"N/A" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">{{ message|default:"Selecione um período para visualizar a análise." }}</p>
+        {% endif %}
+
+        <div id="charts-area" class="mt-4">
+            </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// (Opcional) Poderíamos adicionar JavaScript aqui para melhorar os filtros de data
+// ou para renderizar gráficos com Chart.js usando os dados calculados pela view.
+</script>
+{% endblock %}

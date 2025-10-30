@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Painel NIR - Gerenciamento de Leitos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">Painel NIR - Gerenciamento de Leitos</h1>
+    {% if can_edit_nir %}
+        <a href="#" class="btn btn-primary"> {# Link para adicionar internação (futuro) #}
+            <i class="bi bi-plus-circle me-2"></i>
+            Alocar Paciente em Leito
+        </a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Mapa de Leitos</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-sm small">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 10%;">Leito</th>
+                        <th style="width: 25%;">Paciente</th>
+                        <th style="width: 12%;">Admissão</th>
+                        <th style="width: 20%;">Procedimento Previsto</th>
+                        <th style="width: 10%;">Previsão Cir.</th>
+                        <th style="width: 13%;">Status Atual</th>
+                        {% if can_edit_nir %}
+                            <th style="width: 10%;" class="text-end">Ações</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bed in beds %}
+                    <tr>
+                        <td class="fw-bold {% if not bed.active_hospitalization %}table-success{% else %}table-warning{% endif %}">
+                            {{ bed.identifier }}
+                            <small class="text-muted d-block">{{ bed.get_category_display }}</small>
+                        </td>
+                        {% with hosp=bed.active_hospitalization %}
+                            <td>{% if hosp %}{{ hosp.patient.name }}{% else %}<span class="text-muted fst-italic">Vago</span>{% endif %}</td>
+                            <td>{% if hosp %}{{ hosp.admission_date|date:"d/m H:i" }}{% endif %}</td>
+                            <td>{% if hosp %}{{ hosp.procedure_planned|default_if_none:"" }}{% endif %}</td>
+                            <td>{% if hosp %}{{ hosp.expected_surgery_date|date:"d/m/Y"|default_if_none:"" }}{% endif %}</td>
+                            <td>{% if hosp %}{{ hosp.current_status|default_if_none:"" }}{% endif %}</td>
+                            {% if can_edit_nir %}
+                                <td class="text-end">
+                                    {% if hosp %}
+                                        <a href="#" class="btn btn-sm btn-outline-primary" title="Editar Internação">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-outline-danger" title="Registrar Alta">
+                                            <i class="bi bi-box-arrow-right"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="#" class="btn btn-sm btn-outline-success" title="Alocar Paciente">
+                                            <i class="bi bi-person-plus"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        {% endwith %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if can_edit_nir %}7{% else %}6{% endif %}" class="text-center text-muted py-4">
+                            Nenhum leito cadastrado no sistema. Execute o comando 'populate_beds'.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Navegação das páginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        {% for i in paginator.get_elided_page_range %}
+            {% if i == paginator.ELLIPSIS %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% elif i == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Cirurgias{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">Lista de Casos Cirúrgicos</h1>
+    {% if perms.core.add_surgery %}
+        <a href="{% url 'surgery_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Adicionar Cirurgia
+        </a>
+    {% endif %}
+</div>
+
+<div class="row">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Filtros</h6>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="row gx-3 gy-2 align-items-end">
+
+                        <div class="col-sm-3">
+                            <label for="{{ filterset.form.patient_name.id_for_label }}" class="form-label">{{ filterset.form.patient_name.label }}</label>
+                            {{ filterset.form.patient_name }}
+                        </div>
+
+                        <div class="col-sm-2">
+                            <label for="{{ filterset.form.status.id_for_label }}" class="form-label">{{ filterset.form.status.label }}</label>
+                            {{ filterset.form.status }}
+                        </div>
+
+                        <div class="col-sm-5">
+                            <label for="{{ filterset.form.scheduled_date.id_for_label }}" class="form-label">{{ filterset.form.scheduled_date.label }}</label>
+                            <div class="input-group">
+                                {{ filterset.form.scheduled_date }}
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2 d-grid">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search me-2"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-subtitle mb-2 text-muted">Total de Resultados</h6>
+                        <h2 class="card-title">{{ total_results }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-subtitle mb-2 text-muted">Taxa de Cancelamento</h6>
+                        <h2 class="card-title">{{ cancellation_rate|floatformat:1 }}%</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h6 class="card-subtitle mb-2 text-muted">Média Diária</h6>
+                        <h2 class="card-title">
+                            {% if daily_average is not None %}
+                                {{ daily_average|floatformat:1 }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4" style="height: 285px;">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Distribuição dos Resultados</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="listStatusChart" style="width:100%; height:100%;"></canvas>
+            </div>
+        </div>
+    </div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Paciente</th>
+                    <th>Procedimento</th>
+                    <th>Data Agendada</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for surgery in surgeries %}
+                <tr>
+                    <td>{{ surgery.patient_name }}</td>
+                    <td>{{ surgery.procedure_name }}</td>
+                    <td>{{ surgery.scheduled_date|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="badge {% if surgery.status == 'REALIZADA' %}bg-success{% elif surgery.status == 'CANCELADA' %}bg-danger{% else %}bg-info{% endif %}">
+                            {{ surgery.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'surgery_detail' surgery.pk %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                        {% if surgery.status == 'AGENDADA' and perms.core.change_surgery %}
+                            <a href="{% url 'surgery_update' pk=surgery.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Nenhuma cirurgia encontrada. Verifique seus filtros.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Navegação das páginas" class="mt-4">
+    <ul class="pagination justify-content-center flex-wrap">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Anterior</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+        {% for i in elided_page_range %}
+            {% if i == paginator.ELLIPSIS %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% elif i == page_obj.number %}
+                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Próxima</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{{ status_distribution_json|json_script:"list-status-data" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statusDataEl = document.getElementById('list-status-data');
+
+    if (statusDataEl) {
+        const statusData = JSON.parse(statusDataEl.textContent);
+        const ctxStatus = document.getElementById('listStatusChart');
+        const hasData = statusData.data.some(item => item > 0);
+
+        if (ctxStatus && hasData) {
+            new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: statusData.labels,
+                    datasets: [{
+                        data: statusData.data,
+                        backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    // 2. OPÇÃO AJUSTADA PARA O GRÁFICO PREENCHER O ESPAÇO
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        } else if (ctxStatus) {
+            const ctx = ctxStatus.getContext('2d');
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = '14px "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctx.fillStyle = '#858796';
+            ctx.fillText('Sem dados para exibir', ctxStatus.width / 2, ctxStatus.height / 2);
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HRRO Dashboard{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        body { display: flex; min-height: 100vh; flex-direction: column; background-color: #f8f9fa; }
+        .sidebar { width: 280px; background-color: #2c3e50; }
+        .content { flex-grow: 1; padding: 2rem; }
+        .nav-link { color: rgba(255,255,255,.75); }
+        .nav-link:hover, .nav-link.active { color: #fff; background-color: #34495e; }
+        /* Estilo para o link de logout */
+        .logout-section { margin-top: auto; } /* Empurra para o final */
+    </style>
+</head>
+<body>
+    <div class="d-flex flex-grow-1">
+        <div class="sidebar d-flex flex-column flex-shrink-0 p-3">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <i class="bi bi-hospital fs-4 me-2"></i>
+                <span class="fs-4">HRRO Cirúrgico</span>
+            </a>
+            <hr>
+
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" aria-current="page"><i class="bi bi-graph-up me-2"></i>Dashboard</a></li>
+                <li><a href="{% url 'surgery_list' %}" class="nav-link {% if 'surgery' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-card-list me-2"></i>Lista de Cirurgias</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'indicator_dashboard' or request.resolver_match.url_name == 'indicator_history' or request.resolver_match.url_name == 'indicator_analysis' %}active{% endif %}" href="{% url 'indicator_dashboard' %}">
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Indicadores NSP
+                    </a>
+                </li>
+                <hr>
+                <small class="text-secondary ps-3 text-uppercase">Setores</small>
+
+                <li>
+                    <a href="{% url 'nir_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'nir_panel' %}active{% endif %}">
+                        <i class="bi bi-clipboard2-data me-2"></i>
+                        Painel NIR (Leitos)
+                    </a>
+                </li>
+                <li><a href="#" class="nav-link"><i class="bi bi-scissors me-2"></i>Centro Cirúrgico</a></li>
+                <li><a href="#" class="nav-link"><i class="bi bi-box me-2"></i>CME</a></li>
+                <li><a href="#" class="nav-link"><i class="bi bi-bandaid me-2"></i>OPME</a></li>
+                <li><a href="#" class="nav-link"><i class="bi bi-file-earmark-medical me-2"></i>Faturamento (FAT)</a></li>
+                <li><a href="#" class="nav-link"><i class="bi bi-ui-checks me-2"></i>Checklist (GENF)</a></li>
+            </ul>
+    <div class="logout-section mt-auto">
+            <hr>
+            {% if user.is_authenticated %}
+            <div class="px-3 text-white mb-2">
+            <small>Usuário: <strong>{{ user.username }}</strong></small>
+    </div>
+
+            <form action="{% url 'logout' %}" method="post" class="d-grid">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-link nav-link text-start text-white p-2">
+                <i class="bi bi-box-arrow-right me-2"></i>Sair
+            </button>
+            </form>
+            {% endif %}
+            </div>
+
+        </div>
+
+        <main class="content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

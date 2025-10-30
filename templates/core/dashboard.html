@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Estratégico{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'core/css/dashboard_styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="h2 border-bottom pb-2 mb-3">Dashboard de Indicadores Estratégicos</h1>
+
+<div class="row">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-start-primary shadow h-100">
+            <div class="card-body">
+                <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total de Cirurgias</div>
+                <div class="h5 mb-0 fw-bold text-gray-800">{{ total_surgeries }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-start-info shadow h-100">
+            <div class="card-body">
+                <div class="text-xs fw-bold text-info text-uppercase mb-1">Agendadas</div>
+                <div class="h5 mb-0 fw-bold text-gray-800">{{ agendadas_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-start-success shadow h-100">
+            <div class="card-body">
+                <div class="text-xs fw-bold text-success text-uppercase mb-1">Realizadas</div>
+                <div class="h5 mb-0 fw-bold text-gray-800">{{ realizadas_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card border-start-danger shadow h-100">
+            <div class="card-body">
+                <div class="text-xs fw-bold text-danger text-uppercase mb-1">Canceladas</div>
+                <div class="h5 mb-0 fw-bold text-gray-800">{{ canceladas_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Volume de Cirurgias por Mês</h6></div>
+            <div class="card-body"><canvas id="volumeChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Distribuição de Status</h6></div>
+            <div class="card-body"><canvas id="statusChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+{{ status_distribution_json|json_script:"status-data" }}
+{{ monthly_chart_data_json|json_script:"volume-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statusData = JSON.parse(document.getElementById('status-data').textContent);
+    const volumeData = JSON.parse(document.getElementById('volume-data').textContent);
+
+    // Gráfico de Pizza (Doughnut) - Sem alterações
+    const ctxStatus = document.getElementById('statusChart');
+    if (ctxStatus) {
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: statusData.labels,
+                datasets: [{
+                    data: statusData.data,
+                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // --- GRÁFICO DE BARRAS ATUALIZADO PARA BARRAS EMPILHADAS ---
+    const ctxVolume = document.getElementById('volumeChart');
+    if (ctxVolume) {
+        new Chart(ctxVolume, {
+            type: 'bar',
+            data: {
+                labels: volumeData.labels,
+                datasets: [
+                    {
+                        label: 'Realizadas',
+                        data: volumeData.datasets.realizadas,
+                        backgroundColor: '#1cc88a' // Verde
+                    },
+                    {
+                        label: 'Canceladas',
+                        data: volumeData.datasets.canceladas,
+                        backgroundColor: '#e74a3b' // Vermelho
+                    },
+                    {
+                        label: 'Agendadas',
+                        data: volumeData.datasets.agendadas,
+                        backgroundColor: '#36b9cc' // Azul claro
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

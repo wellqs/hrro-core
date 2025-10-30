@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico de Relatórios{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">Histórico de Relatórios de Indicadores</h1>
+    <a href="{% url 'indicator_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>
+        Voltar para o Painel
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data do Relatório</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report_date in report_dates %}
+                    <tr>
+                        <td>
+                            <strong>{{ report_date|date:"d \d\e F \d\e Y" }}</strong>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'indicator_dashboard' %}?date={{ report_date|date:'Y-m-d' }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil-square me-1"></i> Visualizar / Editar
+                            </a>
+                            <a href="{% url 'indicator_pdf' %}?date={{ report_date|date:'Y-m-d' }}" class="btn btn-sm btn-secondary" target="_blank">
+                                <i class="bi bi-printer me-1"></i> Exportar PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="text-center text-muted py-4">
+                            Nenhum relatório encontrado no histórico.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Navegação das páginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        {% for i in paginator.get_elided_page_range %}
+            {% if i == paginator.ELLIPSIS %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% elif i == page_obj.number %}
+                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

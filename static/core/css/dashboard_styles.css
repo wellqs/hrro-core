@@ -1,0 +1,6 @@
+.border-start-primary { border-left: .25rem solid #4e73df !important; }
+.border-start-success { border-left: .25rem solid #1cc88a !important; }
+.border-start-danger { border-left: .25rem solid #e74a3b !important; }
+.text-primary { color: #4e73df !important; }
+.text-success { color: #1cc88a !important; }
+.text-danger { color: #e74a3b !important; }

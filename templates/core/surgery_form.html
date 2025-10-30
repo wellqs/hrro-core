@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Formulário de Cirurgia{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">{% if object %}Editar Caso Cirúrgico{% else %}Adicionar Novo Caso{% endif %}</h1>
+</div>
+
+<div class="card shadow">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.patient_name.label_tag }}
+                {{ form.patient_name }}
+            </div>
+            <div class="mb-3">
+                {{ form.procedure_name.label_tag }}
+                {{ form.procedure_name }}
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.scheduled_date.label_tag }}
+                    {{ form.scheduled_date }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.status.label_tag }}
+                    {{ form.status }}
+                </div>
+            </div>
+
+            <div id="motivo-cancelamento-bloco" style="display: none;" class="mt-3 p-3 border rounded bg-light">
+                <h5>Detalhes do Cancelamento</h5>
+                <div class="mb-3">
+                    {{ form.setor_cancelamento.label_tag }}
+                    {{ form.setor_cancelamento }}
+                </div>
+                <div class="mb-3">
+                    {{ form.motivo_paciente.label_tag }}
+                    {{ form.motivo_paciente }}
+                </div>
+                <div class="mb-3">
+                    {{ form.motivo_institucional.label_tag }}
+                    {{ form.motivo_institucional }}
+                </div>
+                <div class="mb-3">
+                    {{ form.observacoes_cancelamento.label_tag }}
+                    {{ form.observacoes_cancelamento }}
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <a href="{% url 'surgery_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Pega os elementos do formulário pelo ID que o Django gera
+    const statusField = document.getElementById('id_status');
+    const cancelamentoBloco = document.getElementById('motivo-cancelamento-bloco');
+
+    // Função para mostrar ou esconder o bloco
+    function toggleCancelamento(status) {
+        if (status === 'CANCELADA') {
+            cancelamentoBloco.style.display = 'block';
+        } else {
+            cancelamentoBloco.style.display = 'none';
+        }
+    }
+
+    // Verifica o estado inicial do campo quando a página carrega (importante para edição)
+    toggleCancelamento(statusField.value);
+
+    // Adiciona um "ouvinte" que detecta qualquer mudança no campo de status
+    statusField.addEventListener('change', function() {
+        toggleCancelamento(this.value);
+    });
+});
+</script>
+{% endblock %}

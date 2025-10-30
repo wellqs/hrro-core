@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Indicadores - {{ selected_date|date:'d/m/Y' }}</title>
+    <style>
+        /* --- ESTILO DE IMPRESSÃO APRIMORADO --- */
+        @page {
+            size: A4;
+            margin: 2cm;
+
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 10pt;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #004a99;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 18pt;
+            color: #004a99;
+            margin: 0;
+        }
+        .header p {
+            font-size: 12pt;
+            color: #555;
+            margin: 5px 0 0 0;
+        }
+
+        .sector-block {
+            page-break-inside: avoid;
+        }
+        .sector-title {
+            font-size: 14pt;
+            color: #333;
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 0;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        thead {
+            background-color: #f8f9fa;
+        }
+        th {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Relatório de Indicadores Diários</h1>
+        <p>Núcleo de Segurança do Paciente (NSP) - {{ selected_date|date:"d/m/Y" }}</p>
+    </div>
+
+    <main>
+        {% for sector in sectors %}
+            <div class="sector-block">
+                <h3 class="sector-title">{{ sector.name }}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 60%;">Indicador</th>
+                            <th style="width: 15%;">Valor</th>
+                            <th style="width: 25%;">Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for indicator in sector.indicators.all %}
+                        <tr>
+                            <td>{{ indicator.name }}</td>
+                            <td>{{ indicator.current_value|default_if_none:'' }}</td>
+                            <td>{{ indicator.current_notes|default_if_none:'' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; font-style: italic; color: #888;">
+                                Nenhum indicador cadastrado para este setor.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endfor %}
+    </main>
+
+</body>
+</html>

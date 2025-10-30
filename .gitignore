@@ -1,0 +1,28 @@
+# Arquivos de Ambiente Virtual e Python
+venv/
+*.pyc
+__pycache__/
+*.env
+.env
+
+# Django
+db.sqlite3
+/static_root/
+/media/
+
+# Logs e Arquivos de Sistema
+*.log
+.DS_Store
+Thumbs.db
+
+# Arquivos do PyCharm
+.idea/
+
+# Senhas e Segredos (MUITO IMPORTANTE)
+# Se você tiver algum arquivo .ini ou .json com senhas, adicione aqui
+secrets.json
+*.pem
+
+# Arquivos de Backup do Banco de Dados
+*.sql
+*.dump

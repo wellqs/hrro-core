@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: hrro_db_container
+    # Esta linha já garante que o banco de dados inicie automaticamente
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=hrro_core
+      - POSTGRES_USER=hrro_user
+      - POSTGRES_PASSWORD=hrro_pass
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    container_name: hrro_web_container
+    # Adicionamos esta linha para o serviço da aplicação
+    restart: always
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=psql://hrro_user:hrro_pass@db:5432/hrro_core
+
+volumes:
+  postgres_data:

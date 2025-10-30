@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detalhes da Cirurgia: {{ surgery.procedure_name }} - {{ surgery.patient_name }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Detalhes da Cirurgia</h3>
+            <div>
+                <a href="{% url 'surgery_list' %}" class="btn btn-secondary btn-sm">Voltar para a Lista</a>
+
+                {% if surgery.status == 'AGENDADA' and perms.core.change_surgery %}
+                    <a href="{% url 'surgery_update' pk=surgery.pk %}" class="btn btn-primary btn-sm">Editar Cirurgia</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ surgery.procedure_name }}</h5>
+            <p class="card-text"><strong>Paciente:</strong> {{ surgery.patient_name }}</p>
+            <p class="card-text"><strong>Data Agendada:</strong> {{ surgery.scheduled_date|date:"d/m/Y H:i" }}</p>
+            <p class="card-text"><strong>Status:</strong> <span class="badge
+                {% if surgery.status == 'REALIZADA' %}bg-success
+                {% elif surgery.status == 'CANCELADA' %}bg-danger
+                {% else %}bg-info{% endif %}">
+                {{ surgery.get_status_display }}
+            </span></p>
+
+            {% if surgery.status == 'CANCELADA' %}
+            <div class="alert alert-danger mt-3">
+                <h6 class="alert-heading">Detalhes do Cancelamento</h6>
+                <hr>
+                <dl class="row mb-0">
+                    {% if surgery.setor_cancelamento %}
+                        <dt class="col-sm-4">Setor Responsável:</dt>
+                        <dd class="col-sm-8"><strong>{{ surgery.get_setor_cancelamento_display }}</strong></dd>
+                    {% endif %}
+                    {% if surgery.motivo_paciente %}
+                        <dt class="col-sm-4">Motivo (Paciente):</dt>
+                        <dd class="col-sm-8">{{ surgery.get_motivo_paciente_display }}</dd>
+                    {% endif %}
+                    {% if surgery.motivo_institucional %}
+                        <dt class="col-sm-4">Motivo (Institucional):</dt>
+                        <dd class="col-sm-8">{{ surgery.get_motivo_institucional_display }}</dd>
+                    {% endif %}
+                    {% if surgery.observacoes_cancelamento %}
+                        <dt class="col-sm-4">Observações:</dt>
+                        <dd class="col-sm-8">{{ surgery.observacoes_cancelamento }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+            {% endif %}
+
+            <p class="card-text mt-3">
+                <small class="text-muted">Criado por: {{ surgery.created_by.username|default:"N/A" }} em {{ surgery.created_at|date:"d/m/Y" }}</small>
+            </p>
+        </div>
+    </div>
+
+    <h4>Informações Setoriais</h4>
+    <div class="accordion" id="sectoralFormsAccordion">
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRegulation">
+                    <strong>1. Dados de Regulação (NIR)</strong>
+                </button>
+            </h2>
+            <div id="collapseRegulation" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.regulationdata %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Data de Entrada:</dt>
+                            <dd class="col-sm-8">{{ surgery.regulationdata.entry_date|date:"d/m/Y"|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Aprovado?</dt>
+                            <dd class="col-sm-8">{{ surgery.regulationdata.is_approved|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Observações:</dt>
+                            <dd class="col-sm-8">{{ surgery.regulationdata.notes|default:"Nenhuma." }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_regulationdata or surgery.status == 'REALIZADA' and perms.core.change_regulationdata %}
+                        <a href="{% url 'regulation_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNursing">
+                    <strong>2. Checklist de Enfermagem (GENF)</strong>
+                </button>
+            </h2>
+            <div id="collapseNursing" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.nursingchecklist %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Paciente em Jejum?</dt>
+                            <dd class="col-sm-8">{{ surgery.nursingchecklist.patient_fasting|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Termo Assinado?</dt>
+                            <dd class="col-sm-8">{{ surgery.nursingchecklist.consent_form_signed|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Medicação Pré-op?</dt>
+                            <dd class="col-sm-8">{{ surgery.nursingchecklist.pre_op_medication_given|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Observações:</dt>
+                            <dd class="col-sm-8">{{ surgery.nursingchecklist.notes|default:"Nenhuma." }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_nursingchecklist or surgery.status == 'REALIZADA' and perms.core.change_nursingchecklist %}
+                        <a href="{% url 'nursing_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSurgical">
+                    <strong>3. Dados do Centro Cirúrgico</strong>
+                </button>
+            </h2>
+            <div id="collapseSurgical" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.surgicaldata %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Início da Cirurgia:</dt>
+                            <dd class="col-sm-8">{{ surgery.surgicaldata.start_time|date:"d/m/Y H:i"|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Fim da Cirurgia:</dt>
+                            <dd class="col-sm-8">{{ surgery.surgicaldata.end_time|date:"d/m/Y H:i"|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Sala:</dt>
+                            <dd class="col-sm-8">{{ surgery.surgicaldata.room|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Cirurgião:</dt>
+                            <dd class="col-sm-8">{{ surgery.surgicaldata.surgeon|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Checklist Cir. Segura?</dt>
+                            <dd class="col-sm-8">{{ surgery.surgicaldata.checklist_cirurgia_segura|yesno:"Sim,Não" }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_surgicaldata or surgery.status == 'REALIZADA' and perms.core.change_surgicaldata %}
+                        <a href="{% url 'surgical_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCME">
+                    <strong>4. Dados da CME</strong>
+                </button>
+            </h2>
+            <div id="collapseCME" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.cmedata %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Material Esterilizado?</dt>
+                            <dd class="col-sm-8">{{ surgery.cmedata.material_sterilized|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Data da Esterilização:</dt>
+                            <dd class="col-sm-8">{{ surgery.cmedata.sterilization_date|date:"d/m/Y H:i"|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Observações:</dt>
+                            <dd class="col-sm-8">{{ surgery.cmedata.notes|default:"Nenhuma." }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_cmedata or surgery.status == 'REALIZADA' and perms.core.change_cmedata %}
+                        <a href="{% url 'cme_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOPME">
+                    <strong>5. Dados de OPME</strong>
+                </button>
+            </h2>
+            <div id="collapseOPME" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.opmedata %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Lista de Materiais:</dt>
+                            <dd class="col-sm-8" style="white-space: pre-wrap;">{{ surgery.opmedata.materials_list|default:"Nenhuma." }}</dd>
+                            <dt class="col-sm-4">Autorizado?</dt>
+                            <dd class="col-sm-8">{{ surgery.opmedata.is_authorized|yesno:"Sim,Não" }}</dd>
+                            <dt class="col-sm-4">Fornecedor:</dt>
+                            <dd class="col-sm-8">{{ surgery.opmedata.supplier|default:"Não informado" }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_opmedata or surgery.status == 'REALIZADA' and perms.core.change_opmedata %}
+                        <a href="{% url 'opme_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBilling">
+                    <strong>6. Dados de Faturamento (FAT)</strong>
+                </button>
+            </h2>
+            <div id="collapseBilling" class="accordion-collapse collapse" data-bs-parent="#sectoralFormsAccordion">
+                <div class="accordion-body">
+                    {% if surgery.billingdata %}
+                        <dl class="row">
+                            <dt class="col-sm-4">Código da Fatura:</dt>
+                            <dd class="col-sm-8">{{ surgery.billingdata.invoice_code|default:"Não preenchido" }}</dd>
+                            <dt class="col-sm-4">Faturado?</dt>
+                            <dd class="col-sm-8">{{ surgery.billingdata.is_billed|yesno:"Sim,Não" }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Dados ainda não preenchidos.</p>
+                    {% endif %}
+                    {% if surgery.status == 'AGENDADA' and perms.core.change_billingdata or surgery.status == 'REALIZADA' and perms.core.change_billingdata %}
+                        <a href="{% url 'billing_update' pk=surgery.pk %}" class="btn btn-outline-primary btn-sm mt-2">Editar</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

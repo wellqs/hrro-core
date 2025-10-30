@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Indicadores NSP{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h1 class="h2">Painel de Indicadores NSP</h1>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'indicator_analysis' %}" class="btn btn-outline-success">
+                <i class="bi bi-graph-up me-2"></i>
+                Ver Análise
+            </a>
+            <a href="{% url 'indicator_history' %}" class="btn btn-outline-info">
+                <i class="bi bi-clock-history me-2"></i>
+                Ver Histórico
+            </a>
+            <a href="{% url 'indicator_pdf' %}?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-outline-secondary" target="_blank">
+                <i class="bi bi-printer me-2"></i>
+                Exportar PDF
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>
+                Salvar Dados
+            </button>
+        </div>
+        </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <label for="date-select" class="form-label">Selecione a Data</label>
+                    <input type="date" name="date-filter" id="date-select" class="form-control" value="{{ selected_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-8 text-md-end">
+                    <p class="text-muted mb-1">Exibindo dados para: <strong>{{ selected_date|date:'d/m/Y' }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+
+    <div class="accordion" id="sectorsAccordion">
+        {% for sector in sectors %}
+        <div class="accordion-item mb-2">
+            <h2 class="accordion-header" id="heading-{{ sector.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ sector.id }}" aria-expanded="false" aria-controls="collapse-{{ sector.id }}">
+                    {{ sector.name }}
+                </button>
+            </h2>
+            <div id="collapse-{{ sector.id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ sector.id }}" data-bs-parent="#sectorsAccordion">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70%;" class="ps-3">Indicador</th>
+                                    <th style="width: 15%;">Valor</th>
+                                    <th style="width: 15%;">Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for indicator in sector.indicators.all %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <label for="indicator-{{ indicator.id }}" class="form-label-sm">{{ indicator.name }}</label>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm"
+                                               id="indicator-{{ indicator.id }}"
+                                               name="value-{{ indicator.id }}"
+                                               placeholder="0.00" step="0.01"
+                                               value="{{ indicator.current_value|default_if_none:'' }}"
+                                               {% if sector.id not in permitted_sector_ids %}disabled{% endif %}>
+                                    </td>
+                                    <td>
+                                         <input type="text" class="form-control form-control-sm"
+                                               name="notes-{{ indicator.id }}"
+                                               value="{{ indicator.current_notes|default_if_none:'' }}"
+                                               placeholder="Opcional"
+                                               {% if sector.id not in permitted_sector_ids %}disabled{% endif %}>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Nenhum indicador cadastrado para este setor.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateSelect = document.getElementById('date-select');
+
+    dateSelect.addEventListener('change', function() {
+        const selectedDate = this.value;
+        const newUrl = `${window.location.pathname}?date=${selectedDate}`;
+        window.location.href = newUrl;
+    });
+});
+</script>
+{% endblock %}
