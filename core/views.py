@@ -1,4 +1,4 @@
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, FormView
 from django.views import View
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
@@ -8,19 +8,22 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from datetime import date, datetime, timedelta
 from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery
+from django.db import models
 from django.db.models.functions import TruncMonth, TruncDay
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 
 from .models import (
     Surgery, RegulationData, SurgicalData, BillingData, CMEData, OPMEData, NursingChecklist,
     Sector, Indicator, IndicatorData,
-    Patient, Bed, Hospitalization
+    Patient, Bed, Hospitalization,
+    PatientExtra, ReceptionAttendance, ReceptionQueueEntry,
 )
 from .forms import (
     SurgeryForm,
     RegulationDataForm, SurgicalDataForm, BillingDataForm,
     CMEDataForm, OPMEDataForm, NursingChecklistForm
 )
+from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm
 from .filters import SurgeryFilter
 
 
@@ -65,6 +68,131 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         }
         context['monthly_chart_data_json'] = monthly_chart_data
         return context
+
+# --- Recepção ---
+class ReceptionHomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/reception_home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = PatientSearchForm(self.request.GET or None)
+        patients = Patient.objects.none()
+        if form.is_valid() and (form.cleaned_data.get('name') or form.cleaned_data.get('cpf') or form.cleaned_data.get('cns')):
+            qs = Patient.objects.all()
+            name = form.cleaned_data.get('name')
+            cpf = form.cleaned_data.get('cpf')
+            cns = form.cleaned_data.get('cns')
+            if name:
+                qs = qs.filter(name__icontains=name)
+            if cpf:
+                qs = qs.filter(extra__cpf__iexact=cpf)
+            if cns:
+                qs = qs.filter(extra__cns__iexact=cns)
+            patients = qs.select_related('extra')[:50]
+        context['form'] = form
+        context['patients'] = patients
+        return context
+
+class PatientCreateReceptionView(LoginRequiredMixin, CreateView):
+    model = Patient
+    form_class = PatientForm
+    template_name = 'core/reception_patient_form.html'
+    success_url = reverse_lazy('reception_home')
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        # Deixe o CreateView salvar (chama form.save) para evitar salvar duas vezes
+        response = super().form_valid(form)
+        messages.success(self.request, 'Paciente cadastrado com sucesso.')
+        return response
+
+    def get_success_url(self):
+        # Após cadastrar, direciona direto para a abertura de atendimento (inserção na fila)
+        return reverse('reception_queue_new', kwargs={'patient_id': self.object.id})
+
+class ReceptionQueueCreateView(LoginRequiredMixin, FormView):
+    template_name = 'core/reception_queue_form.html'
+    form_class = ReceptionOpenForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.patient = get_object_or_404(Patient, pk=kwargs.get('patient_id'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['patient'] = self.patient
+        return context
+
+    def form_valid(self, form):
+        attendance = ReceptionAttendance.objects.create(
+            patient=self.patient,
+            origin_sector='Recepção',
+            notes=form.cleaned_data.get('notes'),
+            care_type=form.cleaned_data.get('care_type'),
+            origin=form.cleaned_data.get('origin'),
+            reason=form.cleaned_data.get('reason'),
+            referral_type=form.cleaned_data.get('referral_type'),
+            reference_document=form.cleaned_data.get('reference_document'),
+            entry_at=form.cleaned_data.get('entry_at'),
+            triage_at=form.cleaned_data.get('triage_at'),
+            attendance_at=form.cleaned_data.get('attendance_at'),
+            requester_name=form.cleaned_data.get('requester_name'),
+            requester_registry=form.cleaned_data.get('requester_registry')
+        )
+        ReceptionQueueEntry.objects.create(
+            attendance=attendance,
+            destination_sector=form.cleaned_data['destination_sector'],
+            priority=form.cleaned_data['priority'],
+            status='AGUARDANDO'
+        )
+        messages.success(self.request, 'Atendimento aberto e paciente inserido na fila.')
+        return redirect('reception_queue')
+
+class ReceptionQueueListView(LoginRequiredMixin, ListView):
+    model = ReceptionQueueEntry
+    template_name = 'core/reception_queue_list.html'
+    context_object_name = 'queue'
+
+    def get_queryset(self):
+        qs = ReceptionQueueEntry.objects.select_related('attendance__patient').exclude(status='FINALIZADO')
+        priority_order = models.Case(
+            models.When(priority='EMERGENCIA', then=models.Value(0)),
+            models.When(priority='PREFERENCIAL', then=models.Value(1)),
+            default=models.Value(2),
+            output_field=models.IntegerField(),
+        )
+        return qs.order_by(priority_order, 'created_at')
+
+class ReceptionQueueCallView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        entry = get_object_or_404(ReceptionQueueEntry, pk=pk)
+        if entry.status == 'AGUARDANDO':
+            entry.status = 'CHAMADO'
+            entry.called_at = timezone.now()
+            entry.save(update_fields=['status', 'called_at'])
+            messages.success(request, f"Paciente {entry.attendance.patient.name} chamado.")
+        return redirect('reception_queue')
+
+class ReceptionQueueForwardView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        entry = get_object_or_404(ReceptionQueueEntry, pk=pk)
+        if entry.status in ['AGUARDANDO', 'CHAMADO']:
+            if not entry.called_at:
+                entry.called_at = timezone.now()
+            entry.status = 'ENCAMINHADO'
+            entry.save(update_fields=['status', 'called_at'])
+            messages.success(request, f"Paciente {entry.attendance.patient.name} encaminhado.")
+        return redirect('reception_queue')
+
+class ReceptionQueueFinishView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        entry = get_object_or_404(ReceptionQueueEntry, pk=pk)
+        if entry.status != 'FINALIZADO':
+            entry.status = 'FINALIZADO'
+            entry.finished_at = timezone.now()
+            entry.save(update_fields=['status', 'finished_at'])
+            messages.success(request, f"Atendimento de {entry.attendance.patient.name} finalizado.")
+        return redirect('reception_queue')
 
 
 class SurgeryListView(LoginRequiredMixin, ListView):

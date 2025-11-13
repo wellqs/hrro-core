@@ -140,3 +140,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
+
+# Permite sobrescrever o host do banco via variável de ambiente (útil para debug local)
+_db_host_env = os.getenv('DB_HOST')
+if _db_host_env:
+    DATABASES['default']['HOST'] = _db_host_env

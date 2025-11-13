@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Inserir na Fila{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4>Abertura de Atendimento</h4>
+          <a href="{% url 'reception_home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+        </div>
+        <div class="card-body">
+          <p class="mb-1"><strong>Paciente:</strong> {{ patient.name }}</p>
+          <p><strong>Prontuário:</strong> {{ patient.medical_record_number }}</p>
+          <hr>
+          <form method="post">
+            {% csrf_token %}
+            <h6 class="text-secondary">Identificação</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Tipo de atendimento</label>
+                {{ form.care_type }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Origem do paciente</label>
+                {{ form.origin }}
+              </div>
+            </div>
+
+            <h6 class="text-secondary">Motivo e Encaminhamento</h6>
+            <div class="mb-3">
+              <label class="form-label">Motivo da vinda</label>
+              {{ form.reason }}
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Tipo de encaminhamento</label>
+                {{ form.referral_type }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nº guia/senha/referência</label>
+                {{ form.reference_document }}
+              </div>
+            </div>
+
+            <h6 class="text-secondary">Datas</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Entrada em</label>
+                {{ form.entry_at }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Triagem em</label>
+                {{ form.triage_at }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Atendimento em</label>
+                {{ form.attendance_at }}
+              </div>
+            </div>
+
+            <h6 class="text-secondary">Profissional solicitante</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-8">
+                <label class="form-label">Nome</label>
+                {{ form.requester_name }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Registro</label>
+                {{ form.requester_registry }}
+              </div>
+            </div>
+
+            <h6 class="text-secondary">Fila de Espera</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-8">
+                <label class="form-label">Setor de Destino</label>
+                {{ form.destination_sector }}
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Prioridade</label>
+                {{ form.priority }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Observações</label>
+              {{ form.notes }}
+            </div>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="submit">Inserir na Fila</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function(){
+    const ids = ['id_entry_at','id_triage_at','id_attendance_at'];
+    ids.forEach(id => { const el = document.getElementById(id); if (el) el.setAttribute('step','60'); });
+  })();
+</script>
+{% endblock %}

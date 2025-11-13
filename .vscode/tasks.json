@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "DJ: makemigrations",
+      "type": "shell",
+      "command": "python manage.py makemigrations",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "DJ: migrate",
+      "type": "shell",
+      "command": "python manage.py migrate",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "DJ: createsuperuser",
+      "type": "shell",
+      "command": "python manage.py createsuperuser",
+      "problemMatcher": []
+    },
+    {
+      "label": "DJ: test (unittest)",
+      "type": "shell",
+      "command": "python manage.py test",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: up",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: down",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    }
+  ]
+}
+

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Recepção{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-10">
+      <h3 class="mb-3">Recepção</h3>
+      <div class="card mb-4">
+        <div class="card-header">Busca de Pacientes</div>
+        <div class="card-body">
+          <form method="get" class="row g-2">
+            <div class="col-md-4">{{ form.name }}</div>
+            <div class="col-md-3">{{ form.cpf }}</div>
+            <div class="col-md-3">{{ form.cns }}</div>
+            <div class="col-md-2 d-grid">
+              <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="m-0">Resultados</h5>
+        {% include "core/_reception_actions.html" %}
+      </div>
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Prontuário</th>
+                  <th>CPF</th>
+                  <th>CNS</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for p in patients %}
+                <tr>
+                  <td>{{ p.name }}</td>
+                  <td>{{ p.medical_record_number }}</td>
+                  <td>{{ p.extra.cpf|default:"-" }}</td>
+                  <td>{{ p.extra.cns|default:"-" }}</td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-primary" href="{% url 'reception_queue_new' p.id %}">Abrir Atendimento / Inserir na Fila</a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center py-3">Sem resultados.</td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

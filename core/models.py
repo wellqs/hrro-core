@@ -158,3 +158,90 @@ class IndicatorData(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta: verbose_name = "Dado de Indicador"; verbose_name_plural = "Dados de Indicadores"; unique_together = ('indicator', 'period'); ordering = ['-period', 'indicator']
     def __str__(self): return f"{self.indicator.name} - {self.period.strftime('%d/%m/%Y')}: {self.value}"
+
+
+# --- Recepção: dados adicionais do paciente (CPF/CNS) ---
+class PatientExtra(models.Model):
+    patient = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='extra', verbose_name="Paciente")
+    cpf = models.CharField(max_length=14, null=True, blank=True, unique=True, verbose_name="CPF")
+    cns = models.CharField(max_length=15, null=True, blank=True, unique=True, verbose_name="CNS")
+
+    class Meta:
+        verbose_name = "Dados Adicionais do Paciente"
+        verbose_name_plural = "Dados Adicionais dos Pacientes"
+
+    def __str__(self):
+        return f"Extras de {self.patient.name}"
+
+
+# --- Recepção: Atendimento e Fila ---
+class ReceptionAttendance(models.Model):
+    patient = models.ForeignKey('Patient', on_delete=models.PROTECT, related_name='reception_attendances', verbose_name="Paciente")
+    origin_sector = models.CharField(max_length=100, default='Recepção', verbose_name="Setor de Origem")
+    notes = models.TextField(blank=True, null=True, verbose_name="Observações")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
+
+    # Identificação / Procedência / Encaminhamento / Documentação / Datas / Outros
+    care_type = models.CharField(
+        max_length=20,
+        choices=[('AMBULATORIO','Ambulatório'),('URGENCIA','Urgência'),('INTERNACAO','Internação'),('EXAME','Exame'),('OUTRO','Outro')],
+        default='AMBULATORIO',
+        verbose_name="Tipo de atendimento"
+    )
+    origin = models.CharField(
+        max_length=20,
+        choices=[('HOSPITAL','Próprio hospital'),('UBS','Unidade Básica de Saúde (UBS)'),('HOSPITAL_EXTERNO','Outro hospital'),('REGULACAO','Regulação estadual'),('OUTRO','Outro')],
+        default='HOSPITAL',
+        verbose_name="Origem do paciente"
+    )
+    reason = models.TextField(blank=True, null=True, verbose_name="Motivo da vinda")
+    referral_type = models.CharField(
+        max_length=20,
+        choices=[('ESPONTANEO','Espontâneo'),('REGULADO','Regulado'),('TRANSFERENCIA','Transferência externa')],
+        default='ESPONTANEO',
+        verbose_name="Tipo de encaminhamento"
+    )
+    reference_document = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nº guia/senha/referência")
+    entry_at = models.DateTimeField(blank=True, null=True, verbose_name="Entrada em")
+    triage_at = models.DateTimeField(blank=True, null=True, verbose_name="Triagem em")
+    attendance_at = models.DateTimeField(blank=True, null=True, verbose_name="Atendimento em")
+    requester_name = models.CharField(max_length=150, blank=True, null=True, verbose_name="Profissional solicitante")
+    requester_registry = models.CharField(max_length=50, blank=True, null=True, verbose_name="Registro do solicitante")
+
+    class Meta:
+        verbose_name = "Atendimento (Recepção)"
+        verbose_name_plural = "Atendimentos (Recepção)"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Atendimento de {self.patient.name} em {self.created_at.strftime('%d/%m/%Y %H:%M')}"
+
+
+class ReceptionQueueEntry(models.Model):
+    PRIORITY_CHOICES = [
+        ('NORMAL', 'Normal'),
+        ('PREFERENCIAL', 'Preferencial'),
+        ('EMERGENCIA', 'Emergência'),
+    ]
+    STATUS_CHOICES = [
+        ('AGUARDANDO', 'Aguardando'),
+        ('CHAMADO', 'Chamado'),
+        ('ENCAMINHADO', 'Encaminhado'),
+        ('FINALIZADO', 'Finalizado'),
+    ]
+
+    attendance = models.ForeignKey('ReceptionAttendance', on_delete=models.CASCADE, related_name='queue_entries', verbose_name="Atendimento")
+    destination_sector = models.CharField(max_length=100, verbose_name="Setor de Destino")
+    priority = models.CharField(max_length=15, choices=PRIORITY_CHOICES, default='NORMAL', verbose_name="Prioridade")
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='AGUARDANDO', verbose_name="Status")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
+    called_at = models.DateTimeField(blank=True, null=True, verbose_name="Chamado em")
+    finished_at = models.DateTimeField(blank=True, null=True, verbose_name="Finalizado em")
+
+    class Meta:
+        verbose_name = "Entrada de Fila (Recepção)"
+        verbose_name_plural = "Fila de Espera (Recepção)"
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.attendance.patient.name} - {self.get_priority_display()} - {self.get_status_display()}"

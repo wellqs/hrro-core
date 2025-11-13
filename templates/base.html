@@ -20,6 +20,10 @@
         /* Estilo para o link de logout */
         .logout-section { margin-top: auto; } /* Empurra para o final */
     </style>
+    <!--
+        Observação: este arquivo foi limpo para remover menus duplicados.
+        Mantemos apenas um bloco de navegação consolidado abaixo.
+    -->
 </head>
 <body>
     <div class="d-flex flex-grow-1">
@@ -31,29 +35,124 @@
             <hr>
 
             <ul class="nav nav-pills flex-column">
-                <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" aria-current="page"><i class="bi bi-graph-up me-2"></i>Dashboard</a></li>
-                <li><a href="{% url 'surgery_list' %}" class="nav-link {% if 'surgery' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-card-list me-2"></i>Lista de Cirurgias</a></li>
+                <!-- Dashboard Geral -->
+                <li class="nav-item">
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" aria-current="page">
+                        <i class="bi bi-graph-up me-2"></i>Dashboard Geral
+                    </a>
+                </li>
 
+                <!-- Recepção (placeholder) -->
+                <li>
+                    <a href="{% url 'reception_home' %}" class="nav-link {% if request.resolver_match.url_name == 'reception_home' or request.resolver_match.url_name == 'reception_queue' or request.resolver_match.url_name == 'reception_queue_new' or request.resolver_match.url_name == 'reception_patient_new' %}active{% endif %}">
+                        <i class="bi bi-person-check me-2"></i>Recepção
+                    </a>
+                </li>
+
+                <!-- NIR / Regulação -->
+                <li>
+                    <a href="{% url 'nir_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'nir_panel' or request.resolver_match.url_name == 'clinic_bed_list' %}active{% endif %}">
+                        <i class="bi bi-clipboard2-data me-2"></i>NIR / Regulação
+                    </a>
+                </li>
+
+                <!-- Ambulatório (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-building me-2"></i>Ambulatório
+                    </a>
+                </li>
+
+                <!-- Internação (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-hospital me-2"></i>Internação
+                    </a>
+                </li>
+
+                <!-- Pronto Atendimento / Urgência (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-activity me-2"></i>Pronto Atendimento / Urgência
+                    </a>
+                </li>
+
+                <!-- Centro Cirúrgico -> lista de cirurgias existente -->
+                <li>
+                    <a href="{% url 'surgery_list' %}" class="nav-link {% if 'surgery' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-scissors me-2"></i>Centro Cirúrgico
+                    </a>
+                </li>
+
+                <!-- Exames (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-clipboard-check me-2"></i>Exames
+                    </a>
+                </li>
+
+                <!-- Laboratório (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-beaker me-2"></i>Laboratório
+                    </a>
+                </li>
+
+                <!-- Imagem (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-image me-2"></i>Imagem
+                    </a>
+                </li>
+
+                <!-- Farmácia / Almoxarifado (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-capsule me-2"></i>Farmácia / Almoxarifado
+                    </a>
+                </li>
+
+                <!-- Faturamento (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-file-earmark-medical me-2"></i>Faturamento
+                    </a>
+                </li>
+
+                <!-- CCIH (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-shield-plus me-2"></i>CCIH
+                    </a>
+                </li>
+
+                <!-- NSP (Indicadores) -> indicadores existentes -->
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'indicator_dashboard' or request.resolver_match.url_name == 'indicator_history' or request.resolver_match.url_name == 'indicator_analysis' %}active{% endif %}" href="{% url 'indicator_dashboard' %}">
-                        <i class="bi bi-bar-chart-line me-2"></i>
-                        Indicadores NSP
+                        <i class="bi bi-bar-chart-line me-2"></i>NSP (Segurança do Paciente)
                     </a>
                 </li>
-                <hr>
-                <small class="text-secondary ps-3 text-uppercase">Setores</small>
 
+                <!-- SESMT (placeholder) -->
                 <li>
-                    <a href="{% url 'nir_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'nir_panel' %}active{% endif %}">
-                        <i class="bi bi-clipboard2-data me-2"></i>
-                        Painel NIR (Leitos)
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-cone-striped me-2"></i>SESMT (Segurança do Trabalho)
                     </a>
                 </li>
-                <li><a href="#" class="nav-link"><i class="bi bi-scissors me-2"></i>Centro Cirúrgico</a></li>
-                <li><a href="#" class="nav-link"><i class="bi bi-box me-2"></i>CME</a></li>
-                <li><a href="#" class="nav-link"><i class="bi bi-bandaid me-2"></i>OPME</a></li>
-                <li><a href="#" class="nav-link"><i class="bi bi-file-earmark-medical me-2"></i>Faturamento (FAT)</a></li>
-                <li><a href="#" class="nav-link"><i class="bi bi-ui-checks me-2"></i>Checklist (GENF)</a></li>
+
+                <!-- Relatórios & Indicadores (placeholder) -->
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-journal-text me-2"></i>Relatórios & Indicadores
+                    </a>
+                </li>
+
+                <!-- Administração -> Django Admin -->
+                <li>
+                    <a href="{% url 'admin:index' %}" class="nav-link">
+                        <i class="bi bi-gear me-2"></i>Administração
+                    </a>
+                </li>
             </ul>
     <div class="logout-section mt-auto">
             <hr>

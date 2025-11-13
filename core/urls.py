@@ -21,6 +21,14 @@ from .views import (
     NIRPanelView,
     # --- IMPORTAÇÃO ADICIONADA PARA A VIEW DA LISTA DE LEITOS DA CLÍNICA ---
     ClinicBedListView,
+    # Recepção
+    ReceptionHomeView,
+    PatientCreateReceptionView,
+    ReceptionQueueCreateView,
+    ReceptionQueueListView,
+    ReceptionQueueCallView,
+    ReceptionQueueForwardView,
+    ReceptionQueueFinishView,
 )
 
 urlpatterns = [
@@ -53,4 +61,13 @@ urlpatterns = [
     path('surgery/<int:pk>/cme/', CMEDataUpdateView.as_view(), name='cme_update'),
     path('surgery/<int:pk>/opme/', OPMEDataUpdateView.as_view(), name='opme_update'),
     path('surgery/<int:pk>/nursing/', NursingChecklistUpdateView.as_view(), name='nursing_update'),
+
+    # Recepção
+    path('reception/', ReceptionHomeView.as_view(), name='reception_home'),
+    path('reception/patient/new/', PatientCreateReceptionView.as_view(), name='reception_patient_new'),
+    path('reception/attendance/<int:patient_id>/open/', ReceptionQueueCreateView.as_view(), name='reception_queue_new'),
+    path('reception/queue/', ReceptionQueueListView.as_view(), name='reception_queue'),
+    path('reception/queue/<int:pk>/call/', ReceptionQueueCallView.as_view(), name='reception_queue_call'),
+    path('reception/queue/<int:pk>/forward/', ReceptionQueueForwardView.as_view(), name='reception_queue_forward'),
+    path('reception/queue/<int:pk>/finish/', ReceptionQueueFinishView.as_view(), name='reception_queue_finish'),
 ]

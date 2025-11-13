@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django: runserver",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": ["runserver", "0.0.0.0:8000"],
+      "django": true,
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "hrro_project.settings",
+        "DB_HOST": "localhost"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Django: tests (unittest)",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest",
+      "args": ["discover", "-s", "."],
+      "django": true,
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "hrro_project.settings",
+        "DB_HOST": "localhost"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}
+

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h2">{{ page_title }}</h1>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                {% for field in form %}
+                <div class="col-md-{% if field.name == 'notes' or field.name == 'hipotese_diagnostica' %}12{% elif 'date' in field.name %}6{% else %}6{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ request.META.HTTP_REFERER|default:"#" }}" class="btn btn-outline-secondary me-2">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
