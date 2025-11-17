@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Painel NIR - Gerenciamento de Leitos{% endblock %}
@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
     <h1 class="h2">Painel NIR - Gerenciamento de Leitos</h1>
     {% if can_edit_nir %}
-        <a href="#" class="btn btn-primary"> {# Link para adicionar internação (futuro) #}
+        <a href="{% url 'nir_hospitalization_create' %}" class="btn btn-primary"> {# Link para adicionar internação (futuro) #}
             <i class="bi bi-plus-circle me-2"></i>
             Alocar Paciente em Leito
         </a>
@@ -50,14 +50,14 @@
                             {% if can_edit_nir %}
                                 <td class="text-end">
                                     {% if hosp %}
-                                        <a href="#" class="btn btn-sm btn-outline-primary" title="Editar Internação">
+                                        <a href="{% url 'nir_hospitalization_edit' hosp.id %}" class="btn btn-sm btn-outline-primary" title="Editar Internação">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <a href="#" class="btn btn-sm btn-outline-danger" title="Registrar Alta">
+                                        <a href="{% url 'nir_hospitalization_discharge' hosp.id %}" class="btn btn-sm btn-outline-danger" title="Registrar Alta">
                                             <i class="bi bi-box-arrow-right"></i>
                                         </a>
                                     {% else %}
-                                        <a href="#" class="btn btn-sm btn-outline-success" title="Alocar Paciente">
+                                        <a href="{% url 'nir_hospitalization_create_bed' bed.id %}" class="btn btn-sm btn-outline-success" title="Alocar Paciente">
                                             <i class="bi bi-person-plus"></i>
                                         </a>
                                     {% endif %}
@@ -107,3 +107,5 @@
 {% endif %}
 
 {% endblock %}
+
+

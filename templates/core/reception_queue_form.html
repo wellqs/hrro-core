@@ -78,15 +78,38 @@
               <div class="col-md-8">
                 <label class="form-label">Setor de Destino</label>
                 {{ form.destination_sector }}
+                {% if form.destination_sector.errors %}<div class="text-danger small">{{ form.destination_sector.errors.0 }}</div>{% endif %}
               </div>
               <div class="col-md-4">
                 <label class="form-label">Prioridade</label>
                 {{ form.priority }}
+                {% if form.priority.errors %}<div class="text-danger small">{{ form.priority.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="form-check form-switch mb-3">
+              {{ form.direct_internation }}
+              <label class="form-check-label ms-2" for="id_direct_internation">Internação direta (não entra na fila)</label>
+              {% if form.direct_internation.errors %}<div class="text-danger small">{{ form.direct_internation.errors.0 }}</div>{% endif %}
+            </div>
+            <div id="direct-internation-fields" class="border rounded-3 p-3 mb-3 d-none">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                  <label class="form-label">Leito para internação direta</label>
+                  {{ form.bed }}
+                  {% if form.bed.errors %}<div class="text-danger small">{{ form.bed.errors.0 }}</div>{% endif %}
+                  <small class="text-muted">Apenas leitos ativos aparecem na lista.</small>
+                </div>
+                <div class="col-md-6">
+                  <div class="alert alert-info mb-0">
+                    O paciente será registrado na planilha do NIR usando este leito e não aparecerá na fila.
+                  </div>
+                </div>
               </div>
             </div>
             <div class="mb-3">
               <label class="form-label">Observações</label>
               {{ form.notes }}
+              {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
             </div>
             <div class="d-grid gap-2">
               <button class="btn btn-primary" type="submit">Inserir na Fila</button>
@@ -104,6 +127,13 @@
   (function(){
     const ids = ['id_entry_at','id_triage_at','id_attendance_at'];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.setAttribute('step','60'); });
+    const toggle = document.getElementById('id_direct_internation');
+    const section = document.getElementById('direct-internation-fields');
+    if (toggle && section){
+      const refresh = () => { section.classList.toggle('d-none', !toggle.checked); };
+      toggle.addEventListener('change', refresh);
+      refresh();
+    }
   })();
 </script>
 {% endblock %}

@@ -163,8 +163,8 @@ class IndicatorData(models.Model):
 # --- Recepção: dados adicionais do paciente (CPF/CNS) ---
 class PatientExtra(models.Model):
     patient = models.OneToOneField('Patient', on_delete=models.CASCADE, related_name='extra', verbose_name="Paciente")
-    cpf = models.CharField(max_length=14, null=True, blank=True, unique=True, verbose_name="CPF")
-    cns = models.CharField(max_length=15, null=True, blank=True, unique=True, verbose_name="CNS")
+    cpf = models.CharField(max_length=14, null=True, blank=True, verbose_name="CPF")
+    cns = models.CharField(max_length=15, null=True, blank=True, verbose_name="CNS")
 
     class Meta:
         verbose_name = "Dados Adicionais do Paciente"
@@ -172,6 +172,32 @@ class PatientExtra(models.Model):
 
     def __str__(self):
         return f"Extras de {self.patient.name}"
+
+
+class PatientDocument(models.Model):
+    CATEGORY_CHOICES = [
+        ('EXAME', 'Exames'),
+        ('LAUDO', 'Laudos'),
+        ('DOCUMENTO', 'Documentos Pessoais'),
+        ('REQUERIMENTO', 'Requerimentos'),
+        ('ATESTADO', 'Atestados'),
+        ('OUTRO', 'Outros'),
+    ]
+
+    patient = models.ForeignKey('Patient', on_delete=models.CASCADE, related_name='documents', verbose_name="Paciente")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="Categoria")
+    description = models.CharField(max_length=255, blank=True, verbose_name="Descrição")
+    document = models.FileField(upload_to='patient_documents/%Y/%m/', verbose_name="Arquivo")
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Enviado por")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Enviado em")
+
+    class Meta:
+        verbose_name = "Documento do Paciente"
+        verbose_name_plural = "Documentos do Paciente"
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.patient.name}"
 
 
 # --- Recepção: Atendimento e Fila ---

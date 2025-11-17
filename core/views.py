@@ -1,12 +1,14 @@
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, FormView
+﻿from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, FormView
 from django.views import View
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
+import unicodedata
 from weasyprint import HTML
 from django.urls import reverse_lazy, reverse # Adicionado reverse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from datetime import date, datetime, timedelta
+from django.utils import timezone
 from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery
 from django.db import models
 from django.db.models.functions import TruncMonth, TruncDay
@@ -16,15 +18,37 @@ from .models import (
     Surgery, RegulationData, SurgicalData, BillingData, CMEData, OPMEData, NursingChecklist,
     Sector, Indicator, IndicatorData,
     Patient, Bed, Hospitalization,
-    PatientExtra, ReceptionAttendance, ReceptionQueueEntry,
+    PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry,
 )
 from .forms import (
     SurgeryForm,
     RegulationDataForm, SurgicalDataForm, BillingDataForm,
     CMEDataForm, OPMEDataForm, NursingChecklistForm
 )
-from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm
+from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm, HospitalizationForm, HospitalizationDischargeForm, PatientDocumentForm
 from .filters import SurgeryFilter
+
+NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
+
+
+def nir_clinic_slug(name: str) -> str:
+    value = (name or '').lower()
+    replacements = {
+        'á': 'a', 'ã': 'a', 'â': 'a', 'é': 'e', 'ê': 'e', 'í': 'i', 'ó': 'o', 'õ': 'o', 'ú': 'u', 'ç': 'c'
+    }
+    for src, tgt in replacements.items():
+        value = value.replace(src, tgt)
+    return value.replace(' ', '-')
+
+
+class NIRPermissionMixin(UserPassesTestMixin):
+    def test_func(self):
+        user = self.request.user
+        return user.is_superuser or user.groups.filter(name=NIR_GROUP_NAME).exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, 'Você não tem permissão para acessar esta área do NIR.')
+        return redirect('dashboard')
 
 
 # --- Views existentes (sem alterações) ---
@@ -139,6 +163,32 @@ class ReceptionQueueCreateView(LoginRequiredMixin, FormView):
             requester_name=form.cleaned_data.get('requester_name'),
             requester_registry=form.cleaned_data.get('requester_registry')
         )
+        if form.cleaned_data.get('direct_internation'):
+            bed = form.cleaned_data.get('bed')
+            admission_dt = form.cleaned_data.get('entry_at') or timezone.now()
+            expected_date = None
+            if form.cleaned_data.get('attendance_at'):
+                expected_date = form.cleaned_data['attendance_at'].date()
+            notes_parts = []
+            if form.cleaned_data.get('reason'):
+                notes_parts.append(f"Motivo: {form.cleaned_data['reason']}")
+            if form.cleaned_data.get('notes'):
+                notes_parts.append(form.cleaned_data['notes'])
+            Hospitalization.objects.create(
+                patient=self.patient,
+                bed=bed,
+                admission_date=admission_dt,
+                procedure_planned=form.cleaned_data.get('reason'),
+                current_status='Internação direta pela Recepção',
+                expected_surgery_date=expected_date,
+                notes='\n'.join(notes_parts) if notes_parts else None,
+                numero_atendimento=form.cleaned_data.get('reference_document'),
+                hipotese_diagnostica=form.cleaned_data.get('reason'),
+                created_by=self.request.user
+            )
+            messages.success(self.request, f"Paciente direcionado diretamente ao leito {bed.identifier}.")
+            return redirect(nir_redirect_to_clinic(bed))
+
         ReceptionQueueEntry.objects.create(
             attendance=attendance,
             destination_sector=form.cleaned_data['destination_sector'],
@@ -388,7 +438,7 @@ class IndicatorAnalysisView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 
 # View para a página inicial do NIR com resumos das clínicas
-class NIRPanelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class NIRPanelView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
     template_name = 'core/nir_landing.html' # Novo template para a página inicial
     NIR_GROUP_NAME = "NIR (NÚCLEO INTERNO DE REGULAÇÃO)"
 
@@ -424,7 +474,7 @@ class NIRPanelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                 # Prepara dados para o gráfico Chart.js ([ocupados, vagos])
                 'chart_data': [occupied_beds, vacant_beds],
                 # Gera a URL para a lista de leitos da clínica
-                'detail_url': reverse('clinic_bed_list', kwargs={'clinic_name_slug': clinic_name.lower().replace('í', 'i').replace(' ', '-')})
+                'detail_url': reverse('clinic_bed_list', kwargs={'clinic_name_slug': nir_clinic_slug(clinic_name)})
             }
             clinic_data.append(clinic_info)
 
@@ -432,7 +482,7 @@ class NIRPanelView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 # View para listar os leitos de uma clínica específica
-class ClinicBedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class ClinicBedListView(LoginRequiredMixin, NIRPermissionMixin, ListView):
     model = Bed
     template_name = 'core/clinic_bed_list.html' # Usaremos este template para a lista
     context_object_name = 'beds'
@@ -445,6 +495,7 @@ class ClinicBedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def get_queryset(self):
         # Pega o nome da clínica da URL (vem como slug)
         clinic_name_slug = self.kwargs['clinic_name_slug']
+        self.clinic_slug = clinic_name_slug
         # Converte o slug de volta para o nome original da clínica (precisa ser robusto)
         # Esta é uma forma simples, pode precisar de ajustes se os nomes forem complexos
         clinic_name = clinic_name_slug.replace('-', ' ').replace('i', 'í').upper() # Tenta reverter
@@ -479,6 +530,7 @@ class ClinicBedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         user = self.request.user
         context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=self.NIR_GROUP_NAME).exists()
         context['clinic_name'] = self.clinic_name # Envia o nome da clínica para o template
+        context['clinic_slug'] = getattr(self, 'clinic_slug', self.kwargs.get('clinic_name_slug'))
 
         for bed in context['beds']:
             bed.active_hospitalization = None
@@ -486,4 +538,137 @@ class ClinicBedListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 if hosp.id == bed.active_hospitalization_id:
                     bed.active_hospitalization = hosp
                     break
+        return context
+
+def nir_redirect_to_clinic(bed):
+    return reverse('clinic_bed_list', kwargs={'clinic_name_slug': nir_clinic_slug(bed.clinic)})
+
+
+def get_hospitalization_success_url(hospitalization):
+    return nir_redirect_to_clinic(hospitalization.bed)
+
+
+class NIRHospitalizationCreateView(LoginRequiredMixin, NIRPermissionMixin, CreateView):
+    model = Hospitalization
+    form_class = HospitalizationForm
+    template_name = 'core/nir_hospitalization_form.html'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        bed_id = self.kwargs.get('bed_id')
+        if bed_id:
+            initial['bed'] = get_object_or_404(Bed, pk=bed_id)
+        initial.setdefault('admission_date', timezone.now())
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Alocar Paciente em Leito'
+        return context
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, 'Internação registrada com sucesso.')
+        return response
+
+    def get_success_url(self):
+        return get_hospitalization_success_url(self.object)
+
+
+class NIRHospitalizationUpdateView(LoginRequiredMixin, NIRPermissionMixin, UpdateView):
+    model = Hospitalization
+    form_class = HospitalizationForm
+    template_name = 'core/nir_hospitalization_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Editar Internação'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Internação atualizada com sucesso.')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return get_hospitalization_success_url(self.object)
+
+
+class NIRHospitalizationDischargeView(LoginRequiredMixin, NIRPermissionMixin, UpdateView):
+    model = Hospitalization
+    form_class = HospitalizationDischargeForm
+    template_name = 'core/nir_hospitalization_discharge_form.html'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if not self.object.discharge_date:
+            initial['discharge_date'] = timezone.now()
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Registrar Alta'
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Alta registrada com sucesso.')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return get_hospitalization_success_url(self.object)
+
+
+class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
+    form_class = PatientDocumentForm
+    template_name = 'core/patient_documents.html'
+
+    def get_patient(self):
+        return get_object_or_404(Patient, pk=self.kwargs.get('patient_id'))
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['patient'] = self.get_patient()
+        return initial
+
+    def form_valid(self, form):
+        doc = form.save(commit=False)
+        doc.patient = self.get_patient()
+        doc.uploaded_by = self.request.user
+        doc.save()
+        messages.success(self.request, 'Documento anexado com sucesso.')
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('patient_documents', kwargs={'patient_id': self.kwargs.get('patient_id')})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        patient = self.get_patient()
+        docs = PatientDocument.objects.filter(patient=patient).order_by('-uploaded_at')
+        context['patient'] = patient
+        context['documents'] = docs
+        context['page_title'] = f'Documentos de {patient.name}'
+        return context
+
+class NIRHospitalizationHistoryView(LoginRequiredMixin, NIRPermissionMixin, ListView):
+    model = Hospitalization
+    template_name = 'core/nir_hospitalization_history.html'
+    context_object_name = 'hospitalizations'
+    paginate_by = 25
+
+    def get_queryset(self):
+        qs = Hospitalization.objects.select_related('patient', 'bed').order_by('-admission_date')
+        status_filter = self.request.GET.get('status')
+        if status_filter == 'active':
+            qs = qs.filter(discharge_date__isnull=True)
+        elif status_filter == 'discharged':
+            qs = qs.filter(discharge_date__isnull=False)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Histórico de Internações'
+        context['status_filter'] = self.request.GET.get('status', '')
+        context['active_count'] = Hospitalization.objects.filter(discharge_date__isnull=True).count()
+        context['discharged_count'] = Hospitalization.objects.filter(discharge_date__isnull=False).count()
         return context

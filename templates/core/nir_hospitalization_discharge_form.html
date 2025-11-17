@@ -26,6 +26,13 @@
                         <div class="invalid-feedback d-block">{{ error }}</div>
                     {% endfor %}
                 </div>
+                <div class="col-md-6">
+                    <label for="{{ form.current_status.id_for_label }}" class="form-label">{{ form.current_status.label }}</label>
+                    {{ form.current_status }}
+                    {% for error in form.current_status.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
                 <div class="col-md-12 mt-3">
                     <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
                     {{ form.notes }}

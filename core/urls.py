@@ -1,4 +1,4 @@
-# Em core/urls.py
+﻿# Em core/urls.py
 
 from django.urls import path
 from django.contrib.auth import views as auth_views
@@ -21,6 +21,11 @@ from .views import (
     NIRPanelView,
     # --- IMPORTAÇÃO ADICIONADA PARA A VIEW DA LISTA DE LEITOS DA CLÍNICA ---
     ClinicBedListView,
+    NIRHospitalizationCreateView,
+    NIRHospitalizationUpdateView,
+    NIRHospitalizationDischargeView,
+    NIRHospitalizationHistoryView,
+    PatientDocumentListView,
     # Recepção
     ReceptionHomeView,
     PatientCreateReceptionView,
@@ -53,6 +58,13 @@ urlpatterns = [
     path('nir/', NIRPanelView.as_view(), name='nir_panel'), # Página inicial com resumos
     # --- NOVA URL ADICIONADA PARA A LISTA DE LEITOS DA CLÍNICA ---
     path('nir/clinic/<slug:clinic_name_slug>/', ClinicBedListView.as_view(), name='clinic_bed_list'), # Página de detalhes da clínica
+    path('nir/hospitalization/new/', NIRHospitalizationCreateView.as_view(), name='nir_hospitalization_create'),
+    path('nir/hospitalization/new/bed/<int:bed_id>/', NIRHospitalizationCreateView.as_view(), name='nir_hospitalization_create_bed'),
+    path('nir/hospitalization/<int:pk>/edit/', NIRHospitalizationUpdateView.as_view(), name='nir_hospitalization_edit'),
+    path('nir/hospitalization/<int:pk>/discharge/', NIRHospitalizationDischargeView.as_view(), name='nir_hospitalization_discharge'),
+
+    path('nir/hospitalizations/', NIRHospitalizationHistoryView.as_view(), name='nir_hospitalization_history'),
+    path('nir/patient/<int:patient_id>/documents/', PatientDocumentListView.as_view(), name='patient_documents'),
 
     # URLs dos Formulários Setoriais
     path('surgery/<int:pk>/regulation/', RegulationDataUpdateView.as_view(), name='regulation_update'),
