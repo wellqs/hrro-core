@@ -13,6 +13,7 @@ from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery
 from django.db import models
 from django.db.models.functions import TruncMonth, TruncDay
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+import unicodedata
 
 from .models import (
     Surgery, RegulationData, SurgicalData, BillingData, CMEData, OPMEData, NursingChecklist,
@@ -31,15 +32,21 @@ from .filters import SurgeryFilter
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
 
 
-def nir_clinic_slug(name: str) -> str:
-    value = (name or '').lower()
-    replacements = {
-        'á': 'a', 'ã': 'a', 'â': 'a', 'é': 'e', 'ê': 'e', 'í': 'i', 'ó': 'o', 'õ': 'o', 'ú': 'u', 'ç': 'c'
-    }
-    for src, tgt in replacements.items():
-        value = value.replace(src, tgt)
-    return value.replace(' ', '-')
 
+def normalize_ascii(value: str) -> str:
+    normalized = unicodedata.normalize('NFKD', value or '')
+    return normalized.encode('ascii', 'ignore').decode('ascii').lower()
+
+
+def nir_clinic_slug(name: str) -> str:
+    return normalize_ascii(name).replace(' ', '-')
+
+
+def nir_clinic_name_from_slug(slug: str) -> str:
+    slug_normalized = (slug or '').lower()
+    clinics = Bed.objects.values_list('clinic', flat=True).distinct()
+    mapping = {nir_clinic_slug(c): c for c in clinics}
+    return mapping.get(slug_normalized, slug.replace('-', ' ').upper())
 
 class NIRPermissionMixin(UserPassesTestMixin):
     def test_func(self):
@@ -439,97 +446,65 @@ class IndicatorAnalysisView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
 
 # View para a página inicial do NIR com resumos das clínicas
 class NIRPanelView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
-    template_name = 'core/nir_landing.html' # Novo template para a página inicial
-    NIR_GROUP_NAME = "NIR (NÚCLEO INTERNO DE REGULAÇÃO)"
-
-    def test_func(self):
-        # Permite acesso a todos por enquanto, mas podemos restringir depois
-        return True
+    template_name = 'core/nir_landing.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        clinics = ['CLÍNICA A', 'CLÍNICA B', 'CLÍNICA C', 'EXTRA'] # Clínicas a serem analisadas
+        clinics = Bed.objects.filter(is_active=True).values_list('clinic', flat=True).distinct()
         clinic_data = []
-
         for clinic_name in clinics:
-            # Total de leitos ativos na clínica
             total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
-
-            # Conta internações ativas (sem data de saída) nos leitos da clínica
             occupied_beds = Hospitalization.objects.filter(
                 bed__clinic=clinic_name,
                 bed__is_active=True,
                 discharge_date__isnull=True
             ).count()
-
             vacant_beds = total_beds - occupied_beds
             occupancy_rate = (occupied_beds / total_beds * 100) if total_beds > 0 else 0
-
-            clinic_info = {
+            clinic_data.append({
                 'name': clinic_name,
                 'total_beds': total_beds,
                 'occupied_beds': occupied_beds,
                 'vacant_beds': vacant_beds,
                 'occupancy_rate': round(occupancy_rate, 1),
-                # Prepara dados para o gráfico Chart.js ([ocupados, vagos])
                 'chart_data': [occupied_beds, vacant_beds],
-                # Gera a URL para a lista de leitos da clínica
                 'detail_url': reverse('clinic_bed_list', kwargs={'clinic_name_slug': nir_clinic_slug(clinic_name)})
-            }
-            clinic_data.append(clinic_info)
-
+            })
         context['clinic_data'] = clinic_data
         return context
 
-# View para listar os leitos de uma clínica específica
+
 class ClinicBedListView(LoginRequiredMixin, NIRPermissionMixin, ListView):
     model = Bed
-    template_name = 'core/clinic_bed_list.html' # Usaremos este template para a lista
+    template_name = 'core/clinic_bed_list.html'
     context_object_name = 'beds'
     paginate_by = 30
-    NIR_GROUP_NAME = "NIR (NÚCLEO INTERNO DE REGULAÇÃO)"
-
-    def test_func(self):
-        return True # Permite acesso a todos por enquanto
 
     def get_queryset(self):
-        # Pega o nome da clínica da URL (vem como slug)
-        clinic_name_slug = self.kwargs['clinic_name_slug']
-        self.clinic_slug = clinic_name_slug
-        # Converte o slug de volta para o nome original da clínica (precisa ser robusto)
-        # Esta é uma forma simples, pode precisar de ajustes se os nomes forem complexos
-        clinic_name = clinic_name_slug.replace('-', ' ').replace('i', 'í').upper() # Tenta reverter
-        # Correção específica para 'CLÍNICA A', 'CLÍNICA B', 'CLÍNICA C'
-        if clinic_name_slug == 'clinica-a': clinic_name = 'CLÍNICA A'
-        elif clinic_name_slug == 'clinica-b': clinic_name = 'CLÍNICA B'
-        elif clinic_name_slug == 'clinica-c': clinic_name = 'CLÍNICA C'
-        elif clinic_name_slug == 'extra': clinic_name = 'EXTRA' # Adicionado
-        # Se não encontrar, pode retornar erro ou queryset vazio
-
-        self.clinic_name = clinic_name # Armazena para usar no get_context_data
+        clinic_slug = self.kwargs['clinic_name_slug']
+        self.clinic_slug = clinic_slug
+        clinic_name = nir_clinic_name_from_slug(clinic_slug)
+        self.clinic_name = clinic_name
 
         active_hospitalization_subquery = Hospitalization.objects.filter(
             bed=OuterRef('pk'),
             discharge_date__isnull=True
         ).order_by('-admission_date')
 
-        queryset = Bed.objects.filter(
+        return Bed.objects.filter(
             is_active=True,
-            clinic=self.clinic_name # Filtra pela clínica da URL
+            clinic=clinic_name
         ).annotate(
             active_hospitalization_id=Subquery(active_hospitalization_subquery.values('id')[:1]),
         ).prefetch_related(
-            'hospitalizations',
-            'hospitalizations__patient'
-        ).order_by('identifier') # Ordena pelo identificador dentro da clínica
-
-        return queryset
+            'hospitalizations', 'hospitalizations__patient'
+        ).order_by('identifier')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=self.NIR_GROUP_NAME).exists()
-        context['clinic_name'] = self.clinic_name # Envia o nome da clínica para o template
+        context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=NIR_GROUP_NAME).exists()
+        context['clinic_name'] = self.clinic_name
         context['clinic_slug'] = getattr(self, 'clinic_slug', self.kwargs.get('clinic_name_slug'))
 
         for bed in context['beds']:
@@ -672,3 +647,5 @@ class NIRHospitalizationHistoryView(LoginRequiredMixin, NIRPermissionMixin, List
         context['active_count'] = Hospitalization.objects.filter(discharge_date__isnull=True).count()
         context['discharged_count'] = Hospitalization.objects.filter(discharge_date__isnull=False).count()
         return context
+
+
