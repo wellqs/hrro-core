@@ -21,6 +21,13 @@ from .models import (
 
 # --- Formulário Principal ---
 class SurgeryForm(forms.ModelForm):
+    # Sobrescreve patient_name para selecionar apenas pacientes internados (NIR ativo)
+    patient_name = forms.ModelChoiceField(
+        label='Paciente',
+        queryset=Hospitalization.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
     class Meta:
         model = Surgery
         fields = [
@@ -29,7 +36,6 @@ class SurgeryForm(forms.ModelForm):
             'setor_cancelamento'
         ]
         widgets = {
-            'patient_name': forms.TextInput(attrs={'class': 'form-control'}),
             'procedure_name': forms.TextInput(attrs={'class': 'form-control'}),
             'scheduled_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
@@ -38,6 +44,16 @@ class SurgeryForm(forms.ModelForm):
             'observacoes_cancelamento': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'maxlength': 150}),
             'setor_cancelamento': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        active_hosp = Hospitalization.objects.filter(discharge_date__isnull=True).select_related('patient', 'bed')
+        self.fields['patient_name'].queryset = active_hosp
+        self.fields['patient_name'].label_from_instance = lambda hosp: f"{hosp.patient.name} - Leito {hosp.bed.identifier}"
+
+    def clean_patient_name(self):
+        hosp = self.cleaned_data['patient_name']
+        return hosp.patient.name if hosp else ''
 
     def clean(self):
         cleaned_data = super().clean()
