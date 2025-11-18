@@ -258,7 +258,8 @@ class SurgeryListView(LoginRequiredMixin, ListView):
     context_object_name = 'surgeries'
     paginate_by = 10
     def get_queryset(self):
-        queryset = super().get_queryset()
+        active_patient_names = Hospitalization.objects.filter(discharge_date__isnull=True).values_list('patient__name', flat=True).distinct()
+        queryset = super().get_queryset().filter(patient_name__in=active_patient_names)
         self.filterset = SurgeryFilter(self.request.GET, queryset=queryset)
         return self.filterset.qs
     def get_context_data(self, **kwargs):
