@@ -80,24 +80,10 @@
                     </a>
                 </li>
 
-                <!-- Exames (placeholder) -->
+                <!-- Exames (laboratório e imagem) -->
                 <li>
-                    <a href="#" class="nav-link">
+                    <a href="{% url 'exams_landing' %}" class="nav-link {% if request.resolver_match.url_name == 'exams_landing' %}active{% endif %}">
                         <i class="bi bi-clipboard-check me-2"></i>Exames
-                    </a>
-                </li>
-
-                <!-- Laboratório (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-beaker me-2"></i>Laboratório
-                    </a>
-                </li>
-
-                <!-- Imagem (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-image me-2"></i>Imagem
                     </a>
                 </li>
 

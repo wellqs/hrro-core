@@ -599,6 +599,9 @@ class NIRHospitalizationDischargeView(LoginRequiredMixin, NIRPermissionMixin, Up
     def get_success_url(self):
         return get_hospitalization_success_url(self.object)
 
+class ExamsLandingView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/exams_landing.html'
+
 
 class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
     form_class = PatientDocumentForm

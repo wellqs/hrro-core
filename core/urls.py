@@ -26,6 +26,7 @@ from .views import (
     NIRHospitalizationDischargeView,
     NIRHospitalizationHistoryView,
     PatientDocumentListView,
+    ExamsLandingView,
     # Recepção
     ReceptionHomeView,
     PatientCreateReceptionView,
@@ -65,6 +66,8 @@ urlpatterns = [
 
     path('nir/hospitalizations/', NIRHospitalizationHistoryView.as_view(), name='nir_hospitalization_history'),
     path('nir/patient/<int:patient_id>/documents/', PatientDocumentListView.as_view(), name='patient_documents'),
+
+    path('exams/', ExamsLandingView.as_view(), name='exams_landing'),
 
     # URLs dos Formulários Setoriais
     path('surgery/<int:pk>/regulation/', RegulationDataUpdateView.as_view(), name='regulation_update'),
