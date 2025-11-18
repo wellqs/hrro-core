@@ -603,6 +603,23 @@ class ExamsLandingView(LoginRequiredMixin, TemplateView):
     template_name = 'core/exams_landing.html'
 
 
+class PatientExamsView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
+    template_name = 'core/patient_exams.html'
+
+    def get_patient(self):
+        return get_object_or_404(Patient, pk=self.kwargs.get('patient_id'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        patient = self.get_patient()
+        docs = PatientDocument.objects.filter(patient=patient).order_by('-uploaded_at')
+        # Mapear categorias: usamos 'EXAME' como laboratório e 'LAUDO' como imagem por enquanto
+        context['patient'] = patient
+        context['lab_docs'] = docs.filter(category='EXAME')
+        context['img_docs'] = docs.filter(category='LAUDO')
+        context['other_docs'] = docs.exclude(category__in=['EXAME', 'LAUDO'])
+        return context
+
 class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
     form_class = PatientDocumentForm
     template_name = 'core/patient_documents.html'

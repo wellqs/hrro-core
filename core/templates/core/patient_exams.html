@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Exames de {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div>
+        <h1 class="h5 mb-1">Exames do Paciente</h1>
+        <p class="text-muted mb-0">{{ patient.name }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'patient_documents' patient.id %}" class="btn btn-outline-secondary">Documentos</a>
+        <a href="{% url 'nir_hospitalization_history' %}" class="btn btn-outline-secondary">Histórico</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-search text-primary me-2"></i>
+                <strong>Exames de Laboratório</strong>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for doc in lab_docs %}
+                        <a class="list-group-item d-flex justify-content-between align-items-start" href="{{ doc.document.url }}" target="_blank">
+                            <div>
+                                <div class="fw-bold">{{ doc.description|default:"Sem descrição" }}</div>
+                                <small class="text-muted">{{ doc.uploaded_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-muted">Nenhum exame de laboratório.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-image text-info me-2"></i>
+                <strong>Exames de Imagem</strong>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for doc in img_docs %}
+                        <a class="list-group-item d-flex justify-content-between align-items-start" href="{{ doc.document.url }}" target="_blank">
+                            <div>
+                                <div class="fw-bold">{{ doc.description|default:"Sem descrição" }}</div>
+                                <small class="text-muted">{{ doc.uploaded_at|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-muted">Nenhum exame de imagem.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if other_docs %}
+<div class="card shadow-sm mt-4">
+    <div class="card-header">Outros documentos</div>
+    <ul class="list-group list-group-flush">
+        {% for doc in other_docs %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div>
+                <div class="fw-bold">{{ doc.get_category_display }}</div>
+                <div>{{ doc.description|default:"Sem descrição" }}</div>
+                <small class="text-muted">{{ doc.uploaded_at|date:"d/m/Y H:i" }}</small>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ doc.document.url }}" target="_blank">Abrir</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
+
