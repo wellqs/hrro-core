@@ -450,7 +450,13 @@ class NIRPanelView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        clinics = Bed.objects.filter(is_active=True).values_list('clinic', flat=True).distinct()
+        clinic_names = Bed.objects.filter(is_active=True).values_list('clinic', flat=True)
+        unique_clinics = {}
+        for name in clinic_names:
+            slug = nir_clinic_slug(name)
+            if slug not in unique_clinics:
+                unique_clinics[slug] = name
+        clinics = unique_clinics.values()
         clinic_data = []
         for clinic_name in clinics:
             total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
