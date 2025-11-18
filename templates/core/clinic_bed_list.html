@@ -50,6 +50,12 @@
                             {% if can_edit_nir %}
                                 <td class="text-end">
                                     {% if hosp %}
+                                        <a href="{% url 'patient_exams' hosp.patient.id %}" class="btn btn-sm btn-outline-info" title="Exames do Paciente">
+                                            <i class="bi bi-clipboard-check"></i>
+                                        </a>
+                                        <a href="{% url 'patient_documents' hosp.patient.id %}" class="btn btn-sm btn-outline-info" title="Documentos do Paciente">
+                                            <i class="bi bi-paperclip"></i>
+                                        </a>
                                         <a href="{% url 'nir_hospitalization_edit' hosp.id %}" class="btn btn-sm btn-outline-primary" title="Editar Internação">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
