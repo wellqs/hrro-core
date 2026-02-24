@@ -1,0 +1,42 @@
+{% extends "nsp/base.html" %}
+
+{% block title %}Evento Adverso | NSP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1 text-primary fw-bold">Evento Adverso</h2>
+      <p class="text-muted mb-0">Paciente: {{ patient.name }} (Prontuario {{ patient.medical_record_number }})</p>
+    </div>
+    <a href="{% url 'nsp_coleta' %}" class="btn btn-outline-secondary">Voltar</a>
+  </div>
+
+  <div class="card border-0 shadow-sm" style="border-radius: 16px; background: #f8fafc;">
+    <div class="card-body p-4 p-md-5">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-slate-700">
+              {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+              <div class="form-text text-muted">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-danger small">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2 justify-content-end mt-3">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-1"></i> Salvar evento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

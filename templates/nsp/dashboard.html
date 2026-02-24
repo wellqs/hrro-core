@@ -1,0 +1,273 @@
+{% extends "nsp/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .metric-card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    min-height: 170px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .metric-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+  }
+  .metric-label {
+    font-size: 0.95rem;
+    color: #475569;
+    font-weight: 600;
+  }
+  .metric-sub {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+  .metric-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <h2 class="mb-3 mb-md-0 text-primary fw-bold">Dashboard NSP - Seguranca do Paciente</h2>
+
+    <form class="row g-2" id="filterForm" method="get">
+      <div class="col-auto">
+        <select id="anoSelect" name="ano" class="form-select form-select-sm shadow-sm">
+          {% for ano in anos %}
+            <option value="{{ ano }}" {% if ano == ano_selecionado %}selected{% endif %}>{{ ano }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <select id="mesSelect" class="form-select form-select-sm shadow-sm" name="mes">
+          <option value="" {% if not mes_selecionado %}selected{% endif %}>Todos</option>
+          {% for num, nome in meses %}
+            <option value="{{ num }}" {% if num == mes_selecionado %}selected{% endif %}>{{ nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <select id="setorSelect" class="form-select form-select-sm shadow-sm">
+          <option value="">Todos os setores</option>
+          {% for setor in setores %}
+            <option value="{{ setor }}">{{ setor }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-primary btn-sm shadow-sm" type="submit">
+            <i class="bi bi-filter"></i> Filtrar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #fff6e5; border: 1px solid #f3d3a5;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Total de EA</div>
+            <div class="metric-icon" style="background:#fbbf24; color:#92400e;">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-dark mt-2" id="val-total-ea-nsp">{{ stats.total_ea_nsp }}</div>
+          <div class="metric-sub">Eventos adversos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #e6f2ff; border: 1px solid #c7dff8;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Pulseiras verificadas</div>
+            <div class="metric-icon" style="background:#0ea5e9; color:#0b3b68;">
+              <i class="bi bi-activity"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-dark mt-2" id="val-total-pulseiras">{{ stats.total_pulseiras }}</div>
+          <div class="metric-sub">Identificacao do paciente</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #fbe7e8; border: 1px solid #f3c3c6;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Quedas</div>
+            <div class="metric-icon" style="background:#e11d48; color:#fff;">
+              <i class="bi bi-graph-down-arrow"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-dark mt-2" id="val-ea-queda">{{ stats.total_ea_queda }}</div>
+          <div class="metric-sub">Total de quedas</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #eef2ff; border: 1px solid #d7def8;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Pacientes</div>
+            <div class="metric-icon" style="background:#1f2937; color:#e5e7eb;">
+              <i class="bi bi-people-fill"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-dark mt-2" id="val-total-pacientes">{{ stats.total_pacientes }}</div>
+          <div class="metric-sub"><span id="val-pulseiras">{{ stats.total_pulseiras }}</span> com pulseira correta</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #e8f9f3; border: 1px solid #bceede;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Taxa de conformidade</div>
+            <div class="metric-icon" style="background:#10b981; color:#ecfdf3;">
+              <i class="bi bi-check2-circle"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-success mt-2" id="val-taxa-conformidade">{{ stats.taxa_conformidade }}%</div>
+          <div class="metric-sub">Protocolos de seguranca</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card metric-card h-100" style="background: #fbf3e8; border: 1px solid #f1d9b8;">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="metric-label text-dark">Flebite</div>
+            <div class="metric-icon" style="background:#f59e0b; color:#7c2d12;">
+              <i class="bi bi-activity"></i>
+            </div>
+          </div>
+          <div class="fs-2 fw-bold text-dark mt-2" id="val-ea-flebite">{{ stats.total_ea_flebite }}</div>
+          <div class="metric-sub">Casos registrados</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <span>Evolucao dos eventos adversos ({{ ano_selecionado }})</span>
+        </div>
+        <div class="card-body">
+          <canvas id="lineEventos"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <strong>Conformidade de identificacao</strong>
+        </div>
+        <div class="card-body" style="height: 250px; display: flex; justify-content: center;">
+          <canvas id="doughnutIdentificacao"></canvas>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <strong>Distribuicao de tipos de eventos</strong>
+        </div>
+        <div class="card-body">
+          <canvas id="barDistribuicao"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{{ stats|json_script:"stats-data" }}
+{{ chart_data|json_script:"chart-data" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const stats = JSON.parse(document.getElementById("stats-data").textContent);
+    const chartData = JSON.parse(document.getElementById("chart-data").textContent);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const ctxLine = document.getElementById("lineEventos").getContext("2d");
+        new Chart(ctxLine, {
+            type: "bar",
+            data: {
+                labels: chartData.chart_labels,
+                datasets: [
+                    { label: "Eventos Adversos (NSP)", data: chartData.chart_ea_nsp, backgroundColor: "#0d6efd", borderRadius: 6, barThickness: 26, borderSkipped: false },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } },
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { stacked: false }
+                }
+            }
+        });
+
+        const ctxDoughnut = document.getElementById("doughnutIdentificacao").getContext("2d");
+        new Chart(ctxDoughnut, {
+            type: "doughnut",
+            data: {
+                labels: ["Correta", "Incorreta/sem pulseira"],
+                datasets: [{
+                    data: [
+                        stats.total_pulseiras,
+                        stats.total_pacientes - stats.total_pulseiras
+                    ],
+                    backgroundColor: ["#198754", "#dc3545"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+
+        const ctxBar = document.getElementById("barDistribuicao").getContext("2d");
+        new Chart(ctxBar, {
+            type: "bar",
+            data: {
+                labels: ["Eventos Adversos (NSP)", "Eventos Adversos (NOTIVISA)", "Queda", "Flebite"],
+                datasets: [{
+                    data: [
+                        stats.total_ea_nsp,
+                        stats.total_ea_notivisa,
+                        stats.total_ea_queda,
+                        stats.total_ea_flebite
+                    ],
+                    backgroundColor: ["#0d6efd", "#6c757d", "#dc3545", "#ffc107"]
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    });
+</script>
+{% endblock %}

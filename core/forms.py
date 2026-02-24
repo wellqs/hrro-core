@@ -17,7 +17,20 @@ from .models import (
     Bed,
     Hospitalization,
 )
+class NSPCollectForm(forms.Form):
+    total_ea_nsp = forms.DecimalField(label='Total de EA (NSP)', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    total_ea_notivisa = forms.DecimalField(label='Total de EA (NOTIVISA)', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    total_ea_queda = forms.DecimalField(label='Quedas', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    total_ea_flebite = forms.DecimalField(label='Flebite', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    total_pacientes = forms.DecimalField(label='Total de pacientes', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_total_pacientes'}))
+    total_pulseiras = forms.DecimalField(label='Pulseiras verificadas', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_total_pulseiras'}))
+    taxa_conformidade = forms.DecimalField(label='Taxa de conformidade (%)', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_taxa_conformidade'}))
 
+
+class NSPEventoAdversoForm(forms.Form):
+    data_evento = forms.DateField(label='Data do evento', required=True, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    tipo_evento = forms.CharField(label='Tipo de evento', required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    descricao = forms.CharField(label='Descricao', required=False, widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}))
 
 # --- Formulário Principal ---
 class SurgeryForm(forms.ModelForm):
@@ -67,7 +80,6 @@ class SurgeryForm(forms.ModelForm):
 
         return cleaned_data
 
-
 # --- Formulários Setoriais ---
 class RegulationDataForm(forms.ModelForm):
     class Meta:
@@ -78,7 +90,6 @@ class RegulationDataForm(forms.ModelForm):
             'is_approved': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
-
 
 class SurgicalDataForm(forms.ModelForm):
     class Meta:
@@ -93,7 +104,6 @@ class SurgicalDataForm(forms.ModelForm):
             # ADICIONADO WIDGET PARA O NOVO CAMPO
             'checklist_cirurgia_segura': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
 
 class BillingDataForm(forms.ModelForm):
     class Meta:

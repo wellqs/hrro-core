@@ -1,63 +1,71 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard Estratégico{% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'core/css/dashboard_styles.css' %}">
-{% endblock %}
+{% block title %}Dashboard Estrat\u00e9gico{% endblock %}
 
 {% block content %}
-<h1 class="h2 border-bottom pb-2 mb-3">Dashboard de Indicadores Estratégicos</h1>
+<div class="flex flex-col gap-2">
+    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Vis\u00e3o geral</p>
+    <h1 class="text-2xl font-semibold text-slate-800">Dashboard de Indicadores Estrat\u00e9gicos</h1>
+</div>
 
-<div class="row">
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card border-start-primary shadow h-100">
-            <div class="card-body">
-                <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total de Cirurgias</div>
-                <div class="h5 mb-0 fw-bold text-gray-800">{{ total_surgeries }}</div>
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Total de Cirurgias</div>
+        <div class="flex items-center justify-between">
+            <div class="text-3xl font-bold text-slate-900">{{ total_surgeries }}</div>
+            <div class="h-10 w-10 rounded-xl bg-hrro-sky/20 text-hrro-sky flex items-center justify-center">
+                <i class="bi bi-activity"></i>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card border-start-info shadow h-100">
-            <div class="card-body">
-                <div class="text-xs fw-bold text-info text-uppercase mb-1">Agendadas</div>
-                <div class="h5 mb-0 fw-bold text-gray-800">{{ agendadas_count }}</div>
+    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Agendadas</div>
+        <div class="flex items-center justify-between">
+            <div class="text-3xl font-bold text-slate-900">{{ agendadas_count }}</div>
+            <div class="h-10 w-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center">
+                <i class="bi bi-calendar-week"></i>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card border-start-success shadow h-100">
-            <div class="card-body">
-                <div class="text-xs fw-bold text-success text-uppercase mb-1">Realizadas</div>
-                <div class="h5 mb-0 fw-bold text-gray-800">{{ realizadas_count }}</div>
+    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Realizadas</div>
+        <div class="flex items-center justify-between">
+            <div class="text-3xl font-bold text-slate-900">{{ realizadas_count }}</div>
+            <div class="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="bi bi-check2-circle"></i>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card border-start-danger shadow h-100">
-            <div class="card-body">
-                <div class="text-xs fw-bold text-danger text-uppercase mb-1">Canceladas</div>
-                <div class="h5 mb-0 fw-bold text-gray-800">{{ canceladas_count }}</div>
+    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Canceladas</div>
+        <div class="flex items-center justify-between">
+            <div class="text-3xl font-bold text-slate-900">{{ canceladas_count }}</div>
+            <div class="h-10 w-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                <i class="bi bi-x-circle"></i>
             </div>
         </div>
     </div>
 </div>
 
-
-<div class="row">
-    <div class="col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Volume de Cirurgias por Mês</h6></div>
-            <div class="card-body"><canvas id="volumeChart"></canvas></div>
+<div class="grid gap-4 lg:grid-cols-3">
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 lg:col-span-2 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-xs uppercase tracking-wide text-slate-500">Tend\u00eancia</p>
+                <h6 class="text-base font-semibold text-slate-800">Volume de Cirurgias por M\u00eas</h6>
+            </div>
         </div>
+        <div class="h-80"><canvas id="volumeChart" class="w-full h-full"></canvas></div>
     </div>
-    <div class="col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Distribuição de Status</h6></div>
-            <div class="card-body"><canvas id="statusChart"></canvas></div>
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-xs uppercase tracking-wide text-slate-500">Distribui\u00e7\u00e3o</p>
+                <h6 class="text-base font-semibold text-slate-800">Status das Cirurgias</h6>
+            </div>
         </div>
+        <div class="h-80"><canvas id="statusChart" class="w-full h-full"></canvas></div>
     </div>
 </div>
 
@@ -71,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusData = JSON.parse(document.getElementById('status-data').textContent);
     const volumeData = JSON.parse(document.getElementById('volume-data').textContent);
 
-    // Gráfico de Pizza (Doughnut) - Sem alterações
+    // Grafico doughnut
     const ctxStatus = document.getElementById('statusChart');
     if (ctxStatus) {
         new Chart(ctxStatus, {
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: statusData.labels,
                 datasets: [{
                     data: statusData.data,
-                    backgroundColor: ['#1cc88a', '#e74a3b', '#36b9cc']
+                    backgroundColor: ['#22c55e', '#e11d48', '#38bdf8']
                 }]
             },
             options: {
@@ -91,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- GRÁFICO DE BARRAS ATUALIZADO PARA BARRAS EMPILHADAS ---
+    // Grafico de barras empilhadas
     const ctxVolume = document.getElementById('volumeChart');
     if (ctxVolume) {
         new Chart(ctxVolume, {
@@ -102,17 +110,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         label: 'Realizadas',
                         data: volumeData.datasets.realizadas,
-                        backgroundColor: '#1cc88a' // Verde
+                        backgroundColor: '#22c55e'
                     },
                     {
                         label: 'Canceladas',
                         data: volumeData.datasets.canceladas,
-                        backgroundColor: '#e74a3b' // Vermelho
+                        backgroundColor: '#e11d48'
                     },
                     {
                         label: 'Agendadas',
                         data: volumeData.datasets.agendadas,
-                        backgroundColor: '#36b9cc' // Azul claro
+                        backgroundColor: '#38bdf8'
                     }
                 ]
             },

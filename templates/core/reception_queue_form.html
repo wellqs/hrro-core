@@ -1,122 +1,119 @@
 {% extends "base.html" %}
 
-{% block title %}Inserir na Fila{% endblock %}
+{% block title %}Inserir na fila{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4>Abertura de Atendimento</h4>
-          <a href="{% url 'reception_home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <h1 class="text-xl font-semibold text-slate-800">Abertura de atendimento</h1>
+      <p class="text-sm text-slate-500">Paciente: <span class="font-semibold text-slate-800">{{ patient.name }}</span> — Prontuario {{ patient.medical_record_number }}</p>
+    </div>
+    <a href="{% url 'reception_home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body space-y-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Tipo de atendimento</label>
+            {{ form.care_type }}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Origem do paciente</label>
+            {{ form.origin }}
+          </div>
         </div>
-        <div class="card-body">
-          <p class="mb-1"><strong>Paciente:</strong> {{ patient.name }}</p>
-          <p><strong>Prontuário:</strong> {{ patient.medical_record_number }}</p>
-          <hr>
-          <form method="post">
-            {% csrf_token %}
-            <h6 class="text-secondary">Identificação</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Tipo de atendimento</label>
-                {{ form.care_type }}
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Origem do paciente</label>
-                {{ form.origin }}
-              </div>
-            </div>
 
-            <h6 class="text-secondary">Motivo e Encaminhamento</h6>
-            <div class="mb-3">
-              <label class="form-label">Motivo da vinda</label>
-              {{ form.reason }}
-            </div>
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label class="form-label">Tipo de encaminhamento</label>
-                {{ form.referral_type }}
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Nº guia/senha/referência</label>
-                {{ form.reference_document }}
-              </div>
-            </div>
-
-            <h6 class="text-secondary">Datas</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-4">
-                <label class="form-label">Entrada em</label>
-                {{ form.entry_at }}
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Triagem em</label>
-                {{ form.triage_at }}
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Atendimento em</label>
-                {{ form.attendance_at }}
-              </div>
-            </div>
-
-            <h6 class="text-secondary">Profissional solicitante</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-8">
-                <label class="form-label">Nome</label>
-                {{ form.requester_name }}
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Registro</label>
-                {{ form.requester_registry }}
-              </div>
-            </div>
-
-            <h6 class="text-secondary">Fila de Espera</h6>
-            <div class="row g-3 mb-3">
-              <div class="col-md-8">
-                <label class="form-label">Setor de Destino</label>
-                {{ form.destination_sector }}
-                {% if form.destination_sector.errors %}<div class="text-danger small">{{ form.destination_sector.errors.0 }}</div>{% endif %}
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Prioridade</label>
-                {{ form.priority }}
-                {% if form.priority.errors %}<div class="text-danger small">{{ form.priority.errors.0 }}</div>{% endif %}
-              </div>
-            </div>
-            <div class="form-check form-switch mb-3">
-              {{ form.direct_internation }}
-              <label class="form-check-label ms-2" for="id_direct_internation">Internação direta (não entra na fila)</label>
-              {% if form.direct_internation.errors %}<div class="text-danger small">{{ form.direct_internation.errors.0 }}</div>{% endif %}
-            </div>
-            <div id="direct-internation-fields" class="border rounded-3 p-3 mb-3 d-none">
-              <div class="row g-3 align-items-end">
-                <div class="col-md-6">
-                  <label class="form-label">Leito para internação direta</label>
-                  {{ form.bed }}
-                  {% if form.bed.errors %}<div class="text-danger small">{{ form.bed.errors.0 }}</div>{% endif %}
-                  <small class="text-muted">Apenas leitos ativos aparecem na lista.</small>
-                </div>
-                <div class="col-md-6">
-                  <div class="alert alert-info mb-0">
-                    O paciente será registrado na planilha do NIR usando este leito e não aparecerá na fila.
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Observações</label>
-              {{ form.notes }}
-              {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
-            </div>
-            <div class="d-grid gap-2">
-              <button class="btn btn-primary" type="submit">Inserir na Fila</button>
-            </div>
-          </form>
+        <div class="space-y-2">
+          <label class="form-label">Motivo da vinda</label>
+          {{ form.reason }}
         </div>
-      </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Tipo de encaminhamento</label>
+            {{ form.referral_type }}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">No guia/senha/referencia</label>
+            {{ form.reference_document }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="space-y-2">
+            <label class="form-label">Entrada em</label>
+            {{ form.entry_at }}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Triagem em</label>
+            {{ form.triage_at }}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Atendimento em</label>
+            {{ form.attendance_at }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="md:col-span-2 space-y-2">
+            <label class="form-label">Profissional solicitante</label>
+            {{ form.requester_name }}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Registro</label>
+            {{ form.requester_registry }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="md:col-span-2 space-y-2">
+            <label class="form-label">Setor de destino</label>
+            {{ form.destination_sector }}
+            {% if form.destination_sector.errors %}<div class="text-danger small">{{ form.destination_sector.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="space-y-2">
+            <label class="form-label">Prioridade</label>
+            {{ form.priority }}
+            {% if form.priority.errors %}<div class="text-danger small">{{ form.priority.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+          {{ form.direct_internation }}
+          <label class="form-check-label" for="id_direct_internation">Internacao direta (nao entra na fila)</label>
+          {% if form.direct_internation.errors %}<div class="text-danger small">{{ form.direct_internation.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div id="direct-internation-fields" class="border border-slate-200 rounded-xl p-4 bg-white hidden">
+          <div class="grid md:grid-cols-2 gap-4 items-start">
+            <div class="space-y-2">
+              <label class="form-label">Leito para internacao direta</label>
+              {{ form.bed }}
+              {% if form.bed.errors %}<div class="text-danger small">{{ form.bed.errors.0 }}</div>{% endif %}
+              <p class="text-xs text-slate-500">Apenas leitos ativos aparecem na lista.</p>
+            </div>
+            <div class="rounded-lg border border-sky-200 bg-sky-50 text-sky-800 p-3 text-sm">
+              O paciente sera registrado na planilha do NIR usando este leito e nao aparecera na fila.
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="form-label">Observacoes</label>
+          {{ form.notes }}
+          {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="d-grid">
+          <button class="btn btn-primary" type="submit">Inserir na fila</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -130,7 +127,7 @@
     const toggle = document.getElementById('id_direct_internation');
     const section = document.getElementById('direct-internation-fields');
     if (toggle && section){
-      const refresh = () => { section.classList.toggle('d-none', !toggle.checked); };
+      const refresh = () => { section.classList.toggle('hidden', !toggle.checked); };
       toggle.addEventListener('change', refresh);
       refresh();
     }

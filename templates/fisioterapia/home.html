@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Fisioterapia{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
+      <h1 class="text-xl font-semibold text-slate-800">Escolha o painel</h1>
+    </div>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <a href="{% url 'fisioterapia:coordenador' %}" class="card block">
+      <div class="card-body space-y-2">
+        <div class="h-10 w-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center">
+          <i class="bi bi-diagram-3"></i>
+        </div>
+        <h2 class="text-lg font-semibold text-slate-800">Coordenador</h2>
+        <p class="text-sm text-slate-600">Indicadores, equipe, metas e visão gerencial.</p>
+      </div>
+    </a>
+    <a href="{% url 'fisioterapia:assistencia' %}" class="card block">
+      <div class="card-body space-y-2">
+        <div class="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <i class="bi bi-activity"></i>
+        </div>
+        <h2 class="text-lg font-semibold text-slate-800">Assistência</h2>
+        <p class="text-sm text-slate-600">Atendimentos, agenda e acompanhamento diário.</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

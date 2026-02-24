@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Fisioterapia - Coordenador{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
+      <h1 class="text-xl font-semibold text-slate-800">Painel do Coordenador</h1>
+    </div>
+    <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card">
+      <div class="card-body">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Atendimentos do dia</p>
+        <div class="text-3xl font-bold text-slate-800">--</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Pacientes ativos</p>
+        <div class="text-3xl font-bold text-slate-800">--</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Equipe em plantão</p>
+        <div class="text-3xl font-bold text-slate-800">--</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Meta semanal</p>
+        <div class="text-3xl font-bold text-slate-800">--</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="card lg:col-span-2">
+      <div class="card-header">
+        <h2 class="text-base font-semibold text-slate-800 m-0">Indicadores principais</h2>
+      </div>
+      <div class="card-body text-slate-600">
+        Adicione aqui gráficos e métricas gerenciais.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-base font-semibold text-slate-800 m-0">Alertas</h2>
+      </div>
+      <div class="card-body text-slate-600">
+        Pendências, pacientes críticos e avisos rápidos.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,7 +3,10 @@ from django.views import View
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 import unicodedata
-from weasyprint import HTML
+try:
+    from weasyprint import HTML
+except Exception:
+    HTML = None
 from django.urls import reverse_lazy, reverse # Adicionado reverse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
@@ -26,7 +29,7 @@ from .forms import (
     RegulationDataForm, SurgicalDataForm, BillingDataForm,
     CMEDataForm, OPMEDataForm, NursingChecklistForm
 )
-from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm, HospitalizationForm, HospitalizationDischargeForm, PatientDocumentForm
+from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm, HospitalizationForm, HospitalizationDischargeForm, PatientDocumentForm, NSPCollectForm, NSPEventoAdversoForm
 from .filters import SurgeryFilter
 
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
@@ -374,7 +377,7 @@ class NursingChecklistUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Up
 
 class IndicatorDashboardView(LoginRequiredMixin, ListView):
     model = Sector
-    template_name = 'core/indicator_dashboard.html'
+    template_name = 'nsp/dashboard.html'
     context_object_name = 'sectors'
     def get_queryset(self):
         return Sector.objects.prefetch_related('indicators').filter(indicators__is_active=True).distinct()
@@ -405,18 +408,25 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
 
 class IndicatorPDFView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        date_str = request.GET.get('date');
-        if not date_str: return HttpResponse("Data não fornecida.", status=400)
+        date_str = request.GET.get('date')
+        if not date_str:
+            return HttpResponse("Data nÆo fornecida.", status=400)
+        if HTML is None:
+            return HttpResponse("Dependência do WeasyPrint ausente no ambiente.", status=500)
         selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         sectors = Sector.objects.prefetch_related('indicators').filter(indicators__is_active=True).distinct()
         existing_data = IndicatorData.objects.filter(period=selected_date)
         indicator_data_map = {entry.indicator_id: (entry.value, entry.notes) for entry in existing_data}
         for sector in sectors:
-            for indicator in sector.indicators.all(): indicator.current_value, indicator.current_notes = indicator_data_map.get(indicator.id, (None, None))
+            for indicator in sector.indicators.all():
+                indicator.current_value, indicator.current_notes = indicator_data_map.get(indicator.id, (None, None))
         context = {'sectors': sectors, 'selected_date': selected_date}
-        html_string = render_to_string('core/indicator_report_pdf.html', context); base_url = request.build_absolute_uri('/')
-        html = HTML(string=html_string, base_url=base_url); pdf = html.write_pdf()
-        response = HttpResponse(pdf, content_type='application/pdf'); response['Content-Disposition'] = f'attachment; filename="relatorio_indicadores_{date_str}.pdf"'
+        html_string = render_to_string('core/indicator_report_pdf.html', context)
+        base_url = request.build_absolute_uri('/')
+        html = HTML(string=html_string, base_url=base_url)
+        pdf = html.write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment="relatorio_indicadores_{date_str}.pdf"'
         return response
 
 
@@ -442,6 +452,85 @@ class IndicatorAnalysisView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
         results = queryset.values('indicator__name', 'indicator__sector__name').annotate(total_value=Sum('value'), average_value=Avg('value'), days_count=Count('id')).order_by('indicator__sector__name', 'indicator__name')
         context['results'] = [{'indicator_name': item['indicator__name'], 'sector_name': item['indicator__sector__name'], 'total_value': item['total_value'], 'average_value': item['average_value'], 'days_count': item['days_count']} for item in results]
         return context
+
+
+class NSPLandingView(LoginRequiredMixin, TemplateView):
+    template_name = 'nsp/landing.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['user_display'] = user.first_name or user.username
+        return context
+
+
+class NSPClinicLandingView(LoginRequiredMixin, TemplateView):
+    template_name = 'nsp/coleta.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        clinic_names = Bed.objects.filter(is_active=True).values_list('clinic', flat=True)
+        unique_clinics = {}
+        for name in clinic_names:
+            slug = nir_clinic_slug(name)
+            if slug not in unique_clinics:
+                unique_clinics[slug] = name
+        clinics = unique_clinics.values()
+        clinic_data = []
+        for clinic_name in clinics:
+            total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
+            occupied_beds = Hospitalization.objects.filter(
+                bed__clinic=clinic_name,
+                bed__is_active=True,
+                discharge_date__isnull=True
+            ).count()
+            vacant_beds = total_beds - occupied_beds
+            occupancy_rate = (occupied_beds / total_beds * 100) if total_beds > 0 else 0
+            clinic_data.append({
+                'name': clinic_name,
+                'total_beds': total_beds,
+                'occupied_beds': occupied_beds,
+                'vacant_beds': vacant_beds,
+                'occupancy_rate': round(occupancy_rate, 1),
+                'chart_data': [occupied_beds, vacant_beds],
+                'detail_url': reverse('nsp_coleta_clinic', kwargs={'clinic_name_slug': nir_clinic_slug(clinic_name)})
+            })
+        context['clinic_data'] = clinic_data
+        return context
+
+
+
+
+
+class NSPEquipeView(LoginRequiredMixin, TemplateView):
+    template_name = 'nsp/equipe.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['members'] = [
+            {'nome': 'Coordenador NSP', 'cargo': 'Coordenação', 'email': 'coordenacao@nsp.local'},
+            {'nome': 'Enfermeiro NSP', 'cargo': 'Enfermagem', 'email': 'enfermagem@nsp.local'},
+            {'nome': 'Analista de Qualidade', 'cargo': 'Qualidade', 'email': 'qualidade@nsp.local'},
+        ]
+        return context
+
+
+class NSPEventoAdversoView(LoginRequiredMixin, FormView):
+    template_name = 'nsp/evento_adverso.html'
+    form_class = NSPEventoAdversoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.patient = get_object_or_404(Patient, pk=kwargs.get('patient_id'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['patient'] = self.patient
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Evento adverso registrado.')
+        return redirect('nsp_coleta')
 
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 
@@ -620,6 +709,31 @@ class PatientExamsView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
         context['other_docs'] = docs.exclude(category__in=['EXAME', 'LAUDO'])
         return context
 
+
+class NSPClinicBedListView(ClinicBedListView):
+    template_name = 'nsp/clinic_bed_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        clinic_name = context.get('clinic_name')
+        if clinic_name:
+            total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
+            occupied_beds = Hospitalization.objects.filter(
+                bed__clinic=clinic_name,
+                bed__is_active=True,
+                discharge_date__isnull=True
+            ).count()
+            context['total_beds'] = total_beds
+            context['occupied_beds'] = occupied_beds
+            context['available_beds'] = total_beds - occupied_beds
+        else:
+            context['total_beds'] = 0
+            context['occupied_beds'] = 0
+            context['available_beds'] = 0
+        clinics = Bed.objects.filter(is_active=True).values_list('clinic', flat=True).distinct()
+        context['clinics'] = [{'name': c, 'slug': nir_clinic_slug(c)} for c in clinics]
+        return context
+
 class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
     form_class = PatientDocumentForm
     template_name = 'core/patient_documents.html'
@@ -674,5 +788,7 @@ class NIRHospitalizationHistoryView(LoginRequiredMixin, NIRPermissionMixin, List
         context['active_count'] = Hospitalization.objects.filter(discharge_date__isnull=True).count()
         context['discharged_count'] = Hospitalization.objects.filter(discharge_date__isnull=False).count()
         return context
+
+
 
 

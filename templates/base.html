@@ -6,171 +6,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HRRO Dashboard{% endblock %}</title>
 
+    <!-- Tailwind via CDN (preflight desligado para manter compatibilidade com estilos existentes) -->
+    <script>
+        tailwind = window.tailwind || {};
+        tailwind.config = {
+            corePlugins: { preflight: false },
+            theme: {
+                extend: {
+                    colors: {
+                        hrro: {
+                            navy: '#0f172a',
+                            slate: '#1e293b',
+                            sky: '#38bdf8',
+                            lime: '#a3e635',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap base para compatibilidade com templates existentes -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    {% block extra_css %}{% endblock %}
-
     <style>
-        body { display: flex; min-height: 100vh; flex-direction: column; background-color: #f8f9fa; }
-        .sidebar { width: 280px; background-color: #2c3e50; }
-        .content { flex-grow: 1; padding: 2rem; }
-        .nav-link { color: rgba(255,255,255,.75); }
-        .nav-link:hover, .nav-link.active { color: #fff; background-color: #34495e; }
-        /* Estilo para o link de logout */
-        .logout-section { margin-top: auto; } /* Empurra para o final */
+        :root {
+            --hrro-navy: #0f172a;
+            --hrro-slate: #1e293b;
+            --hrro-sky: #38bdf8;
+            --hrro-lime: #a3e635;
+            --hrro-surface: #ffffff;
+            --hrro-border: #e2e8f0;
+            --hrro-text: #0f172a;
+        }
+        body {
+            background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+            color: var(--hrro-text);
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        /* Cards e containers */
+        .card {
+            border: 1px solid var(--hrro-border);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.25);
+            background: var(--hrro-surface);
+        }
+        .card-header {
+            border-bottom: 1px solid var(--hrro-border);
+            background: linear-gradient(90deg, rgba(56,189,248,0.08), rgba(163,230,53,0.06));
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .card-body { padding: 1.5rem; }
+        .container, .container-fluid { padding-left: 1rem; padding-right: 1rem; }
+        /* Botões */
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-primary { background: var(--hrro-navy); }
+        .btn-primary:hover { background: #0b1322; }
+        .btn-success { background: #22c55e; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-secondary { background: #cbd5e1; color: #0f172a; }
+        .btn-secondary:hover { background: #94a3b8; color: #0f172a; }
+        .btn-outline-primary { color: var(--hrro-navy); border: 1px solid var(--hrro-navy); background: transparent; }
+        .btn-outline-primary:hover { background: var(--hrro-navy); color: #fff; }
+        /* Inputs */
+        input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"],
+        input[type="email"], input[type="password"], select, textarea {
+            width: 100%;
+            border: 1px solid var(--hrro-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid rgba(56,189,248,0.35);
+            border-color: #38bdf8;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(56,189,248,0.12);
+        }
+        label { font-weight: 600; color: #475569; }
+        /* Tabelas */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; }
+        thead th {
+            background: rgba(56,189,248,0.08);
+            color: #0f172a;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+        }
+        tbody tr { border-bottom: 1px solid var(--hrro-border); }
+        tbody tr:hover { background: #f8fafc; }
+        /* Badges genéricas */
+        .badge { padding: 6px 10px; border-radius: 10px; font-weight: 600; }
+        /* Helpers */
+        .bg-soft { background: linear-gradient(180deg, rgba(56,189,248,0.07), rgba(15,23,42,0.03)); }
+        .text-muted { color: #64748b !important; }
+        .shadow-soft { box-shadow: 0 24px 50px -28px rgba(15,23,42,0.25); }
+        .table-responsive { border: 1px solid var(--hrro-border); border-radius: 16px; overflow: hidden; background: #fff; }
+        /* Sidebar fallback (garante contraste mesmo sem Tailwind) */
+        .hrro-sidebar {
+            width: 280px;
+            background: var(--hrro-navy);
+            color: #ffffff;
+        }
+        .hrro-sidebar .hrro-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.86);
+            text-decoration: none;
+        }
+        .hrro-sidebar .hrro-nav a:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+        .hrro-sidebar .hrro-nav a.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <div class="d-flex flex-grow-1">
-        <div class="sidebar d-flex flex-column flex-shrink-0 p-3">
-            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <i class="bi bi-hospital fs-4 me-2"></i>
-                <span class="fs-4">HRRO Cirúrgico</span>
-            </a>
-            <hr>
-
-            <ul class="nav nav-pills flex-column">
-                <!-- Dashboard Geral -->
-                <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" aria-current="page">
-                        <i class="bi bi-graph-up me-2"></i>Dashboard Geral
-                    </a>
-                </li>
-
-                <!-- Recepção (placeholder) -->
-                <li>
-                    <a href="{% url 'reception_home' %}" class="nav-link {% if request.resolver_match.url_name == 'reception_home' or request.resolver_match.url_name == 'reception_queue' or request.resolver_match.url_name == 'reception_queue_new' or request.resolver_match.url_name == 'reception_patient_new' %}active{% endif %}">
-                        <i class="bi bi-person-check me-2"></i>Recepção
-                    </a>
-                </li>
-
-                <!-- NIR / Regulação -->
-                <li>
-                    <a href="{% url 'nir_panel' %}" class="nav-link {% if request.resolver_match.url_name == 'nir_panel' or request.resolver_match.url_name == 'clinic_bed_list' %}active{% endif %}">
-                        <i class="bi bi-clipboard2-data me-2"></i>NIR / Regulação
-                    </a>
-                </li>
-
-                <!-- Ambulatório (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-building me-2"></i>Ambulatório
-                    </a>
-                </li>
-
-                <!-- Internação (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-hospital me-2"></i>Internação
-                    </a>
-                </li>
-
-                <!-- Pronto Atendimento / Urgência (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-activity me-2"></i>Pronto Atendimento / Urgência
-                    </a>
-                </li>
-
-                <!-- Centro Cirúrgico -> lista de cirurgias existente -->
-                <li>
-                    <a href="{% url 'surgery_list' %}" class="nav-link {% if 'surgery' in request.resolver_match.url_name %}active{% endif %}">
-                        <i class="bi bi-scissors me-2"></i>Centro Cirúrgico
-                    </a>
-                </li>
-
-                <!-- Exames (laboratório e imagem) -->
-                <li>
-                    <a href="{% url 'exams_landing' %}" class="nav-link {% if request.resolver_match.url_name == 'exams_landing' %}active{% endif %}">
-                        <i class="bi bi-clipboard-check me-2"></i>Exames
-                    </a>
-                </li>
-
-                <!-- Farmácia / Almoxarifado (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-capsule me-2"></i>Farmácia / Almoxarifado
-                    </a>
-                </li>
-
-                <!-- Faturamento (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-file-earmark-medical me-2"></i>Faturamento
-                    </a>
-                </li>
-
-                <!-- CCIH (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-shield-plus me-2"></i>CCIH
-                    </a>
-                </li>
-
-                <!-- NSP (Indicadores) -> indicadores existentes -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'indicator_dashboard' or request.resolver_match.url_name == 'indicator_history' or request.resolver_match.url_name == 'indicator_analysis' %}active{% endif %}" href="{% url 'indicator_dashboard' %}">
-                        <i class="bi bi-bar-chart-line me-2"></i>NSP (Segurança do Paciente)
-                    </a>
-                </li>
-
-                <!-- SESMT (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-cone-striped me-2"></i>SESMT (Segurança do Trabalho)
-                    </a>
-                </li>
-
-                <!-- Relatórios & Indicadores (placeholder) -->
-                <li>
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-journal-text me-2"></i>Relatórios & Indicadores
-                    </a>
-                </li>
-
-                <!-- Administração -> Django Admin -->
-                <li>
-                    <a href="{% url 'admin:index' %}" class="nav-link">
-                        <i class="bi bi-gear me-2"></i>Administração
-                    </a>
-                </li>
-            </ul>
-    <div class="logout-section mt-auto">
-            <hr>
-            {% if user.is_authenticated %}
-            <div class="px-3 text-white mb-2">
-            <small>Usuário: <strong>{{ user.username }}</strong></small>
-    </div>
-
-            <form action="{% url 'logout' %}" method="post" class="d-grid">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-link nav-link text-start text-white p-2">
-                <i class="bi bi-box-arrow-right me-2"></i>Sair
-            </button>
-            </form>
-            {% endif %}
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside class="hrro-sidebar hidden md:flex w-72 bg-hrro-navy text-white flex-col border-r border-slate-800/70 shadow-xl">
+            <div class="flex items-center gap-3 px-6 py-6">
+                <div class="h-10 w-10 rounded-2xl bg-slate-800/60 flex items-center justify-center">
+                    <i class="bi bi-hospital fs-5"></i>
+                </div>
+                <div>
+                    <div class="text-lg font-semibold leading-tight">HRRO</div>
+                    <div class="text-xs text-slate-200/70 uppercase tracking-wide">Centro CirÇ§rgico</div>
+                </div>
             </div>
-
-        </div>
-
-        <main class="content">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+            {% with current=request.resolver_match.url_name|default:'' %}
+            <nav class="hrro-nav flex-1 px-4 space-y-1">
+                <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if current == 'dashboard' %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
+                    <i class="bi bi-graph-up"></i><span>Dashboard Geral</span>
+                </a>
+                <a href="{% url 'nsp_landing' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if 'nsp' in request.path or 'indicator' in current %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
+                    <i class="bi bi-bar-chart-line"></i><span>NSP / Indicadores</span>
+                </a>
+                <a href="{% url 'fisioterapia:home' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if 'fisioterapia' in request.path %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
+                    <i class="bi bi-heart-pulse"></i><span>Fisioterapia</span>
+                </a>
+            </nav>
+            {% endwith %}
+            {% if user.is_authenticated %}
+            <div class="px-6 py-5 border-t border-slate-800/70">
+                <div class="text-xs text-slate-200/70 mb-2">UsuÇ­rio</div>
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold">{{ user.username }}</span>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white">Sair</button>
+                    </form>
+                </div>
+            </div>
             {% endif %}
-            {% block content %}{% endblock %}
-        </main>
+        </aside>
 
+        <!-- ConteÇ_do principal -->
+        <main class="flex-1 min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+                {% if messages %}
+                    <div class="space-y-2">
+                        {% for message in messages %}
+                            <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border shadow-sm
+                                {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-900{% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
+                                <i class="bi bi-info-circle mt-0.5"></i>
+                                <div class="text-sm">{{ message }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="grid gap-6">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_js %}{% endblock %}
-
 </body>
 </html>

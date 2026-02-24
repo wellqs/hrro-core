@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Fila de Espera{% endblock %}
+{% block title %}Fila de espera{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h3>Fila de Espera</h3>
-  <p>Sem conteúdo.</p>
+<div class="space-y-4">
+  <div>
+    <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+    <h1 class="text-xl font-semibold text-slate-800">Fila de espera</h1>
+  </div>
+  <div class="card">
+    <div class="card-body text-center text-slate-600">
+      Nenhum paciente na fila no momento.
+    </div>
+  </div>
 </div>
 {% endblock %}
-

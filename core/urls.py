@@ -18,6 +18,11 @@ from .views import (
     IndicatorPDFView,
     IndicatorHistoryView,
     IndicatorAnalysisView,
+    NSPLandingView,
+    NSPClinicLandingView,
+    NSPClinicBedListView,
+    NSPEquipeView,
+    NSPEventoAdversoView,
     NIRPanelView,
     # --- IMPORTAÇÃO ADICIONADA PARA A VIEW DA LISTA DE LEITOS DA CLÍNICA ---
     ClinicBedListView,
@@ -55,6 +60,11 @@ urlpatterns = [
     path('indicators/pdf/', IndicatorPDFView.as_view(), name='indicator_pdf'),
     path('indicators/history/', IndicatorHistoryView.as_view(), name='indicator_history'),
     path('indicators/analysis/', IndicatorAnalysisView.as_view(), name='indicator_analysis'),
+    path('nsp/', NSPLandingView.as_view(), name='nsp_landing'),
+    path('nsp/coleta/', NSPClinicLandingView.as_view(), name='nsp_coleta'),
+    path('nsp/coleta/clinic/<slug:clinic_name_slug>/', NSPClinicBedListView.as_view(), name='nsp_coleta_clinic'),
+    path('nsp/equipe/', NSPEquipeView.as_view(), name='nsp_equipe'),
+    path('nsp/eventos/paciente/<int:patient_id>/', NSPEventoAdversoView.as_view(), name='nsp_evento_adverso'),
 
     # URLs do NIR
     path('nir/', NIRPanelView.as_view(), name='nir_panel'), # Página inicial com resumos

@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Fila de Espera{% endblock %}
+{% block title %}Fila de espera{% endblock %}
 
 {% block extra_js %}
 <script>
-  // Atualiza a lista a cada 10s para simular tempo real
   setInterval(() => { window.location.reload(); }, 10000);
-{% comment %} Desative o auto-refresh se preferir {% endcomment %}
 </script>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="m-0">Fila de Espera</h3>
-    <a class="btn btn-secondary" href="{% url 'reception_home' %}">Voltar à Recepção</a>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <h1 class="text-xl font-semibold text-slate-800">Fila de espera</h1>
+    </div>
+    <a class="btn btn-secondary btn-sm" href="{% url 'reception_home' %}">Voltar para recepcao</a>
   </div>
 
   <div class="card">
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
+        <table class="table mb-0">
           <thead>
             <tr>
               <th>Paciente</th>
@@ -35,26 +36,26 @@
           <tbody>
             {% for e in queue %}
               <tr>
-                <td>{{ e.attendance.patient.name }}</td>
+                <td class="font-semibold text-slate-800">{{ e.attendance.patient.name }}</td>
                 <td>{{ e.get_priority_display }}</td>
                 <td>{{ e.destination_sector }}</td>
                 <td>{{ e.get_status_display }}</td>
                 <td>{{ e.created_at|date:'d/m/Y H:i' }}</td>
                 <td>{% if e.called_at %}{{ e.called_at|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
-                <td class="text-end">
-                  <form method="post" action="{% url 'reception_queue_call' e.id %}" class="d-inline">{% csrf_token %}
+                <td class="text-end space-x-2 whitespace-nowrap">
+                  <form method="post" action="{% url 'reception_queue_call' e.id %}" class="inline">{% csrf_token %}
                     <button class="btn btn-sm btn-primary" {% if e.status != 'AGUARDANDO' %}disabled{% endif %}>Chamar</button>
                   </form>
-                  <form method="post" action="{% url 'reception_queue_forward' e.id %}" class="d-inline">{% csrf_token %}
-                    <button class="btn btn-sm btn-warning" {% if e.status == 'FINALIZADO' %}disabled{% endif %}>Encaminhar</button>
+                  <form method="post" action="{% url 'reception_queue_forward' e.id %}" class="inline">{% csrf_token %}
+                    <button class="btn btn-sm btn-outline-primary" {% if e.status == 'FINALIZADO' %}disabled{% endif %}>Encaminhar</button>
                   </form>
-                  <form method="post" action="{% url 'reception_queue_finish' e.id %}" class="d-inline">{% csrf_token %}
+                  <form method="post" action="{% url 'reception_queue_finish' e.id %}" class="inline">{% csrf_token %}
                     <button class="btn btn-sm btn-success" {% if e.status == 'FINALIZADO' %}disabled{% endif %}>Finalizar</button>
                   </form>
                 </td>
               </tr>
             {% empty %}
-              <tr><td colspan="7" class="text-center py-3">Não há pacientes na fila.</td></tr>
+              <tr><td colspan="7" class="text-center py-4 text-slate-600">Nao ha pacientes na fila.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -63,4 +64,3 @@
   </div>
 </div>
 {% endblock %}
-

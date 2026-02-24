@@ -1,35 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6 col-lg-4">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4 class="card-title text-center mb-4">Acesso ao Sistema</h4>
-                    
-                    {% if form.errors %}
-                        <div class="alert alert-danger" role="alert">
-                            Seu usuário e senha não foram reconhecidos. Tente novamente.
-                        </div>
-                    {% endif %}
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Usuário</label>
-                            <input type="text" name="username" class="form-control" id="id_username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_password" class="form-label">Senha</label>
-                            <input type="password" name="password" class="form-control" id="id_password" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Entrar</button>
-                        </div>
-                    </form>
+<div class="flex items-center justify-center py-12">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-10 w-10 rounded-xl bg-hrro-sky/20 text-hrro-sky flex items-center justify-center">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                    <p class="text-xs uppercase tracking-wide text-slate-500">Acesso</p>
+                    <h2 class="text-xl font-semibold text-slate-800">Entrar no sistema</h2>
                 </div>
             </div>
+
+            {% if form.errors %}
+                <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 px-4 py-3 text-sm">
+                    Usu\u00e1rio ou senha n\u00e3o reconhecidos. Tente novamente.
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="space-y-2">
+                    <label for="id_username" class="text-sm font-medium text-slate-700">Usu\u00e1rio</label>
+                    <input type="text" name="username" id="id_username" required
+                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 focus:border-hrro-sky focus:ring-2 focus:ring-hrro-sky/30">
+                </div>
+                <div class="space-y-2">
+                    <label for="id_password" class="text-sm font-medium text-slate-700">Senha</label>
+                    <input type="password" name="password" id="id_password" required
+                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 focus:border-hrro-sky focus:ring-2 focus:ring-hrro-sky/30">
+                </div>
+                <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-hrro-navy text-white px-4 py-2.5 font-semibold shadow-md hover:bg-hrro-slate transition">
+                    <i class="bi bi-box-arrow-in-right"></i> Entrar
+                </button>
+            </form>
         </div>
     </div>
 </div>

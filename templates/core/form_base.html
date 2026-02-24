@@ -5,31 +5,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>{{ form_title }}</h4>
-                    <a href="{{ surgery.get_absolute_url }}" class="btn btn-secondary btn-sm">Voltar aos Detalhes</a>
-                </div>
-                <div class="card-body">
-                    <p>
-                        <strong>Paciente:</strong> {{ surgery.patient_name }}<br>
-                        <strong>Procedimento:</strong> {{ surgery.procedure_name }}
-                    </p>
-                    <hr>
-                    <form method="post">
-                        {% csrf_token %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Cirurgia</p>
+            <h1 class="text-xl font-semibold text-slate-800">{{ form_title }}</h1>
+        </div>
+        <a href="{{ surgery.get_absolute_url }}" class="btn btn-secondary btn-sm">Voltar aos detalhes</a>
+    </div>
 
-                        {{ form.as_p }}
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary mt-3">Salvar Informações</button>
-                        </div>
-                    </form>
-                </div>
+    <div class="card">
+        <div class="card-body space-y-4">
+            <div class="grid gap-1 text-sm">
+                <div><span class="font-semibold text-slate-700">Paciente:</span> {{ surgery.patient_name }}</div>
+                <div><span class="font-semibold text-slate-700">Procedimento:</span> {{ surgery.procedure_name }}</div>
             </div>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Salvar informacoes</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Fisioterapia - Assistência{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
+      <h1 class="text-xl font-semibold text-slate-800">Painel Assistencial</h1>
+    </div>
+    <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-base font-semibold text-slate-800 m-0">Agenda do dia</h2>
+    </div>
+    <div class="card-body text-slate-600">
+      Lista de pacientes e horários de atendimento.
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="card lg:col-span-2">
+      <div class="card-header">
+        <h2 class="text-base font-semibold text-slate-800 m-0">Atendimentos em andamento</h2>
+      </div>
+      <div class="card-body text-slate-600">
+        Acompanhe os atendimentos em tempo real.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-base font-semibold text-slate-800 m-0">Pendências</h2>
+      </div>
+      <div class="card-body text-slate-600">
+        Evoluções, registros e follow-ups.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

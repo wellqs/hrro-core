@@ -1,0 +1,40 @@
+{% extends "nsp/base.html" %}
+{% block title %}Equipe | NSP.HRRO{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1 text-primary fw-bold">Equipe NSP</h2>
+      <p class="text-muted mb-0">Contatos e responsabilidades da equipe.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for member in members %}
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+              {{ member.nome|slice:":2"|upper }}
+            </div>
+            <div class="ms-3">
+              <h5 class="mb-0">{{ member.nome }}</h5>
+              <small class="text-muted">{{ member.cargo }}</small>
+            </div>
+          </div>
+          <div class="mt-auto">
+            <div class="text-muted" style="font-size: 0.9rem;">{{ member.email }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info mb-0">Nenhum membro cadastrado.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
