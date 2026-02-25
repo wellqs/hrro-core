@@ -22,7 +22,7 @@ from .models import (
     Surgery, RegulationData, SurgicalData, BillingData, CMEData, OPMEData, NursingChecklist,
     Sector, Indicator, IndicatorData,
     Patient, Bed, Hospitalization,
-    PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry,
+    PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry, AdverseEventReport,
 )
 from .forms import (
     SurgeryForm,
@@ -529,8 +529,35 @@ class NSPEventoAdversoView(LoginRequiredMixin, FormView):
         return context
 
     def form_valid(self, form):
+        report = form.save(commit=False)
+        report.patient = self.patient
+        report.created_by = self.request.user
+        report.save()
         messages.success(self.request, 'Evento adverso registrado.')
-        return redirect('nsp_coleta')
+        return redirect('nsp_eventos_list')
+
+
+class NSPEventoAdversoListView(LoginRequiredMixin, ListView):
+    template_name = 'nsp/eventos_list.html'
+    context_object_name = 'reports'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = AdverseEventReport.objects.select_related('patient', 'created_by')
+        date_str = self.request.GET.get('date')
+        if date_str:
+            try:
+                selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                qs = qs.filter(date_evento=selected_date)
+            except ValueError:
+                pass
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        date_str = self.request.GET.get('date')
+        context['selected_date'] = date_str or ''
+        return context
 
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 

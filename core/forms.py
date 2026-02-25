@@ -16,6 +16,7 @@ from .models import (
     Sector,
     Bed,
     Hospitalization,
+    AdverseEventReport,
 )
 class NSPCollectForm(forms.Form):
     total_ea_nsp = forms.DecimalField(label='Total de EA (NSP)', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control'}))
@@ -27,10 +28,35 @@ class NSPCollectForm(forms.Form):
     taxa_conformidade = forms.DecimalField(label='Taxa de conformidade (%)', required=False, decimal_places=2, max_digits=10, widget=forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_taxa_conformidade'}))
 
 
-class NSPEventoAdversoForm(forms.Form):
-    data_evento = forms.DateField(label='Data do evento', required=True, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
-    tipo_evento = forms.CharField(label='Tipo de evento', required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    descricao = forms.CharField(label='Descricao', required=False, widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}))
+class NSPEventoAdversoForm(forms.ModelForm):
+    class Meta:
+        model = AdverseEventReport
+        fields = [
+            'date_evento',
+            'pulseira_identificacao',
+            'identificacao_medicacao',
+            'risco_queda',
+            'lesao_pressao',
+            'flebite',
+            'tempo_acesso_dias',
+            'tempo_roupa_cama_dias',
+            'identificacao_leito',
+            'nao_conformidade_estruturas',
+            'observacoes',
+        ]
+        widgets = {
+            'date_evento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'pulseira_identificacao': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'identificacao_medicacao': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'risco_queda': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'lesao_pressao': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'flebite': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'tempo_acesso_dias': forms.NumberInput(attrs={'class': 'form-control'}),
+            'tempo_roupa_cama_dias': forms.NumberInput(attrs={'class': 'form-control'}),
+            'identificacao_leito': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'nao_conformidade_estruturas': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
 
 # --- Formulário Principal ---
 class SurgeryForm(forms.ModelForm):

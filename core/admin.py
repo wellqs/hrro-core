@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Surgery, RegulationData, SurgicalData, CMEData,
-    OPMEData, BillingData, NursingChecklist
+    OPMEData, BillingData, NursingChecklist, AdverseEventReport
 )
 
 
@@ -79,3 +79,9 @@ class SurgeryAdmin(admin.ModelAdmin):
             'fields': ('created_by',),
         }),
     )
+
+@admin.register(AdverseEventReport)
+class AdverseEventReportAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'date_evento', 'created_by', 'created_at')
+    list_filter = ('date_evento', 'created_by')
+    search_fields = ('patient__name',)

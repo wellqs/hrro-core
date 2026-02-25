@@ -200,6 +200,32 @@ class PatientDocument(models.Model):
         return f"{self.get_category_display()} - {self.patient.name}"
 
 
+# --- NSP: Eventos Adversos ---
+class AdverseEventReport(models.Model):
+    patient = models.ForeignKey('Patient', on_delete=models.PROTECT, related_name='adverse_event_reports')
+    date_evento = models.DateField(verbose_name="Data do evento")
+    pulseira_identificacao = models.BooleanField(default=False)
+    identificacao_medicacao = models.BooleanField(default=False)
+    risco_queda = models.BooleanField(default=False)
+    lesao_pressao = models.BooleanField(default=False)
+    flebite = models.BooleanField(default=False)
+    tempo_acesso_dias = models.PositiveIntegerField(null=True, blank=True)
+    tempo_roupa_cama_dias = models.PositiveIntegerField(null=True, blank=True)
+    identificacao_leito = models.BooleanField(default=False)
+    nao_conformidade_estruturas = models.BooleanField(default=False)
+    observacoes = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_adverse_reports')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date_evento', '-created_at']
+        verbose_name = "Evento Adverso"
+        verbose_name_plural = "Eventos Adversos"
+
+    def __str__(self):
+        return f"{self.patient.name} - {self.date_evento}"
+
+
 # --- Recepção: Atendimento e Fila ---
 class ReceptionAttendance(models.Model):
     patient = models.ForeignKey('Patient', on_delete=models.PROTECT, related_name='reception_attendances', verbose_name="Paciente")

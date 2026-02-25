@@ -1,0 +1,107 @@
+{% extends "nsp/base.html" %}
+
+{% block title %}Eventos Adversos | NSP{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1 text-primary fw-bold">Eventos Adversos</h2>
+      <p class="text-muted mb-0">Relatorios por dia</p>
+    </div>
+    <a href="{% url 'nsp_landing' %}" class="btn btn-outline-secondary">Voltar</a>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label class="form-label text-muted small">Filtrar por data</label>
+          <input type="date" name="date" value="{{ selected_date }}" class="form-control">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary" type="submit">Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% regroup reports by date_evento as grouped_reports %}
+
+  {% for group in grouped_reports %}
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+      <div class="card-header bg-white">
+        <strong>{{ group.grouper|date:"d/m/Y" }}</strong>
+        <span class="text-muted ms-2">({{ group.list|length }} registros)</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Paciente</th>
+                <th>Checklist</th>
+                <th>Tempos (dias)</th>
+                <th>Registrado por</th>
+                <th>Observacoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in group.list %}
+                <tr>
+                  <td>{{ r.patient.name }}</td>
+                  <td class="text-sm">
+                    {% if r.pulseira_identificacao %}<span class="badge bg-success">Pulseira</span>{% endif %}
+                    {% if r.identificacao_medicacao %}<span class="badge bg-success">Medicacao</span>{% endif %}
+                    {% if r.risco_queda %}<span class="badge bg-warning text-dark">Queda</span>{% endif %}
+                    {% if r.lesao_pressao %}<span class="badge bg-warning text-dark">Lesao</span>{% endif %}
+                    {% if r.flebite %}<span class="badge bg-warning text-dark">Flebite</span>{% endif %}
+                    {% if r.identificacao_leito %}<span class="badge bg-info text-dark">Leito</span>{% endif %}
+                    {% if r.nao_conformidade_estruturas %}<span class="badge bg-danger">Estruturas</span>{% endif %}
+                  </td>
+                  <td class="text-sm">
+                    Acesso: {{ r.tempo_acesso_dias|default:"-" }}<br>
+                    Roupa: {{ r.tempo_roupa_cama_dias|default:"-" }}
+                  </td>
+                  <td class="text-sm">{{ r.created_by.username|default:"-" }}</td>
+                  <td class="text-sm">{{ r.observacoes|default:"-" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-info">Nenhum registro encontrado.</div>
+  {% endfor %}
+
+  {% if is_paginated %}
+  <nav aria-label="Navegacao das paginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}
+
+      {% for i in paginator.get_elided_page_range %}
+        {% if i == paginator.ELLIPSIS %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% elif i == page_obj.number %}
+          <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Proxima</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Proxima</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
