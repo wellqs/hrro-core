@@ -3,6 +3,8 @@ from django.views import View
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 import unicodedata
+import re
+from collections import OrderedDict
 try:
     from weasyprint import HTML
 except Exception:
@@ -12,7 +14,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from datetime import date, datetime, timedelta
 from django.utils import timezone
-from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery
+from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery, Case, When
 from django.db import models
 from django.db.models.functions import TruncMonth, TruncDay
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
@@ -42,7 +44,9 @@ def normalize_ascii(value: str) -> str:
 
 
 def nir_clinic_slug(name: str) -> str:
-    return normalize_ascii(name).replace(' ', '-')
+    # replace non-alphanumeric with hyphen to keep URL-safe slugs
+    slug = re.sub(r'[^a-z0-9]+', '-', normalize_ascii(name))
+    return slug.strip('-')
 
 
 def nir_clinic_name_from_slug(slug: str) -> str:
@@ -393,6 +397,106 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
         indicator_data_map = {entry.indicator_id: (entry.value, entry.notes) for entry in existing_data}
         for sector in context['sectors']:
             for indicator in sector.indicators.all(): indicator.current_value, indicator.current_notes = indicator_data_map.get(indicator.id, (None, None))
+
+        # --- NSP: estatisticas a partir dos eventos adversos ---
+        year = self.request.GET.get('ano')
+        month = self.request.GET.get('mes')
+        current_year = date.today().year
+        try:
+            year = int(year) if year else current_year
+        except ValueError:
+            year = current_year
+        try:
+            month = int(month) if month else None
+        except ValueError:
+            month = None
+
+        qs = AdverseEventReport.objects.all()
+        if year:
+            qs = qs.filter(date_evento__year=year)
+        if month:
+            qs = qs.filter(date_evento__month=month)
+
+        def sum_bool(field):
+            return Sum(Case(When(**{field: True}, then=1), default=0, output_field=models.IntegerField()))
+
+        def sum_any(field):
+            return Sum(Case(When(**{f"{field}__isnull": False}, then=1), default=0, output_field=models.IntegerField()))
+
+        agg = qs.aggregate(
+            pulseira=sum_bool('pulseira_identificacao'),
+            medicacao=sum_bool('identificacao_medicacao'),
+            queda=sum_bool('risco_queda'),
+            lesao=sum_bool('lesao_pressao'),
+            flebite=sum_bool('flebite'),
+            leito=sum_bool('identificacao_leito'),
+            estruturas=sum_bool('nao_conformidade_estruturas'),
+            acesso=sum_any('tempo_acesso_dias'),
+            roupa=sum_any('tempo_roupa_cama_dias'),
+            pacientes=Count('patient', distinct=True),
+        )
+        for k, v in agg.items():
+            if v is None:
+                agg[k] = 0
+
+        total_ea_nsp = (
+            agg['pulseira'] + agg['medicacao'] + agg['queda'] + agg['lesao'] +
+            agg['flebite'] + agg['leito'] + agg['estruturas'] + agg['acesso'] + agg['roupa']
+        )
+        total_pulseiras = agg['pulseira']
+        total_pacientes = agg['pacientes']
+        taxa_conformidade = round((total_pulseiras / total_pacientes) * 100, 2) if total_pacientes else 0
+
+        context['stats'] = {
+            'total_ea_nsp': total_ea_nsp,
+            'total_ea_notivisa': 0,
+            'total_ea_queda': agg['queda'],
+            'total_ea_flebite': agg['flebite'],
+            'total_pacientes': total_pacientes,
+            'total_pulseiras': total_pulseiras,
+            'taxa_conformidade': taxa_conformidade,
+            'total_ident_medicacao': agg['medicacao'],
+            'total_lesao_pressao': agg['lesao'],
+            'total_ident_leito': agg['leito'],
+            'total_nao_conformidade': agg['estruturas'],
+            'total_tempo_acesso': agg['acesso'],
+            'total_tempo_roupa': agg['roupa'],
+        }
+
+        monthly = AdverseEventReport.objects.filter(date_evento__year=year).annotate(
+            month=TruncMonth('date_evento')
+        ).values('month').annotate(
+            pulseira=sum_bool('pulseira_identificacao'),
+            medicacao=sum_bool('identificacao_medicacao'),
+            queda=sum_bool('risco_queda'),
+            lesao=sum_bool('lesao_pressao'),
+            flebite=sum_bool('flebite'),
+            leito=sum_bool('identificacao_leito'),
+            estruturas=sum_bool('nao_conformidade_estruturas'),
+            acesso=sum_any('tempo_acesso_dias'),
+            roupa=sum_any('tempo_roupa_cama_dias'),
+        ).order_by('month')
+
+        chart_labels = []
+        chart_ea_nsp = []
+        for row in monthly:
+            chart_labels.append(row['month'].strftime('%b/%Y'))
+            score = sum((row.get(k) or 0) for k in ['pulseira','medicacao','queda','lesao','flebite','leito','estruturas','acesso','roupa'])
+            chart_ea_nsp.append(score)
+
+        context['chart_data'] = {
+            'chart_labels': chart_labels,
+            'chart_ea_nsp': chart_ea_nsp,
+        }
+
+        anos = AdverseEventReport.objects.dates('date_evento', 'year')
+        context['anos'] = [d.year for d in anos] or [current_year]
+        context['ano_selecionado'] = year
+        context['meses'] = [
+            (1, 'Jan'), (2, 'Fev'), (3, 'Mar'), (4, 'Abr'), (5, 'Mai'), (6, 'Jun'),
+            (7, 'Jul'), (8, 'Ago'), (9, 'Set'), (10, 'Out'), (11, 'Nov'), (12, 'Dez')
+        ]
+        context['mes_selecionado'] = month
         return context
     def post(self, request, *args, **kwargs):
         date_str = request.POST.get('date'); period = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -469,33 +573,37 @@ class NSPClinicLandingView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        clinic_names = Bed.objects.filter(is_active=True).values_list('clinic', flat=True)
-        unique_clinics = {}
-        for name in clinic_names:
-            slug = nir_clinic_slug(name)
-            if slug not in unique_clinics:
-                unique_clinics[slug] = name
-        clinics = unique_clinics.values()
-        clinic_data = []
-        for clinic_name in clinics:
-            total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
+        beds = Bed.objects.filter(is_active=True).values_list('identifier', flat=True)
+        groups = OrderedDict((k, {'name': f'Clinica {k}', 'beds': []}) for k in ('A', 'B', 'C'))
+        groups['OUTROS'] = {'name': 'Outros', 'beds': []}
+        for identifier in beds:
+            first = (identifier or '').strip()[:1].upper()
+            key = first if first in ('A', 'B', 'C') else 'OUTROS'
+            groups[key]['beds'].append(identifier)
+
+        group_data = []
+        for key, group in groups.items():
+            if not group['beds']:
+                continue
+            total_beds = Bed.objects.filter(is_active=True, identifier__istartswith=key).count() if key != 'OUTROS' else Bed.objects.filter(is_active=True).exclude(identifier__regex=r'^[ABC]').count()
             occupied_beds = Hospitalization.objects.filter(
-                bed__clinic=clinic_name,
                 bed__is_active=True,
                 discharge_date__isnull=True
+            ).filter(
+                bed__identifier__istartswith=key if key != 'OUTROS' else Bed.objects.exclude(identifier__regex=r'^[ABC]').values('identifier')
             ).count()
             vacant_beds = total_beds - occupied_beds
             occupancy_rate = (occupied_beds / total_beds * 100) if total_beds > 0 else 0
-            clinic_data.append({
-                'name': clinic_name,
+            group_data.append({
+                'name': group['name'],
                 'total_beds': total_beds,
                 'occupied_beds': occupied_beds,
                 'vacant_beds': vacant_beds,
                 'occupancy_rate': round(occupancy_rate, 1),
                 'chart_data': [occupied_beds, vacant_beds],
-                'detail_url': reverse('nsp_coleta_clinic', kwargs={'clinic_name_slug': nir_clinic_slug(clinic_name)})
+                'detail_url': reverse('nsp_coleta_group', kwargs={'group_key': key.lower()})
             })
-        context['clinic_data'] = clinic_data
+        context['clinic_data'] = group_data
         return context
 
 
@@ -759,6 +867,66 @@ class NSPClinicBedListView(ClinicBedListView):
             context['available_beds'] = 0
         clinics = Bed.objects.filter(is_active=True).values_list('clinic', flat=True).distinct()
         context['clinics'] = [{'name': c, 'slug': nir_clinic_slug(c)} for c in clinics]
+
+        def group_key(identifier: str) -> str:
+            s = (identifier or '').strip()
+            if not s:
+                return 'OUTROS'
+            first = s[0].upper()
+            if first in ('A', 'B', 'C'):
+                return first
+            return 'OUTROS'
+
+        grouped = OrderedDict((k, []) for k in ('A', 'B', 'C', 'OUTROS'))
+        for bed in context.get('beds', []):
+            grouped[group_key(bed.identifier)].append(bed)
+        context['grouped_beds'] = [
+            {'key': k, 'label': f'Enfermaria {k}' if k != 'OUTROS' else 'Outros', 'beds': v}
+            for k, v in grouped.items() if v
+        ]
+        return context
+
+
+class NSPClinicBedGroupView(ListView):
+    model = Bed
+    template_name = 'nsp/clinic_bed_list.html'
+    context_object_name = 'beds'
+    paginate_by = 30
+
+    def get_queryset(self):
+        group_key = (self.kwargs.get('group_key') or '').upper()
+        self.group_key = group_key
+        active_hospitalization_subquery = Hospitalization.objects.filter(
+            bed=OuterRef('pk'),
+            discharge_date__isnull=True
+        ).order_by('-admission_date')
+
+        if group_key in ('A', 'B', 'C'):
+            qs = Bed.objects.filter(is_active=True, identifier__istartswith=group_key)
+        else:
+            qs = Bed.objects.filter(is_active=True).exclude(identifier__regex=r'^[ABC]')
+
+        return qs.annotate(
+            active_hospitalization_id=Subquery(active_hospitalization_subquery.values('id')[:1]),
+        ).prefetch_related(
+            'hospitalizations', 'hospitalizations__patient'
+        ).order_by('identifier')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=NIR_GROUP_NAME).exists()
+        label = f'Enfermaria {self.group_key}' if self.group_key in ('A','B','C') else 'Outros'
+        context['clinic_name'] = label
+        total_beds = context['beds'].count()
+        occupied_beds = Hospitalization.objects.filter(
+            bed__in=context['beds'],
+            discharge_date__isnull=True
+        ).count()
+        context['total_beds'] = total_beds
+        context['occupied_beds'] = occupied_beds
+        context['available_beds'] = total_beds - occupied_beds
+        context['grouped_beds'] = [{'label': label, 'beds': context['beds']}]
         return context
 
 class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):

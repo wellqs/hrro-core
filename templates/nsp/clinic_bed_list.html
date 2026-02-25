@@ -75,77 +75,80 @@
       </div>
     </div>
 
-    <div class="table-responsive">
-      <table class="table mb-0 align-middle">
-        <thead class="table-light">
-          <tr class="text-uppercase small text-muted">
-            <th class="px-4 py-3">Leito</th>
-            <th class="px-4 py-3">Paciente</th>
-            <th class="px-4 py-3">Admissao</th>
-            <th class="px-4 py-3">Procedimento Previsto</th>
-            <th class="px-4 py-3">Previsao Cir.</th>
-            <th class="px-4 py-3">Status Atual</th>
-            {% if can_edit_nir %}
-              <th class="px-4 py-3 text-end">Acoes</th>
-            {% endif %}
-          </tr>
-        </thead>
-        <tbody id="bedsTable">
-          {% for bed in beds %}
-            {% with hosp=bed.active_hospitalization %}
-            <tr class="bed-row" data-bed="{{ bed.identifier|lower }}" data-patient="{% if hosp %}{{ hosp.patient.name|lower }}{% endif %}">
-              <td class="px-4 py-3 badge-cell {% if hosp %}badge-occupied{% else %}badge-available{% endif %}">
-                <div class="fw-bold text-slate-800">{{ bed.identifier }}</div>
-                <div class="text-xs text-muted">{{ bed.get_category_display }}</div>
-              </td>
-              <td class="px-4 py-3">
-                {% if hosp %}
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                      <i class="bi bi-person"></i>
-                    </div>
-                    <span class="fw-semibold">{{ hosp.patient.name }}</span>
-                  </div>
-                {% else %}
-                  <span class="text-muted fst-italic">Vago</span>
-                {% endif %}
-              </td>
-              <td class="px-4 py-3 text-sm text-muted">
-                {% if hosp %}{{ hosp.admission_date|date:"d/m H:i" }}{% else %}-{% endif %}
-              </td>
-              <td class="px-4 py-3 text-sm text-muted">{% if hosp %}{{ hosp.procedure_planned|default_if_none:"" }}{% else %}-{% endif %}</td>
-              <td class="px-4 py-3 text-sm text-muted">{% if hosp %}{{ hosp.expected_surgery_date|date:"d/m/Y"|default_if_none:"" }}{% else %}-{% endif %}</td>
-              <td class="px-4 py-3">
-                {% if hosp %}
-                  <span class="status-pill status-occupied">{{ hosp.current_status|default_if_none:"Ocupado" }}</span>
-                {% else %}
-                  <span class="status-pill status-available">Disponivel</span>
-                {% endif %}
-              </td>
-              {% if can_edit_nir %}
-                <td class="px-4 py-3 text-end">
-                  {% if hosp %}
-                    <a href="{% url 'nsp_evento_adverso' hosp.patient.id %}" class="icon-btn icon-btn-warning" title="Evento Adverso">
-                      <i class="bi bi-exclamation-triangle"></i>
-                    </a>
-                    <a href="{% url 'nir_hospitalization_discharge' hosp.id %}" class="icon-btn icon-btn-danger" title="Registrar Alta">
-                      <i class="bi bi-box-arrow-right"></i>
-                    </a>
+    {% if grouped_beds %}
+      {% for group in grouped_beds %}
+        <div class="p-3 border-top">
+          <h5 class="mb-3 text-slate-700">{{ group.label }}</h5>
+          <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+              <thead class="table-light">
+                <tr class="text-uppercase small text-muted">
+                  <th class="px-4 py-3">Leito</th>
+                  <th class="px-4 py-3">Paciente</th>
+                  <th class="px-4 py-3">Admissao</th>
+                  <th class="px-4 py-3">Procedimento Previsto</th>
+                  <th class="px-4 py-3">Previsao Cir.</th>
+                  <th class="px-4 py-3">Status Atual</th>
+                  {% if can_edit_nir %}
+                    <th class="px-4 py-3 text-end">Acoes</th>
                   {% endif %}
-                </td>
-              {% endif %}
-            </tr>
-            {% endwith %}
-          {% empty %}
-            <tr>
-              <td colspan="{% if can_edit_nir %}7{% else %}6{% endif %}" class="text-center text-muted py-5">
-                Nenhum leito encontrado.
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+                </tr>
+              </thead>
+              <tbody id="bedsTable">
+                {% for bed in group.beds %}
+                  {% with hosp=bed.active_hospitalization %}
+                  <tr class="bed-row" data-bed="{{ bed.identifier|lower }}" data-patient="{% if hosp %}{{ hosp.patient.name|lower }}{% endif %}">
+                    <td class="px-4 py-3 badge-cell {% if hosp %}badge-occupied{% else %}badge-available{% endif %}">
+                      <div class="fw-bold text-slate-800">{{ bed.identifier }}</div>
+                      <div class="text-xs text-muted">{{ bed.get_category_display }}</div>
+                    </td>
+                    <td class="px-4 py-3">
+                      {% if hosp %}
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                            <i class="bi bi-person"></i>
+                          </div>
+                          <span class="fw-semibold">{{ hosp.patient.name }}</span>
+                        </div>
+                      {% else %}
+                        <span class="text-muted fst-italic">Vago</span>
+                      {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-muted">
+                      {% if hosp %}{{ hosp.admission_date|date:"d/m H:i" }}{% else %}-{% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-muted">{% if hosp %}{{ hosp.procedure_planned|default_if_none:"" }}{% else %}-{% endif %}</td>
+                    <td class="px-4 py-3 text-sm text-muted">{% if hosp %}{{ hosp.expected_surgery_date|date:"d/m/Y"|default_if_none:"" }}{% else %}-{% endif %}</td>
+                    <td class="px-4 py-3">
+                      {% if hosp %}
+                        <span class="status-pill status-occupied">{{ hosp.current_status|default_if_none:"Ocupado" }}</span>
+                      {% else %}
+                        <span class="status-pill status-available">Disponivel</span>
+                      {% endif %}
+                    </td>
+                    {% if can_edit_nir %}
+                      <td class="px-4 py-3 text-end">
+                        {% if hosp %}
+                          <a href="{% url 'nsp_evento_adverso' hosp.patient.id %}" class="icon-btn icon-btn-warning" title="Evento Adverso">
+                            <i class="bi bi-exclamation-triangle"></i>
+                          </a>
+                          <a href="{% url 'nir_hospitalization_discharge' hosp.id %}" class="icon-btn icon-btn-danger" title="Registrar Alta">
+                            <i class="bi bi-box-arrow-right"></i>
+                          </a>
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                  </tr>
+                  {% endwith %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="p-4 text-center text-muted">Nenhum leito encontrado.</div>
+    {% endif %}
   </div>
 
   {% if is_paginated %}
@@ -182,7 +185,7 @@
 <script>
   (function() {
     const input = document.getElementById('bedSearch');
-    const rows = Array.from(document.querySelectorAll('#bedsTable tr'));
+    const rows = Array.from(document.querySelectorAll('.bed-row'));
     if (!input) return;
     input.addEventListener('input', () => {
       const term = input.value.trim().toLowerCase();
