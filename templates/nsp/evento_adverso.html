@@ -20,6 +20,17 @@
       <form method="post" class="row g-3">
         {% csrf_token %}
 
+        {% if form.errors %}
+          <div class="col-12">
+            <div class="alert alert-danger mb-0">
+              <div class="fw-semibold">Não foi possível salvar. Revise os campos abaixo.</div>
+              {% if form.non_field_errors %}
+                <div class="small mt-1">{{ form.non_field_errors|striptags }}</div>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
         <div class="col-md-4">
           <label class="form-label fw-semibold text-slate-700">{{ form.data_evento.label }}</label>
           {{ form.data_evento }}

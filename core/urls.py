@@ -25,6 +25,7 @@ from .views import (
     NSPEquipeView,
     NSPEventoAdversoView,
     NSPEventoAdversoListView,
+    NSPEventoAdversoPDFView,
     NIRPanelView,
     # --- IMPORTAÇÃO ADICIONADA PARA A VIEW DA LISTA DE LEITOS DA CLÍNICA ---
     ClinicBedListView,
@@ -69,6 +70,7 @@ urlpatterns = [
     path('nsp/equipe/', NSPEquipeView.as_view(), name='nsp_equipe'),
     path('nsp/eventos/paciente/<int:patient_id>/', NSPEventoAdversoView.as_view(), name='nsp_evento_adverso'),
     path('nsp/eventos/', NSPEventoAdversoListView.as_view(), name='nsp_eventos_list'),
+    path('nsp/eventos/pdf/', NSPEventoAdversoPDFView.as_view(), name='nsp_eventos_pdf'),
 
     # URLs do NIR
     path('nir/', NIRPanelView.as_view(), name='nir_panel'), # Página inicial com resumos

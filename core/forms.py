@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 import re
 from .models import (
     Surgery,
@@ -29,6 +30,11 @@ class NSPCollectForm(forms.Form):
 
 
 class NSPEventoAdversoForm(forms.ModelForm):
+    date_evento = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+
     class Meta:
         model = AdverseEventReport
         fields = [
@@ -45,7 +51,6 @@ class NSPEventoAdversoForm(forms.ModelForm):
             'observacoes',
         ]
         widgets = {
-            'date_evento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'pulseira_identificacao': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'identificacao_medicacao': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'risco_queda': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -57,6 +62,12 @@ class NSPEventoAdversoForm(forms.ModelForm):
             'nao_conformidade_estruturas': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+    def clean_date_evento(self):
+        value = self.cleaned_data.get('date_evento')
+        if value:
+            return value
+        return timezone.localdate()
 
 # --- Formulário Principal ---
 class SurgeryForm(forms.ModelForm):

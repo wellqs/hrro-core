@@ -9,7 +9,10 @@
       <h2 class="mb-1 text-primary fw-bold">Eventos Adversos</h2>
       <p class="text-muted mb-0">Relatorios por dia</p>
     </div>
-    <a href="{% url 'nsp_landing' %}" class="btn btn-outline-secondary">Voltar</a>
+    <div class="d-flex gap-2">
+      <a href="{% url 'nsp_eventos_pdf' %}{% if selected_date %}?date={{ selected_date }}{% endif %}" class="btn btn-outline-primary" target="_blank" rel="noopener">Exportar PDF</a>
+      <a href="{% url 'nsp_landing' %}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
   </div>
 
   <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">

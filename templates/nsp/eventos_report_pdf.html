@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Relatório de Eventos Adversos</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    body { font-family: "Helvetica", Arial, sans-serif; color: #0f172a; font-size: 12px; }
+    h1 { font-size: 20px; margin: 0 0 6px; }
+    h2 { font-size: 14px; margin: 18px 0 8px; }
+    .meta { color: #64748b; font-size: 11px; margin-bottom: 12px; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-right: 4px; }
+    .b-green { background: #dcfce7; color: #166534; }
+    .b-yellow { background: #fef9c3; color: #92400e; }
+    .b-blue { background: #dbeafe; color: #1e40af; }
+    .b-red { background: #fee2e2; color: #b91c1c; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border-bottom: 1px solid #e2e8f0; padding: 8px 6px; vertical-align: top; }
+    th { background: #f8fafc; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
+    .muted { color: #64748b; }
+  </style>
+</head>
+<body>
+  <h1>Relatório de Eventos Adversos</h1>
+  <div class="meta">
+    {% if selected_date %}
+      Data: {{ selected_date|date:"d/m/Y" }} •
+    {% else %}
+      Período: todos os registros •
+    {% endif %}
+    Gerado em: {{ generated_at|date:"d/m/Y H:i" }}
+  </div>
+
+  {% regroup reports by date_evento as grouped_reports %}
+
+  {% for group in grouped_reports %}
+    <h2>{{ group.grouper|date:"d/m/Y" }} <span class="muted">({{ group.list|length }} registros)</span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Paciente</th>
+          <th>Checklist</th>
+          <th>Tempos (dias)</th>
+          <th>Registrado por</th>
+          <th>Observações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in group.list %}
+          <tr>
+            <td>{{ r.patient.name }}</td>
+            <td>
+              {% if r.pulseira_identificacao %}<span class="badge b-green">Pulseira</span>{% endif %}
+              {% if r.identificacao_medicacao %}<span class="badge b-green">Medicacao</span>{% endif %}
+              {% if r.risco_queda %}<span class="badge b-yellow">Queda</span>{% endif %}
+              {% if r.lesao_pressao %}<span class="badge b-yellow">Lesao</span>{% endif %}
+              {% if r.flebite %}<span class="badge b-yellow">Flebite</span>{% endif %}
+              {% if r.identificacao_leito %}<span class="badge b-blue">Leito</span>{% endif %}
+              {% if r.nao_conformidade_estruturas %}<span class="badge b-red">Estruturas</span>{% endif %}
+            </td>
+            <td>
+              Acesso: {{ r.tempo_acesso_dias|default:"-" }}<br>
+              Roupa: {{ r.tempo_roupa_cama_dias|default:"-" }}
+            </td>
+            <td>{{ r.created_by.username|default:"-" }}</td>
+            <td>{{ r.observacoes|default:"-" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% empty %}
+    <p class="muted">Nenhum registro encontrado.</p>
+  {% endfor %}
+</body>
+</html>

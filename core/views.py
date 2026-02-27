@@ -439,13 +439,23 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
             if v is None:
                 agg[k] = 0
 
-        total_ea_nsp = (
-            agg['pulseira'] + agg['medicacao'] + agg['queda'] + agg['lesao'] +
-            agg['flebite'] + agg['leito'] + agg['estruturas'] + agg['acesso'] + agg['roupa']
+        event_q = (
+            Q(pulseira_identificacao=True) |
+            Q(identificacao_medicacao=True) |
+            Q(risco_queda=True) |
+            Q(lesao_pressao=True) |
+            Q(flebite=True) |
+            Q(identificacao_leito=True) |
+            Q(nao_conformidade_estruturas=True) |
+            Q(tempo_acesso_dias__isnull=False) |
+            Q(tempo_roupa_cama_dias__isnull=False)
         )
-        total_pulseiras = agg['pulseira']
-        total_pacientes = agg['pacientes']
-        taxa_conformidade = round((total_pulseiras / total_pacientes) * 100, 2) if total_pacientes else 0
+        total_ea_nsp = qs.filter(event_q).count()
+        total_pacientes = Patient.objects.count()
+        pulseira_pacientes = qs.filter(pulseira_identificacao=True).values('patient').distinct().count()
+        total_pulseiras = pulseira_pacientes
+        taxa_inconformidade = round((total_ea_nsp / total_pacientes) * 100, 2) if total_pacientes else 0
+        taxa_conformidade = round(100 - taxa_inconformidade, 2) if total_pacientes else 0
 
         context['stats'] = {
             'total_ea_nsp': total_ea_nsp,
@@ -455,6 +465,7 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
             'total_pacientes': total_pacientes,
             'total_pulseiras': total_pulseiras,
             'taxa_conformidade': taxa_conformidade,
+            'taxa_inconformidade': taxa_inconformidade,
             'total_ident_medicacao': agg['medicacao'],
             'total_lesao_pressao': agg['lesao'],
             'total_ident_leito': agg['leito'],
@@ -466,23 +477,14 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
         monthly = AdverseEventReport.objects.filter(date_evento__year=year).annotate(
             month=TruncMonth('date_evento')
         ).values('month').annotate(
-            pulseira=sum_bool('pulseira_identificacao'),
-            medicacao=sum_bool('identificacao_medicacao'),
-            queda=sum_bool('risco_queda'),
-            lesao=sum_bool('lesao_pressao'),
-            flebite=sum_bool('flebite'),
-            leito=sum_bool('identificacao_leito'),
-            estruturas=sum_bool('nao_conformidade_estruturas'),
-            acesso=sum_any('tempo_acesso_dias'),
-            roupa=sum_any('tempo_roupa_cama_dias'),
+            eventos=Count('id', filter=event_q),
         ).order_by('month')
 
         chart_labels = []
         chart_ea_nsp = []
         for row in monthly:
             chart_labels.append(row['month'].strftime('%b/%Y'))
-            score = sum((row.get(k) or 0) for k in ['pulseira','medicacao','queda','lesao','flebite','leito','estruturas','acesso','roupa'])
-            chart_ea_nsp.append(score)
+            chart_ea_nsp.append(row.get('eventos') or 0)
 
         context['chart_data'] = {
             'chart_labels': chart_labels,
@@ -631,6 +633,11 @@ class NSPEventoAdversoView(LoginRequiredMixin, FormView):
         self.patient = get_object_or_404(Patient, pk=kwargs.get('patient_id'))
         return super().dispatch(request, *args, **kwargs)
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.setdefault('date_evento', date.today())
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['patient'] = self.patient
@@ -643,6 +650,10 @@ class NSPEventoAdversoView(LoginRequiredMixin, FormView):
         report.save()
         messages.success(self.request, 'Evento adverso registrado.')
         return redirect('nsp_eventos_list')
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Não foi possível salvar. Verifique os campos obrigatórios.')
+        return super().form_invalid(form)
 
 
 class NSPEventoAdversoListView(LoginRequiredMixin, ListView):
@@ -666,6 +677,37 @@ class NSPEventoAdversoListView(LoginRequiredMixin, ListView):
         date_str = self.request.GET.get('date')
         context['selected_date'] = date_str or ''
         return context
+
+
+class NSPEventoAdversoPDFView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if HTML is None:
+            return HttpResponse("Dependência do WeasyPrint ausente no ambiente.", status=500)
+
+        date_str = request.GET.get('date')
+        selected_date = None
+        qs = AdverseEventReport.objects.select_related('patient', 'created_by')
+        if date_str:
+            try:
+                selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                qs = qs.filter(date_evento=selected_date)
+            except ValueError:
+                selected_date = None
+
+        reports = qs.order_by('-date_evento', '-created_at')
+        context = {
+            'reports': reports,
+            'selected_date': selected_date,
+            'generated_at': timezone.now(),
+        }
+
+        html_string = render_to_string('nsp/eventos_report_pdf.html', context)
+        base_url = request.build_absolute_uri('/')
+        pdf = HTML(string=html_string, base_url=base_url).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        suffix = date_str or 'todos'
+        response['Content-Disposition'] = f'inline; filename=\"relatorio_eventos_adversos_{suffix}.pdf\"'
+        return response
 
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 
@@ -927,6 +969,12 @@ class NSPClinicBedGroupView(ListView):
         context['occupied_beds'] = occupied_beds
         context['available_beds'] = total_beds - occupied_beds
         context['grouped_beds'] = [{'label': label, 'beds': context['beds']}]
+        for bed in context['beds']:
+            bed.active_hospitalization = None
+            for hosp in bed.hospitalizations.all():
+                if hosp.id == bed.active_hospitalization_id:
+                    bed.active_hospitalization = hosp
+                    break
         return context
 
 class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
