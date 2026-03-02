@@ -8,34 +8,118 @@
     <div>
       <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
       <h1 class="text-xl font-semibold text-slate-800">Painel Assistencial</h1>
+      <p class="text-sm text-slate-500">Registro de relatórios diários</p>
     </div>
     <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <h2 class="text-base font-semibold text-slate-800 m-0">Agenda do dia</h2>
+      <h2 class="text-base font-semibold text-slate-800 m-0">Registrar Plantão</h2>
     </div>
-    <div class="card-body text-slate-600">
-      Lista de pacientes e horários de atendimento.
+    <div class="card-body">
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% if edit_report %}
+          <input type="hidden" name="report_id" value="{{ edit_report.id }}">
+        {% endif %}
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="form-label">Data do plantão *</label>
+            <input type="date" name="report_date" class="form-control" required value="{% if edit_report %}{{ edit_report.report_date|date:'Y-m-d' }}{% endif %}">
+          </div>
+          <div>
+            <label class="form-label">Tipo de plantão *</label>
+            <select name="shift_type" class="form-select" required>
+              <option value="">Selecione</option>
+              <option value="h6" {% if edit_report and edit_report.shift_type == "h6" %}selected{% endif %}>6 horas</option>
+              <option value="h12" {% if edit_report and edit_report.shift_type == "h12" %}selected{% endif %}>12 horas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border rounded-lg overflow-hidden">
+          <div class="grid grid-cols-12 bg-slate-50 text-slate-600 text-xs font-semibold">
+            <div class="col-span-4 px-3 py-2">Região do corpo</div>
+            <div class="col-span-2 px-3 py-2">Quantidade</div>
+            <div class="col-span-6 px-3 py-2">Observação</div>
+          </div>
+          {% for part in body_parts %}
+          <div class="grid grid-cols-12 border-t">
+            <div class="col-span-4 px-3 py-2 text-sm">{{ part.label }}</div>
+            <div class="col-span-2 px-3 py-2">
+              <input type="number" min="0" name="bp_{{ part.key }}_qty" class="form-control" placeholder="0" value="{% if part.qty %}{{ part.qty }}{% endif %}">
+            </div>
+            <div class="col-span-6 px-3 py-2">
+              <input type="text" name="bp_{{ part.key }}_obs" class="form-control" placeholder="Observação" value="{% if part.obs %}{{ part.obs }}{% endif %}">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="form-label">Recusas de atendimento</label>
+            <input type="number" min="0" name="refusals" class="form-control" placeholder="Ex: 2" value="{% if edit_report %}{{ edit_report.refusals }}{% endif %}">
+          </div>
+          <div>
+            <label class="form-label">Observação de recusas</label>
+            <input type="text" name="refusals_note" class="form-control" placeholder="Descreva o motivo" value="{% if edit_report %}{{ edit_report.refusals_note }}{% endif %}">
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="btn btn-primary">{% if edit_report %}Atualizar relatório{% else %}Salvar relatório{% endif %}</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <div class="grid gap-4 lg:grid-cols-3">
-    <div class="card lg:col-span-2">
-      <div class="card-header">
-        <h2 class="text-base font-semibold text-slate-800 m-0">Atendimentos em andamento</h2>
-      </div>
-      <div class="card-body text-slate-600">
-        Acompanhe os atendimentos em tempo real.
-      </div>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-base font-semibold text-slate-800 m-0">Histórico de relatórios</h2>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <h2 class="text-base font-semibold text-slate-800 m-0">Pendências</h2>
-      </div>
-      <div class="card-body text-slate-600">
-        Evoluções, registros e follow-ups.
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Data</th>
+              <th>Plantão</th>
+              <th>Atendimentos</th>
+              <th>Recusas</th>
+              <th>Região</th>
+              <th>Observações</th>
+              <th class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in reports %}
+            <tr>
+              <td>{{ report.report_date|date:"d/m/Y" }}</td>
+              <td>{{ report.get_shift_type_display }}</td>
+              <td>{{ report.attendances }}</td>
+              <td>{{ report.refusals }}</td>
+              <td>{{ report.body_part }}</td>
+              <td>{{ report.observations|default:"-" }}</td>
+              <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <a href="{% url 'fisioterapia:assistencia' %}?edit={{ report.id }}" class="btn btn-outline-primary btn-sm">Editar</a>
+                  <form method="post" action="{% url 'fisioterapia:assistencia_delete' report.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-slate-500 py-4">Nenhum relatório registrado.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

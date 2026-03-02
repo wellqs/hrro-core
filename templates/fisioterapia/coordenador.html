@@ -2,60 +2,169 @@
 
 {% block title %}Fisioterapia - Coordenador{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
       <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
-      <h1 class="text-xl font-semibold text-slate-800">Painel do Coordenador</h1>
+      <h1 class="text-xl font-semibold text-slate-800">Dashboard de Coordenação</h1>
+      <p class="text-sm text-slate-500">Acompanhe a produtividade da equipe</p>
     </div>
     <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
   </div>
 
-  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div class="card">
       <div class="card-body">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Atendimentos do dia</p>
-        <div class="text-3xl font-bold text-slate-800">--</div>
+        <p class="text-xs uppercase tracking-wide text-slate-500">Total de relatórios</p>
+        <div class="text-3xl font-bold text-slate-800">{{ total_reports }}</div>
       </div>
     </div>
     <div class="card">
       <div class="card-body">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Pacientes ativos</p>
-        <div class="text-3xl font-bold text-slate-800">--</div>
+        <p class="text-xs uppercase tracking-wide text-slate-500">Atendimentos</p>
+        <div class="text-3xl font-bold text-slate-800">{{ total_attendances }}</div>
       </div>
     </div>
     <div class="card">
       <div class="card-body">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Equipe em plantão</p>
-        <div class="text-3xl font-bold text-slate-800">--</div>
+        <p class="text-xs uppercase tracking-wide text-slate-500">Recusas</p>
+        <div class="text-3xl font-bold text-slate-800">{{ total_refusals }}</div>
       </div>
     </div>
     <div class="card">
       <div class="card-body">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Meta semanal</p>
-        <div class="text-3xl font-bold text-slate-800">--</div>
+        <p class="text-xs uppercase tracking-wide text-slate-500">Profissionais ativos</p>
+        <div class="text-3xl font-bold text-slate-800">{{ unique_users }}</div>
       </div>
     </div>
   </div>
 
-  <div class="grid gap-4 lg:grid-cols-3">
-    <div class="card lg:col-span-2">
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="card">
       <div class="card-header">
-        <h2 class="text-base font-semibold text-slate-800 m-0">Indicadores principais</h2>
+        <h2 class="text-base font-semibold text-slate-800 m-0">Evolução (7 dias)</h2>
       </div>
-      <div class="card-body text-slate-600">
-        Adicione aqui gráficos e métricas gerenciais.
+      <div class="card-body">
+        <div style="height: 260px;">
+          <canvas id="evolutionChart"></canvas>
+        </div>
       </div>
     </div>
     <div class="card">
       <div class="card-header">
-        <h2 class="text-base font-semibold text-slate-800 m-0">Alertas</h2>
+        <h2 class="text-base font-semibold text-slate-800 m-0">Distribuição por região</h2>
       </div>
-      <div class="card-body text-slate-600">
-        Pendências, pacientes críticos e avisos rápidos.
+      <div class="card-body">
+        <div style="height: 260px;">
+          <canvas id="bodyPartChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-base font-semibold text-slate-800 m-0">Comparativo entre profissionais</h2>
+    </div>
+    <div class="card-body">
+      <div style="height: 260px;">
+        <canvas id="professionalChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-base font-semibold text-slate-800 m-0">Relatórios registrados</h2>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Profissional</th>
+              <th>Data</th>
+              <th>Plantão</th>
+              <th>Atendimentos</th>
+              <th>Recusas</th>
+              <th>Região</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in reports %}
+            <tr>
+              <td>{{ report.user.get_full_name|default:report.user.username }}</td>
+              <td>{{ report.report_date|date:"d/m/Y" }}</td>
+              <td>{{ report.get_shift_type_display }}</td>
+              <td>{{ report.attendances }}</td>
+              <td>{{ report.refusals }}</td>
+              <td>{{ report.body_part }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-slate-500 py-4">Nenhum relatório registrado.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </div>
+
+{{ evolution_data|json_script:"evolution-data" }}
+{{ body_part_data|json_script:"bodypart-data" }}
+{{ professional_data|json_script:"professional-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const evolutionData = JSON.parse(document.getElementById("evolution-data").textContent);
+  const bodyPartData = JSON.parse(document.getElementById("bodypart-data").textContent);
+  const professionalData = JSON.parse(document.getElementById("professional-data").textContent);
+
+  const ctxEvolution = document.getElementById("evolutionChart").getContext("2d");
+  new Chart(ctxEvolution, {
+    type: "line",
+    data: {
+      labels: evolutionData.map(item => item.date),
+      datasets: [
+        { label: "Atendimentos", data: evolutionData.map(i => i.attendances), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,0.15)", fill: true, tension: 0.3 },
+        { label: "Recusas", data: evolutionData.map(i => i.refusals), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", fill: true, tension: 0.3 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+
+  const ctxBody = document.getElementById("bodyPartChart").getContext("2d");
+  new Chart(ctxBody, {
+    type: "doughnut",
+    data: {
+      labels: bodyPartData.map(item => item.name),
+      datasets: [{
+        data: bodyPartData.map(item => item.value),
+        backgroundColor: ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#14b8a6","#22c55e","#f97316"]
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+
+  const ctxProf = document.getElementById("professionalChart").getContext("2d");
+  new Chart(ctxProf, {
+    type: "bar",
+    data: {
+      labels: professionalData.map(item => item.name),
+      datasets: [
+        { label: "Atendimentos", data: professionalData.map(i => i.attendances), backgroundColor: "#16a34a" },
+        { label: "Recusas", data: professionalData.map(i => i.refusals), backgroundColor: "#f59e0b" }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+</script>
 {% endblock %}
