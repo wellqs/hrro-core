@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group, User
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -21,6 +22,9 @@ BODY_PARTS = [
     ("coluna_sacro", "Coluna Sacro"),
 ]
 
+FISIO_COORD_GROUP = "Fisioterapia Coordenador"
+FISIO_ASSIST_GROUP = "Fisioterapia Assistencial"
+
 
 class FisioHomeView(LoginRequiredMixin, TemplateView):
     template_name = "fisioterapia/home.html"
@@ -28,6 +32,12 @@ class FisioHomeView(LoginRequiredMixin, TemplateView):
 
 class FisioCoordenadorView(LoginRequiredMixin, TemplateView):
     template_name = "fisioterapia/coordenador.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser and not request.user.groups.filter(name=FISIO_COORD_GROUP).exists():
+            messages.error(request, "Você não tem permissão para acessar esta área.")
+            return redirect("fisioterapia:home")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -77,6 +87,58 @@ class FisioCoordenadorView(LoginRequiredMixin, TemplateView):
             for item in by_professional
         ]
         return context
+
+
+class FisioEquipeView(LoginRequiredMixin, View):
+    template_name = "fisioterapia/equipe.html"
+
+    def get(self, request):
+        if not request.user.is_superuser and not request.user.groups.filter(name=FISIO_COORD_GROUP).exists():
+            messages.error(request, "Você não tem permissão para acessar esta área.")
+            return redirect("fisioterapia:home")
+        coord_group, _ = Group.objects.get_or_create(name=FISIO_COORD_GROUP)
+        assist_group, _ = Group.objects.get_or_create(name=FISIO_ASSIST_GROUP)
+        users = User.objects.filter(groups__in=[coord_group, assist_group]).distinct().order_by("first_name", "username")
+        return render(request, self.template_name, {
+            "users": users,
+        })
+
+    def post(self, request):
+        if not request.user.is_superuser and not request.user.groups.filter(name=FISIO_COORD_GROUP).exists():
+            messages.error(request, "Você não tem permissão para acessar esta área.")
+            return redirect("fisioterapia:home")
+        role = request.POST.get("role")
+        first_name = (request.POST.get("first_name") or "").strip()
+        last_name = (request.POST.get("last_name") or "").strip()
+        username = (request.POST.get("username") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        password = (request.POST.get("password") or "").strip()
+
+        if not username or not password:
+            messages.error(request, "Informe usuário e senha.")
+            return redirect("fisioterapia:equipe")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Este usuário já existe.")
+            return redirect("fisioterapia:equipe")
+
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email or None,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        coord_group, _ = Group.objects.get_or_create(name=FISIO_COORD_GROUP)
+        assist_group, _ = Group.objects.get_or_create(name=FISIO_ASSIST_GROUP)
+        if role == "coordenador":
+            user.groups.add(coord_group)
+        else:
+            user.groups.add(assist_group)
+
+        messages.success(request, "Usuário cadastrado com sucesso.")
+        return redirect("fisioterapia:equipe")
 
 
 class FisioAssistenciaView(LoginRequiredMixin, View):

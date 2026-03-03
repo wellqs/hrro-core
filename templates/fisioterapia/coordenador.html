@@ -14,7 +14,10 @@
       <h1 class="text-xl font-semibold text-slate-800">Dashboard de Coordenação</h1>
       <p class="text-sm text-slate-500">Acompanhe a produtividade da equipe</p>
     </div>
-    <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+    <div class="d-flex gap-2">
+      <a href="{% url 'fisioterapia:equipe' %}" class="btn btn-primary btn-sm">Equipe</a>
+      <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
+    </div>
   </div>
 
   <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
