@@ -2,34 +2,127 @@
 
 {% block title %}Fisioterapia{% endblock %}
 
-{% block content %}
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
-      <h1 class="text-xl font-semibold text-slate-800">Escolha o painel</h1>
-    </div>
-  </div>
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
+</script>
+<style>
+  .animate-fade-in-up { animation: fadeInUp 0.6s ease both; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .identity-card { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+  .identity-card:hover { animation: identity-expand 0.35s ease forwards; box-shadow: 0 16px 30px rgba(0,0,0,0.08); }
+  @keyframes identity-expand { to { transform: scale(1.07); } }
+</style>
+{% endblock %}
 
-  <div class="grid gap-4 md:grid-cols-2">
-    <a href="{% url 'fisioterapia:coordenador' %}" class="card block">
-      <div class="card-body space-y-2">
-        <div class="h-10 w-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center">
-          <i class="bi bi-diagram-3"></i>
-        </div>
-        <h2 class="text-lg font-semibold text-slate-800">Coordenador</h2>
-        <p class="text-sm text-slate-600">Indicadores, equipe, metas e visão gerencial.</p>
+{% block content %}
+<main class="mx-auto max-w-7xl space-y-10 px-4 pb-10">
+
+  <section class="relative overflow-hidden rounded-b-3xl bg-gradient-to-br from-emerald-600 via-emerald-600 to-emerald-800 text-white shadow-md">
+    <div class="absolute inset-0 opacity-60" style="background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12) 0, transparent 40%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.1) 0, transparent 35%), radial-gradient(circle at 50% 90%, rgba(255,255,255,0.08) 0, transparent 45%);"></div>
+    <div class="relative mx-auto max-w-4xl px-6 py-14 text-center space-y-4">
+      <div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold tracking-wide">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6H9l-1-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path></svg>
+        </span>
+        Fisioterapia — HRRO
       </div>
-    </a>
-    <a href="{% url 'fisioterapia:assistencia' %}" class="card block">
-      <div class="card-body space-y-2">
-        <div class="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-          <i class="bi bi-activity"></i>
+      <h1 class="text-4xl font-bold sm:text-5xl">Bem-vindo(a) ao Setor de Fisioterapia</h1>
+      <p class="text-lg leading-relaxed text-emerald-50">
+        Organize atendimentos, registre relatórios diários e acompanhe indicadores assistenciais com clareza.
+      </p>
+      <div class="flex flex-col items-center justify-center gap-3 text-emerald-100 sm:flex-row sm:gap-6 text-sm font-semibold">
+        <div class="inline-flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h3l2-7 4 14 2-7h7"></path></svg>
+          Produtividade diária
         </div>
-        <h2 class="text-lg font-semibold text-slate-800">Assistência</h2>
-        <p class="text-sm text-slate-600">Atendimentos, agenda e acompanhamento diário.</p>
+        <div class="inline-flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path></svg>
+          Relatórios seguros
+        </div>
       </div>
-    </a>
-  </div>
-</div>
+    </div>
+    <div class="h-10 w-full bg-white/0">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="h-full w-full text-slate-50">
+        <path fill="currentColor" d="M0,96L60,90.7C120,85,240,75,360,69.3C480,64,600,64,720,74.7C840,85,960,107,1080,112C1200,117,1320,107,1380,101.3L1440,96L1440,120L1380,120C1320,120,1200,120,1080,120C960,120,840,120,720,120C600,120,480,120,360,120C240,120,120,120,60,120L0,120Z"></path>
+      </svg>
+    </div>
+  </section>
+
+  <section class="space-y-4">
+    <h2 class="text-lg font-semibold text-slate-900">Nossa identidade</h2>
+    <div class="grid gap-6 md:grid-cols-3">
+      <div class="identity-card group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 transition group-hover:scale-150"></div>
+        <h3 class="relative flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-emerald-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+          Missão
+        </h3>
+        <p class="relative mt-3 text-sm text-slate-600">
+          Garantir reabilitação humanizada e eficiente, com foco em resultados clínicos e segurança assistencial.
+        </p>
+      </div>
+      <div class="identity-card group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-teal-50 opacity-50 transition group-hover:scale-150"></div>
+        <h3 class="relative flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-teal-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          Visão
+        </h3>
+        <p class="relative mt-3 text-sm text-slate-600">
+          Ser referência em qualidade assistencial e gestão de produtividade na fisioterapia hospitalar.
+        </p>
+      </div>
+      <div class="identity-card group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="absolute right-0 top-0 -mr-4 -mt-4 h-24 w-24 rounded-full bg-emerald-50 opacity-50 transition group-hover:scale-150"></div>
+        <h3 class="relative flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-emerald-700">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          Valores
+        </h3>
+        <p class="relative mt-3 text-sm text-slate-600">
+          Empatia, qualidade técnica, compromisso com a recuperação e trabalho em equipe.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-slate-900">Acesso rápido</h2>
+      <span class="text-xs font-medium text-slate-400">Escolha um painel</span>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2">
+      <a href="{% url 'fisioterapia:coordenador' %}" class="block rounded-2xl bg-emerald-600 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+        <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/70">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v6H3z"></path><path d="M3 9h18v12H3z"></path><path d="M7 13h4"></path><path d="M7 17h10"></path></svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-lg font-bold">Coordenador</h3>
+            <p class="text-sm text-emerald-100">Indicadores, equipe e visão gerencial.</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="{% url 'fisioterapia:assistencia' %}" class="block rounded-2xl bg-slate-800 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+        <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-lg font-bold">Assistência</h3>
+            <p class="text-sm text-slate-200">Relatórios diários e acompanhamento assistencial.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="mt-12 border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <p class="mt-1">Sistema Interno de Apoio à Gestão.</p>
+    <p>HRRO • Fisioterapia</p>
+  </footer>
+
+</main>
 {% endblock %}
