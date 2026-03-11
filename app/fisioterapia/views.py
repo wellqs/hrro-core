@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group, User
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.views.generic import TemplateView
@@ -49,9 +49,19 @@ class FisioCoordenadorView(LoginRequiredMixin, TemplateView):
         context["total_refusals"] = reports.aggregate(total=Sum("refusals"))["total"] or 0
         context["unique_users"] = reports.values("user_id").distinct().count()
 
-        today = date.today()
+        max_date = reports.aggregate(max_date=Max("report_date"))["max_date"]
+        today = max_date or date.today()
+        range_raw = self.request.GET.get("range")
+        try:
+            range_days = int(range_raw) if range_raw else 7
+        except ValueError:
+            range_days = 7
+        if range_days not in (7, 30, 60, 90):
+            range_days = 7
+        context["range_days"] = range_days
+
         evolution = []
-        for i in range(6, -1, -1):
+        for i in range(range_days - 1, -1, -1):
             d = today - timedelta(days=i)
             day_reports = reports.filter(report_date=d)
             evolution.append({

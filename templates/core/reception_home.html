@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Recepcao{% endblock %}
+{% block title %}Recepção{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepção</p>
       <h1 class="text-xl font-semibold text-slate-800">Busca de pacientes</h1>
     </div>
     {% include "core/_reception_actions.html" %}
@@ -36,8 +36,13 @@
     <div class="card-header flex items-center justify-between">
       <h2 class="m-0 text-base font-semibold text-slate-800">Resultados</h2>
       <div class="flex items-center gap-3">
+        {% if can_reception %}
         <a href="{% url 'reception_queue' %}" class="btn btn-outline-primary btn-sm">Ver fila</a>
         <a href="{% url 'reception_patient_new' %}" class="btn btn-success btn-sm">Novo paciente</a>
+        {% else %}
+        <span class="btn btn-outline-primary btn-sm disabled">Ver fila</span>
+        <span class="btn btn-success btn-sm disabled">Novo paciente</span>
+        {% endif %}
       </div>
     </div>
     <div class="card-body p-0">
@@ -46,7 +51,7 @@
           <thead>
             <tr>
               <th>Nome</th>
-              <th>Prontuario</th>
+              <th>Prontuário</th>
               <th>CPF</th>
               <th>CNS</th>
               <th></th>
@@ -60,7 +65,11 @@
               <td>{{ p.extra.cpf|default:"-" }}</td>
               <td>{{ p.extra.cns|default:"-" }}</td>
               <td class="text-end">
+                {% if can_reception %}
                 <a class="btn btn-sm btn-primary" href="{% url 'reception_queue_new' p.id %}">Abrir atendimento / inserir na fila</a>
+                {% else %}
+                <span class="btn btn-sm btn-primary disabled">Acesso restrito</span>
+                {% endif %}
               </td>
             </tr>
           {% empty %}

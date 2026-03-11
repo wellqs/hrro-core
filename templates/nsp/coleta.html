@@ -1,13 +1,13 @@
 {% extends 'nsp/base.html' %}
 {% load static %}
 
-{% block title %}NSP - Visao Geral das Clinicas{% endblock %}
+{% block title %}NSP - Visão Geral das Clínicas{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-    <h1 class="h2">NSP - Visao Geral das Clinicas</h1>
+    <h1 class="h2">NSP - Visão Geral das Clínicas</h1>
     <div class="btn-group">
-        <a href="{% url 'nir_hospitalization_history' %}" class="btn btn-outline-secondary">Historico de Internacoes</a>
+        <a href="{% url 'nir_hospitalization_history' %}" class="btn btn-outline-secondary">Histórico de Internações</a>
         <a href="{% url 'nir_hospitalization_create' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-2"></i>Alocar Paciente em Leito
         </a>
@@ -31,10 +31,10 @@
                     <p class="card-text text-center text-muted small">
                         ({{ clinic.vacant_beds }} Vagos)
                     </p>
-                    <h4 class="card-title text-center mb-3">{{ clinic.occupancy_rate }}% Ocupacao</h4>
+                    <h4 class="card-title text-center mb-3">{{ clinic.occupancy_rate }}% Ocupação</h4>
 
                     <a href="{{ clinic.detail_url }}" class="btn btn-outline-primary mt-auto">
-                        <i class="bi bi-list-ul me-2"></i> Ver Leitos da Clinica
+                        <i class="bi bi-list-ul me-2"></i> Ver Leitos da Clínica
                     </a>
                 </div>
             </div>
@@ -46,7 +46,7 @@
 
     {% empty %}
         <div class="col-12">
-            <p class="text-muted text-center py-5">Nenhum dado de clinica encontrado. Verifique a configuracao dos leitos.</p>
+            <p class="text-muted text-center py-5">Nenhum dado de clínica encontrado. Verifique a configuração dos leitos.</p>
         </div>
     {% endfor %}
 </div>

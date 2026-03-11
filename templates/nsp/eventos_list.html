@@ -7,7 +7,7 @@
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
     <div>
       <h2 class="mb-1 text-primary fw-bold">Eventos Adversos</h2>
-      <p class="text-muted mb-0">Relatorios por dia</p>
+      <p class="text-muted mb-0">Relatórios por dia</p>
     </div>
     <div class="d-flex gap-2">
       <a href="{% url 'nsp_eventos_pdf' %}{% if selected_date %}?date={{ selected_date }}{% endif %}" class="btn btn-outline-primary" target="_blank" rel="noopener">Exportar PDF</a>
@@ -46,7 +46,7 @@
                 <th>Checklist</th>
                 <th>Tempos (dias)</th>
                 <th>Registrado por</th>
-                <th>Observacoes</th>
+                <th>Observações</th>
               </tr>
             </thead>
             <tbody>
@@ -55,9 +55,9 @@
                   <td>{{ r.patient.name }}</td>
                   <td class="text-sm">
                     {% if r.pulseira_identificacao %}<span class="badge bg-success">Pulseira</span>{% endif %}
-                    {% if r.identificacao_medicacao %}<span class="badge bg-success">Medicacao</span>{% endif %}
+                    {% if r.identificacao_medicacao %}<span class="badge bg-success">Medicação</span>{% endif %}
                     {% if r.risco_queda %}<span class="badge bg-warning text-dark">Queda</span>{% endif %}
-                    {% if r.lesao_pressao %}<span class="badge bg-warning text-dark">Lesao</span>{% endif %}
+                    {% if r.lesao_pressao %}<span class="badge bg-warning text-dark">Lesão</span>{% endif %}
                     {% if r.flebite %}<span class="badge bg-warning text-dark">Flebite</span>{% endif %}
                     {% if r.identificacao_leito %}<span class="badge bg-info text-dark">Leito</span>{% endif %}
                     {% if r.nao_conformidade_estruturas %}<span class="badge bg-danger">Estruturas</span>{% endif %}
@@ -80,7 +80,7 @@
   {% endfor %}
 
   {% if is_paginated %}
-  <nav aria-label="Navegacao das paginas" class="mt-4">
+  <nav aria-label="Navegação das páginas" class="mt-4">
     <ul class="pagination justify-content-center">
       {% if page_obj.has_previous %}
         <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
@@ -99,9 +99,9 @@
       {% endfor %}
 
       {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Proxima</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
       {% else %}
-        <li class="page-item disabled"><span class="page-link">Proxima</span></li>
+        <li class="page-item disabled"><span class="page-link">Próxima</span></li>
       {% endif %}
     </ul>
   </nav>

@@ -6,9 +6,9 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepção</p>
       <h1 class="text-xl font-semibold text-slate-800">Abertura de atendimento</h1>
-      <p class="text-sm text-slate-500">Paciente: <span class="font-semibold text-slate-800">{{ patient.name }}</span> — Prontuario {{ patient.medical_record_number }}</p>
+      <p class="text-sm text-slate-500">Paciente: <span class="font-semibold text-slate-800">{{ patient.name }}</span> — Prontuário {{ patient.medical_record_number }}</p>
     </div>
     <a href="{% url 'reception_home' %}" class="btn btn-secondary btn-sm">Voltar</a>
   </div>
@@ -40,7 +40,7 @@
             {{ form.referral_type }}
           </div>
           <div class="space-y-2">
-            <label class="form-label">No guia/senha/referencia</label>
+            <label class="form-label">Nº guia/senha/referência</label>
             {{ form.reference_document }}
           </div>
         </div>
@@ -86,26 +86,26 @@
 
         <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
           {{ form.direct_internation }}
-          <label class="form-check-label" for="id_direct_internation">Internacao direta (nao entra na fila)</label>
+          <label class="form-check-label" for="id_direct_internation">Internação direta (não entra na fila)</label>
           {% if form.direct_internation.errors %}<div class="text-danger small">{{ form.direct_internation.errors.0 }}</div>{% endif %}
         </div>
 
         <div id="direct-internation-fields" class="border border-slate-200 rounded-xl p-4 bg-white hidden">
           <div class="grid md:grid-cols-2 gap-4 items-start">
             <div class="space-y-2">
-              <label class="form-label">Leito para internacao direta</label>
+              <label class="form-label">Leito para internação direta</label>
               {{ form.bed }}
               {% if form.bed.errors %}<div class="text-danger small">{{ form.bed.errors.0 }}</div>{% endif %}
               <p class="text-xs text-slate-500">Apenas leitos ativos aparecem na lista.</p>
             </div>
             <div class="rounded-lg border border-sky-200 bg-sky-50 text-sky-800 p-3 text-sm">
-              O paciente sera registrado na planilha do NIR usando este leito e nao aparecera na fila.
+              O paciente será registrado na planilha do NIR usando este leito e não aparecerá na fila.
             </div>
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="form-label">Observacoes</label>
+          <label class="form-label">Observações</label>
           {{ form.notes }}
           {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
         </div>

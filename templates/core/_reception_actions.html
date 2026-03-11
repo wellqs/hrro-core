@@ -1,5 +1,10 @@
 {% load static %}
 <div class="flex items-center gap-2">
+  {% if can_reception %}
   <a href="{% url 'reception_queue' %}" class="btn btn-outline-primary btn-sm">Ver fila</a>
   <a href="{% url 'reception_patient_new' %}" class="btn btn-success btn-sm">Novo paciente</a>
+  {% else %}
+  <span class="btn btn-outline-primary btn-sm disabled">Ver fila</span>
+  <span class="btn btn-success btn-sm disabled">Novo paciente</span>
+  {% endif %}
 </div>

@@ -6,7 +6,7 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepção</p>
       <h1 class="text-xl font-semibold text-slate-800">Cadastro de paciente</h1>
     </div>
     <a href="{% url 'reception_home' %}" class="btn btn-secondary btn-sm">Voltar</a>
@@ -34,7 +34,7 @@
 
         <div class="grid md:grid-cols-3 gap-4">
           <div class="space-y-2">
-            <label class="form-label">Prontuario</label>
+            <label class="form-label">Prontuário</label>
             {{ form.medical_record_number }}
             {% if form.medical_record_number.errors %}<div class="text-danger small">{{ form.medical_record_number.errors.0 }}</div>{% endif %}
           </div>

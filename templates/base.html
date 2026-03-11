@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -138,6 +138,7 @@
 <body class="min-h-screen bg-slate-50 text-slate-800">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
+        {% if request.resolver_match.url_name != 'login' %}
         <aside class="hrro-sidebar hidden md:flex w-72 bg-hrro-navy text-white flex-col border-r border-slate-800/70 shadow-xl">
             <div class="flex items-center gap-3 px-6 py-6">
                 <div class="h-10 w-10 rounded-2xl bg-slate-800/60 flex items-center justify-center">
@@ -145,7 +146,7 @@
                 </div>
                 <div>
                     <div class="text-lg font-semibold leading-tight">HRRO</div>
-                    <div class="text-xs text-slate-200/70 uppercase tracking-wide">Centro CirÇ§rgico</div>
+                    <div class="text-xs text-slate-200/70 uppercase tracking-wide">Centro Cirúrgico</div>
                 </div>
             </div>
             {% with current=request.resolver_match.url_name|default:'' %}
@@ -163,7 +164,7 @@
             {% endwith %}
             {% if user.is_authenticated %}
             <div class="px-6 py-5 border-t border-slate-800/70">
-                <div class="text-xs text-slate-200/70 mb-2">UsuÇ­rio</div>
+                <div class="text-xs text-slate-200/70 mb-2">Usuário</div>
                 <div class="flex items-center justify-between">
                     <span class="font-semibold">{{ user.username }}</span>
                     <form action="{% url 'logout' %}" method="post">
@@ -174,12 +175,19 @@
             </div>
             {% endif %}
         </aside>
+        {% endif %}
 
-        <!-- ConteÇ_do principal -->
+        <!-- Conteúdo principal -->
         <main class="flex-1 min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+                {% if request.resolver_match.url_name == 'login' %}
+                    <div class="min-h-screen flex items-center justify-center px-4 py-6">
+                        <div class="w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl shadow-slate-300/60 bg-white">
+                {% else %}
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+                {% endif %}
+
                 {% if messages %}
-                    <div class="space-y-2">
+                    <div class="space-y-2 {% if request.resolver_match.url_name == 'login' %}mb-6{% endif %}">
                         {% for message in messages %}
                             <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border shadow-sm
                                 {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-900{% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
@@ -190,10 +198,18 @@
                     </div>
                 {% endif %}
 
-                <div class="grid gap-6">
-                    {% block content %}{% endblock %}
+                {% if request.resolver_match.url_name != 'login' %}
+                    <div class="grid gap-6">
+                {% endif %}
+                        {% block content %}{% endblock %}
+                {% if request.resolver_match.url_name != 'login' %}
+                    </div>
+                {% endif %}
+
                 </div>
-            </div>
+                {% if request.resolver_match.url_name == 'login' %}
+                    </div>
+                {% endif %}
         </main>
     </div>
 
@@ -202,3 +218,4 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+

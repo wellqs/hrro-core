@@ -1,12 +1,12 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard Estrat\u00e9gico{% endblock %}
+{% block title %}Dashboard Estratégico{% endblock %}
 
 {% block content %}
 <div class="flex flex-col gap-2">
-    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Vis\u00e3o geral</p>
-    <h1 class="text-2xl font-semibold text-slate-800">Dashboard de Indicadores Estrat\u00e9gicos</h1>
+    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Visão geral</p>
+    <h1 class="text-2xl font-semibold text-slate-800">Dashboard de Indicadores Estratégicos</h1>
 </div>
 
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -52,8 +52,8 @@
     <div class="bg-white rounded-2xl shadow-lg border border-slate-100 lg:col-span-2 p-6">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <p class="text-xs uppercase tracking-wide text-slate-500">Tend\u00eancia</p>
-                <h6 class="text-base font-semibold text-slate-800">Volume de Cirurgias por M\u00eas</h6>
+                <p class="text-xs uppercase tracking-wide text-slate-500">Tendência</p>
+                <h6 class="text-base font-semibold text-slate-800">Volume de Cirurgias por Mês</h6>
             </div>
         </div>
         <div class="h-80"><canvas id="volumeChart" class="w-full h-full"></canvas></div>
@@ -61,7 +61,7 @@
     <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
         <div class="flex items-center justify-between mb-4">
             <div>
-                <p class="text-xs uppercase tracking-wide text-slate-500">Distribui\u00e7\u00e3o</p>
+                <p class="text-xs uppercase tracking-wide text-slate-500">Distribuição</p>
                 <h6 class="text-base font-semibold text-slate-800">Status das Cirurgias</h6>
             </div>
         </div>
@@ -141,3 +141,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
+

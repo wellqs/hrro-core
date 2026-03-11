@@ -109,6 +109,7 @@
         </div>
 
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {% if can_nsp %}
             <a href="{% url 'indicator_dashboard' %}" class="block rounded-2xl bg-sky-600 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
                 <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-500/70">
@@ -120,7 +121,21 @@
                     </div>
                 </div>
             </a>
+            {% else %}
+            <div class="block rounded-2xl bg-slate-100 text-slate-400 shadow-inner cursor-not-allowed">
+                <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><line x1="3" x2="21" y1="9" y2="9"></line><line x1="9" x2="9" y1="21" y2="9"></line></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-bold">Dashboard</h3>
+                        <p class="text-sm text-slate-400">Acesso restrito ao setor NSP.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
+            {% if can_nsp %}
             <a href="{% url 'nsp_coleta' %}" class="block rounded-2xl bg-slate-800 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
                 <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-700">
@@ -132,7 +147,21 @@
                     </div>
                 </div>
             </a>
+            {% else %}
+            <div class="block rounded-2xl bg-slate-100 text-slate-400 shadow-inner cursor-not-allowed">
+                <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-bold">Coleta de Dados</h3>
+                        <p class="text-sm text-slate-400">Acesso restrito ao setor NSP.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
+            {% if can_nsp %}
             <a href="{% url 'nsp_equipe' %}" class="block rounded-2xl bg-indigo-500 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
                 <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-400/70 text-white">
@@ -144,7 +173,21 @@
                     </div>
                 </div>
             </a>
+            {% else %}
+            <div class="block rounded-2xl bg-slate-100 text-slate-400 shadow-inner cursor-not-allowed">
+                <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-semibold">Equipe</h3>
+                        <p class="text-sm text-slate-400">Acesso restrito ao setor NSP.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
+            {% if can_nsp %}
             <a href="{% url 'nsp_eventos_list' %}" class="block rounded-2xl bg-emerald-600 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
                 <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/70">
@@ -156,6 +199,19 @@
                     </div>
                 </div>
             </a>
+            {% else %}
+            <div class="block rounded-2xl bg-slate-100 text-slate-400 shadow-inner cursor-not-allowed">
+                <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-200 text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-bold">Eventos Adversos</h3>
+                        <p class="text-sm text-slate-400">Acesso restrito ao setor NSP.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="rounded-2xl bg-white border border-slate-200 shadow-sm transition relative">
                 <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Fila de espera{% endblock %}
 
@@ -12,10 +12,10 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
-      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepcao</p>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Recepção</p>
       <h1 class="text-xl font-semibold text-slate-800">Fila de espera</h1>
     </div>
-    <a class="btn btn-secondary btn-sm" href="{% url 'reception_home' %}">Voltar para recepcao</a>
+    <a class="btn btn-secondary btn-sm" href="{% url 'reception_home' %}">Voltar para Recepção</a>
   </div>
 
   <div class="card">
@@ -55,7 +55,7 @@
                 </td>
               </tr>
             {% empty %}
-              <tr><td colspan="7" class="text-center py-4 text-slate-600">Nao ha pacientes na fila.</td></tr>
+              <tr><td colspan="7" class="text-center py-4 text-slate-600">Não há pacientes na fila.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -64,3 +64,4 @@
   </div>
 </div>
 {% endblock %}
+

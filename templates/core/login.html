@@ -1,42 +1,144 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center py-12">
-    <div class="w-full max-w-md">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+<div class="h-full min-h-0 flex bg-slate-50 font-sans text-slate-800 selection:bg-teal-200 selection:text-teal-900">
+    <div class="hidden lg:flex w-5/12 xl:w-1/2 bg-gradient-to-br from-blue-800 via-blue-600 to-teal-500 p-5 text-white flex-col justify-start gap-6 relative overflow-hidden min-h-0">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-teal-300 opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10">
             <div class="flex items-center gap-3 mb-6">
-                <div class="h-10 w-10 rounded-xl bg-hrro-sky/20 text-hrro-sky flex items-center justify-center">
-                    <i class="bi bi-shield-lock"></i>
+                <div class="p-2 bg-white/10 rounded-2xl backdrop-blur-sm border border-white/20">
+                    <i class="bi bi-heart-pulse fs-4 text-teal-300"></i>
                 </div>
-                <div>
-                    <p class="text-xs uppercase tracking-wide text-slate-500">Acesso</p>
-                    <h2 class="text-xl font-semibold text-slate-800">Entrar no sistema</h2>
+                <h1 class="text-2xl font-bold tracking-tight">
+                    HRRO <span class="font-light text-teal-100">CORE</span>
+                </h1>
+            </div>
+
+            <h2 class="text-xl xl:text-2xl font-medium mb-3 leading-tight">
+                Excelência em<br>gestão hospitalar.
+            </h2>
+
+            <div class="space-y-2 mt-3 text-blue-50/90">
+                <div class="flex items-start gap-3 p-2 rounded-2xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                    <i class="bi bi-activity fs-6 text-teal-300 mt-1"></i>
+                    <p class="text-xs leading-relaxed font-light">Plataforma integrada para gestão assistencial, indicadores e rotinas.</p>
                 </div>
+                <div class="flex items-start gap-3 p-2 rounded-2xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                    <i class="bi bi-clock fs-6 text-teal-300 mt-1"></i>
+                    <p class="text-xs leading-relaxed font-light">Monitoramento em tempo real.</p>
+                </div>
+                <div class="flex items-start gap-3 p-2 rounded-2xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                    <i class="bi bi-stethoscope fs-6 text-teal-300 mt-1"></i>
+                    <p class="text-xs leading-relaxed font-light">Suporte aos setores administrativos e assistenciais.</p>
+                </div>
+                <div class="flex items-start gap-3 p-2 rounded-2xl hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+                    <i class="bi bi-shield-check fs-6 text-teal-300 mt-1"></i>
+                    <p class="text-xs leading-relaxed font-light">Fluxos seguros e auditáveis.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative z-10 text-[11px] text-blue-100/70 font-light w-full text-center">
+            &copy; {% now "Y" %} Sistema HRRO CORE.
+        </div>
+    </div>
+
+    <div class="w-full lg:w-7/12 xl:w-1/2 flex flex-col relative bg-white items-center justify-center p-4 sm:p-8 min-h-0">
+        <div class="w-full max-w-md">
+            <div class="flex lg:hidden items-center justify-center gap-3 mb-6 text-blue-700">
+                <div class="p-2 bg-blue-50 rounded-xl">
+                    <i class="bi bi-heart-pulse fs-4 text-blue-600"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight">
+                    HRRO <span class="font-light text-teal-600">CORE</span>
+                </h1>
+            </div>
+
+            <div class="text-center lg:text-left mb-6">
+                <h2 class="text-xl font-bold text-slate-800 mb-1">Acesse sua conta</h2>
+                <p class="text-sm text-slate-500">Insira suas credenciais para acessar a plataforma.</p>
             </div>
 
             {% if form.errors %}
-                <div class="mb-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 px-4 py-3 text-sm">
-                    Usu\u00e1rio ou senha n\u00e3o reconhecidos. Tente novamente.
+                <div class="mb-5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-800 px-4 py-3 text-sm">
+                    Usuário ou senha não reconhecidos. Tente novamente.
                 </div>
             {% endif %}
 
             <form method="post" class="space-y-4">
                 {% csrf_token %}
-                <div class="space-y-2">
-                    <label for="id_username" class="text-sm font-medium text-slate-700">Usu\u00e1rio</label>
-                    <input type="text" name="username" id="id_username" required
-                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 focus:border-hrro-sky focus:ring-2 focus:ring-hrro-sky/30">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 ml-1" for="id_username">Nome de Usuário</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="bi bi-person text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                        </div>
+                        <input type="text" name="username" id="id_username" required
+                               class="block w-full pl-11 pr-4 py-3 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-all outline-none"
+                               placeholder="Digite seu nome de usuário">
+                    </div>
                 </div>
-                <div class="space-y-2">
-                    <label for="id_password" class="text-sm font-medium text-slate-700">Senha</label>
-                    <input type="password" name="password" id="id_password" required
-                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900 focus:border-hrro-sky focus:ring-2 focus:ring-hrro-sky/30">
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 ml-1" for="id_password">Senha</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="bi bi-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                        </div>
+                        <input type="password" name="password" id="id_password" required
+                               class="block w-full pl-11 pr-12 py-3 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 sm:text-sm bg-slate-50 focus:bg-white transition-all outline-none"
+                               placeholder="••••••••">
+                        <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none" data-toggle-password>
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-hrro-navy text-white px-4 py-2.5 font-semibold shadow-md hover:bg-hrro-slate transition">
-                    <i class="bi bi-box-arrow-in-right"></i> Entrar
+
+                <div class="flex items-center justify-between mt-1">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer">
+                        <label for="remember-me" class="ml-2 block text-sm text-slate-600 cursor-pointer">
+                            Lembrar de mim
+                        </label>
+                    </div>
+                    <div class="text-sm">
+                        <span class="font-medium text-blue-600 hover:text-blue-500 hover:underline cursor-default">
+                            Esqueceu a senha?
+                        </span>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-2xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all active:scale-[0.98]">
+                    Entrar no sistema
+                    <i class="bi bi-arrow-right"></i>
                 </button>
             </form>
         </div>
+
+        <div class="mt-6 w-full text-center px-6">
+            <p class="text-xs text-slate-400">
+                Desenvolvido por <span class="font-semibold text-slate-600 tracking-wide">UÉLINTON QUINTÃO SILVÉRIO</span>
+            </p>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const toggle = document.querySelector('[data-toggle-password]');
+    const input = document.getElementById('id_password');
+    if (!toggle || !input) return;
+    toggle.addEventListener('click', () => {
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      toggle.innerHTML = isPassword ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+    });
+  })();
+</script>
 {% endblock %}

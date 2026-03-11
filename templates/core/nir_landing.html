@@ -7,10 +7,17 @@
 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
     <h1 class="h2">Painel NIR - Visão Geral das Clínicas</h1>
     <div class="btn-group">
+        {% if can_nir %}
         <a href="{% url 'nir_hospitalization_history' %}" class="btn btn-outline-secondary">Histórico de Internações</a>
         <a href="{% url 'nir_hospitalization_create' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-2"></i>Alocar Paciente em Leito
         </a>
+        {% else %}
+        <span class="btn btn-outline-secondary disabled">Histórico de Internações</span>
+        <span class="btn btn-primary disabled">
+            <i class="bi bi-plus-circle me-2"></i>Alocar Paciente em Leito
+        </span>
+        {% endif %}
     </div>
 </div>
 
@@ -33,9 +40,15 @@
                     </p>
                     <h4 class="card-title text-center mb-3">{{ clinic.occupancy_rate }}% Ocupação</h4>
 
+                    {% if can_nir %}
                     <a href="{{ clinic.detail_url }}" class="btn btn-outline-primary mt-auto">
                         <i class="bi bi-list-ul me-2"></i> Ver Leitos da Clínica
                     </a>
+                    {% else %}
+                    <span class="btn btn-outline-primary mt-auto disabled">
+                        <i class="bi bi-lock me-2"></i> Acesso restrito
+                    </span>
+                    {% endif %}
                 </div>
             </div>
         </div>
