@@ -1,16 +1,16 @@
-# Documentação HRRO_CORE
+﻿# Documentação HRRO_CORE
 
 ## Stack e módulos
 - **Backend:** Django 5 + PostgreSQL.
 - **Frontend:** Templates Django + Tailwind via CDN + Chart.js + Lucide.
-- **PDF:** WeasyPrint (relatórios NSP).
+- **PDF:** WeasyPrint (relatórios NSP e Fisioterapia).
 - **Apps principais:**
   - `core` — gestão geral, NIR (leitos/internações), NSP (indicadores/eventos adversos), recepção, exames.
-  - `app.fisioterapia` — painel assistencial e coordenação, relatórios diários.
+  - `app.fisioterapia` — painel assistencial e coordenação, relatórios diários, gestão de equipe.
 - **Importações:** comandos de management para carga de leitos e internações via `ocupacao.csv`.
 
 **HRRO_CORE — Sistema Hospitalar Integrado**  
-Documentação Técnica – Versão 1.0  
+Documentação Técnica – Versão 1.1  
 Autor: Uélinton Quintão Silvério
 
 ---
@@ -74,7 +74,11 @@ Problemas identificados:
 - **NIR:** mapa de leitos, internações, alta de pacientes.
 - **NSP:** dashboard de indicadores, checklist de eventos adversos, exportação de relatórios em PDF.
 - **Recepção:** cadastro, fila e fluxos de atendimento.
-- **Fisioterapia:** relatórios diários (assistencial) e dashboard gerencial (coordenação).
+- **Fisioterapia:**
+  - Assistencial: criação/edição de relatórios diários;
+  - Coordenação: dashboard, CRUD completo de relatórios;
+  - Exportação em PDF por relatório e em lote;
+  - Gestão de equipe (ativar/desativar, auditoria e reativação).
 
 ---
 
@@ -98,7 +102,7 @@ A arquitetura é modular, baseada em Django, com separação por apps e template
 - Entidades principais:
   - `Patient`, `Bed`, `Hospitalization`;
   - `AdverseEventReport`;
-  - `FisioReport`, `FisioReportProcedure`;
+  - `FisioReport`, `FisioReportProcedure`, `FisioUserAudit`;
   - `ReceptionAttendance`, `ReceptionQueueEntry`.
 
 ### 4.2 Serviços Complementares (Futuro)
