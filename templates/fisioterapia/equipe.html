@@ -1,9 +1,51 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Fisioterapia - Equipe{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
+  <style>
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .role-assistencial {
+      background: #ecfdf3;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+    .role-coordenador {
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+    .status-active {
+      background: #ecfdf3;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+    .status-inactive {
+      background: #fff1f2;
+      color: #be123c;
+      border: 1px solid #fecdd3;
+    }
+  </style>
   <div class="flex items-center justify-between">
     <div>
       <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
@@ -15,40 +57,50 @@
 
   <div class="card">
     <div class="card-header">
-      <h2 class="text-base font-semibold text-slate-800 m-0">Novo usuário</h2>
+      <h2 class="text-base font-semibold text-slate-800 m-0">
+        {% if edit_user %}Editar usuário{% else %}Novo usuário{% endif %}
+      </h2>
     </div>
     <div class="card-body">
       <form method="post" class="grid gap-4 md:grid-cols-2">
         {% csrf_token %}
+        {% if edit_user %}
+          <input type="hidden" name="user_id" value="{{ edit_user.id }}">
+        {% endif %}
         <div>
           <label class="form-label">Nome</label>
-          <input type="text" name="first_name" class="form-control" placeholder="Nome">
+          <input type="text" name="first_name" class="form-control" placeholder="Nome" value="{{ edit_user.first_name|default:'' }}">
         </div>
         <div>
           <label class="form-label">Sobrenome</label>
-          <input type="text" name="last_name" class="form-control" placeholder="Sobrenome">
+          <input type="text" name="last_name" class="form-control" placeholder="Sobrenome" value="{{ edit_user.last_name|default:'' }}">
         </div>
         <div>
           <label class="form-label">Usuário *</label>
-          <input type="text" name="username" class="form-control" required>
+          <input type="text" name="username" class="form-control" required value="{{ edit_user.username|default:'' }}">
         </div>
         <div>
           <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-control">
+          <input type="email" name="email" class="form-control" value="{{ edit_user.email|default:'' }}">
         </div>
         <div>
-          <label class="form-label">Senha *</label>
-          <input type="password" name="password" class="form-control" required>
+          <label class="form-label">Senha {% if not edit_user %}*{% else %}(opcional){% endif %}</label>
+          <input type="password" name="password" class="form-control" {% if not edit_user %}required{% endif %}>
         </div>
         <div>
           <label class="form-label">Perfil</label>
           <select name="role" class="form-select">
-            <option value="assistencial">Assistencial</option>
-            <option value="coordenador">Coordenador</option>
+            <option value="assistencial" {% if edit_role == "assistencial" %}selected{% endif %}>Assistencial</option>
+            <option value="coordenador" {% if edit_role == "coordenador" %}selected{% endif %}>Coordenador</option>
           </select>
         </div>
-        <div class="md:col-span-2 flex justify-end">
-          <button type="submit" class="btn btn-primary">Cadastrar</button>
+        <div class="md:col-span-2 flex justify-end gap-2">
+          {% if edit_user %}
+            <a href="{% url 'fisioterapia:equipe' %}" class="btn btn-outline-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar alterações</button>
+          {% else %}
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+          {% endif %}
         </div>
       </form>
     </div>
@@ -66,7 +118,9 @@
               <th>Nome</th>
               <th>Usuário</th>
               <th>Email</th>
+              <th>Perfil</th>
               <th>Ativo</th>
+              <th class="text-end">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -75,11 +129,48 @@
               <td>{{ user.get_full_name|default:user.username }}</td>
               <td>{{ user.username }}</td>
               <td>{{ user.email|default:"-" }}</td>
-              <td>{{ user.is_active|yesno:"Sim,Não" }}</td>
+              <td>
+                {% if user.groups.all %}
+                  {% for group in user.groups.all %}
+                    {% if group.name == "Fisioterapia Coordenador" %}
+                      <span class="role-badge role-coordenador">Coordenador</span>
+                    {% elif group.name == "Fisioterapia Assistencial" %}
+                      <span class="role-badge role-assistencial">Assistencial</span>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_active %}
+                  <span class="status-badge status-active">Ativo</span>
+                {% else %}
+                  <span class="status-badge status-inactive">Inativo</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'fisioterapia:equipe' %}?edit={{ user.id }}" class="btn btn-sm btn-outline-primary">Editar</a>
+                {% if user.is_active %}
+                  <form method="post" action="{% url 'fisioterapia:equipe_deactivate' user.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja desativar este usuário?');">
+                      Desativar
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'fisioterapia:equipe_reactivate' user.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Deseja reativar este usuário?');">
+                      Reativar
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="4" class="text-center text-slate-500 py-4">Nenhum usuário cadastrado.</td>
+              <td colspan="6" class="text-center text-slate-500 py-4">Nenhum usuário cadastrado.</td>
             </tr>
             {% endfor %}
           </tbody>

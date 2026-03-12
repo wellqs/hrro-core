@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Fisioterapia</title>
+  <style>
+    body { font-family: "Arial", sans-serif; color: #0f172a; margin: 32px; }
+    h1 { font-size: 20px; margin-bottom: 6px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+    .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; }
+    .value { font-size: 14px; font-weight: 700; margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+    th { background: #f1f5f9; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
+    .section { margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <h1>Relatório do Plantão - Fisioterapia</h1>
+  <div class="subtitle">Gerado em {{ report.created_at|date:"d/m/Y H:i" }}</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="label">Profissional</div>
+      <div class="value">{{ report.user.get_full_name|default:report.user.username }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Data</div>
+      <div class="value">{{ report.report_date|date:"d/m/Y" }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Plantão</div>
+      <div class="value">{{ report.get_shift_type_display }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Atendimentos</div>
+      <div class="value">{{ report.attendances }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Recusas</div>
+      <div class="value">{{ report.refusals }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Região</div>
+      <div class="value">{{ report.body_part }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Procedimentos registrados</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Região</th>
+          <th>Quantidade</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in procedures %}
+        <tr>
+          <td>{{ item.get_body_part_display }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.observation|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">Nenhum procedimento registrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if report.observations %}
+  <div class="section">
+    <div class="label">Observações</div>
+    <div class="card" style="margin-top: 8px;">
+      <div class="value" style="font-size: 12px; font-weight: 500;">{{ report.observations }}</div>
+    </div>
+  </div>
+  {% endif %}
+</body>
+</html>

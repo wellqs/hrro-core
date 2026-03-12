@@ -1,0 +1,91 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Fisioterapia - Relatório{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
+      <h1 class="text-xl font-semibold text-slate-800">{% if report %}Editar relatório{% else %}Novo relatório{% endif %}</h1>
+      <p class="text-sm text-slate-500">Registro de relatórios da equipe assistencial</p>
+    </div>
+    <a href="{% url 'fisioterapia:coordenador' %}" class="btn btn-secondary btn-sm">Voltar</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-base font-semibold text-slate-800 m-0">Dados do plantão</h2>
+    </div>
+    <div class="card-body">
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% if report %}
+          <input type="hidden" name="report_id" value="{{ report.id }}">
+        {% endif %}
+
+        <div class="grid gap-4 md:grid-cols-3">
+          <div>
+            <label class="form-label">Profissional *</label>
+            <select name="user_id" class="form-select" required>
+              <option value="">Selecione</option>
+              {% for u in users %}
+                <option value="{{ u.id }}" {% if selected_user_id and selected_user_id|add:'' == u.id|add:'' %}selected{% endif %}>
+                  {{ u.get_full_name|default:u.username }}{% if not u.is_active %} (inativo){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Data do plantão *</label>
+            <input type="date" name="report_date" class="form-control" required value="{% if report %}{{ report.report_date|date:'Y-m-d' }}{% endif %}">
+          </div>
+          <div>
+            <label class="form-label">Tipo de plantão *</label>
+            <select name="shift_type" class="form-select" required>
+              <option value="">Selecione</option>
+              <option value="h6" {% if report and report.shift_type == "h6" %}selected{% endif %}>6 horas</option>
+              <option value="h12" {% if report and report.shift_type == "h12" %}selected{% endif %}>12 horas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border rounded-lg overflow-hidden">
+          <div class="grid grid-cols-12 bg-slate-50 text-slate-600 text-xs font-semibold">
+            <div class="col-span-4 px-3 py-2">Região do corpo</div>
+            <div class="col-span-2 px-3 py-2">Quantidade</div>
+            <div class="col-span-6 px-3 py-2">Observação</div>
+          </div>
+          {% for part in body_parts %}
+          <div class="grid grid-cols-12 border-t">
+            <div class="col-span-4 px-3 py-2 text-sm">{{ part.label }}</div>
+            <div class="col-span-2 px-3 py-2">
+              <input type="number" min="0" name="bp_{{ part.key }}_qty" class="form-control" placeholder="0" value="{% if part.qty %}{{ part.qty }}{% endif %}">
+            </div>
+            <div class="col-span-6 px-3 py-2">
+              <input type="text" name="bp_{{ part.key }}_obs" class="form-control" placeholder="Observação" value="{% if part.obs %}{{ part.obs }}{% endif %}">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="form-label">Recusas de atendimento</label>
+            <input type="number" min="0" name="refusals" class="form-control" placeholder="Ex: 2" value="{% if report %}{{ report.refusals }}{% endif %}">
+          </div>
+          <div>
+            <label class="form-label">Observação de recusas</label>
+            <input type="text" name="refusals_note" class="form-control" placeholder="Descreva o motivo" value="{% if report %}{{ report.refusals_note }}{% endif %}">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <a href="{% url 'fisioterapia:coordenador' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary">{% if report %}Salvar alterações{% else %}Salvar relatório{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

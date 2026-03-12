@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Fisioterapia - Coordenador{% endblock %}
 
@@ -8,6 +8,19 @@
 
 {% block content %}
 <div class="space-y-6">
+  <style>
+    .btn-action {
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 0.95rem !important;
+      line-height: 38px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 0.875rem;
+    }
+  </style>
   <div class="flex items-center justify-between">
     <div>
       <p class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fisioterapia</p>
@@ -15,6 +28,8 @@
       <p class="text-sm text-slate-500">Acompanhe a produtividade da equipe</p>
     </div>
     <div class="d-flex gap-2">
+      <a href="{% url 'fisioterapia:coordenador_report_new' %}" class="btn btn-primary btn-sm">Novo relatório</a>
+      <a href="{% url 'fisioterapia:coordenador_reports_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">Exportar PDF</a>
       <a href="{% url 'fisioterapia:equipe' %}" class="btn btn-primary btn-sm">Equipe</a>
       <a href="{% url 'fisioterapia:home' %}" class="btn btn-secondary btn-sm">Voltar</a>
     </div>
@@ -97,6 +112,33 @@
       <h2 class="text-base font-semibold text-slate-800 m-0">Relatórios registrados</h2>
     </div>
     <div class="card-body p-0">
+      <div class="p-3 border-bottom">
+        <form method="get" class="grid gap-3 md:grid-cols-4">
+          <div>
+            <label class="form-label mb-1">Profissional</label>
+            <select name="user_id" class="form-select form-select-sm">
+              <option value="">Todos</option>
+              {% for u in users_filter %}
+                <option value="{{ u.id }}" {% if filter_user_id and filter_user_id|add:'' == u.id|add:'' %}selected{% endif %}>
+                  {{ u.get_full_name|default:u.username }}{% if not u.is_active %} (inativo){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label mb-1">Data inicial</label>
+            <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filter_date_from }}">
+          </div>
+          <div>
+            <label class="form-label mb-1">Data final</label>
+            <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filter_date_to }}">
+          </div>
+          <div class="d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+            <a href="{% url 'fisioterapia:coordenador' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+          </div>
+        </form>
+      </div>
       <div class="table-responsive">
         <table class="table mb-0">
           <thead class="table-light">
@@ -107,6 +149,7 @@
               <th>Atendimentos</th>
               <th>Recusas</th>
               <th>Região</th>
+              <th class="text-end">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -118,10 +161,20 @@
               <td>{{ report.attendances }}</td>
               <td>{{ report.refusals }}</td>
               <td>{{ report.body_part }}</td>
+              <td class="text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                  <a href="{% url 'fisioterapia:coordenador_report_detail' report.id %}" class="btn btn-secondary text-white btn-action">Visualizar</a>
+                  <a href="{% url 'fisioterapia:coordenador_report_edit' report.id %}" class="btn btn-warning text-white btn-action">Editar</a>
+                  <form method="post" action="{% url 'fisioterapia:coordenador_report_delete' report.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger text-white btn-action" onclick="return confirm('Deseja excluir este relatório?');">Excluir</button>
+                  </form>
+                </div>
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" class="text-center text-slate-500 py-4">Nenhum relatório registrado.</td>
+              <td colspan="7" class="text-center text-slate-500 py-4">Nenhum relatório registrado.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -182,3 +235,4 @@
   });
 </script>
 {% endblock %}
+

@@ -76,3 +76,24 @@ class FisioReportProcedure(models.Model):
 
     def __str__(self):
         return f"{self.report_id} - {self.body_part} ({self.quantity})"
+
+
+class FisioUserAudit(models.Model):
+    ACTION_CHOICES = [
+        ("deactivated", "Desativado"),
+        ("reactivated", "Reativado"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="fisio_audits")
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    performed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name="fisio_audit_actions")
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Auditoria de Usuário (Fisio)"
+        verbose_name_plural = "Auditorias de Usuário (Fisio)"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_action_display()} ({self.created_at:%d/%m/%Y})"

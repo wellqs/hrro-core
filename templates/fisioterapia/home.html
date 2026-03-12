@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Fisioterapia{% endblock %}
 
@@ -29,7 +29,7 @@
         </span>
         Fisioterapia — HRRO
       </div>
-      <h1 class="text-4xl font-bold sm:text-5xl">Bem-vindo(a) ao Setor de Fisioterapia</h1>
+      <h1 class="text-4xl font-bold sm:text-5xl">Olá, {{ user_display }}!</h1>
       <p class="text-lg leading-relaxed text-emerald-50">
         Organize atendimentos, registre relatórios diários e acompanhe indicadores assistenciais com clareza.
       </p>
@@ -101,7 +101,7 @@
           </div>
           <div class="space-y-1">
             <h3 class="text-lg font-bold">Coordenador</h3>
-            <p class="text-sm text-emerald-100">Indicadores, equipe e visão gerencial.</p>
+            <p class="text-sm text-emerald-100">Indicadores, equipe e Visão gerencial.</p>
           </div>
         </div>
       </a>
@@ -127,7 +127,7 @@
           </div>
           <div class="space-y-1">
             <h3 class="text-lg font-bold">Assistência</h3>
-            <p class="text-sm text-slate-200">Relatórios diários e acompanhamento assistencial.</p>
+            <p class="text-sm text-slate-200">relatórios diários e acompanhamento assistencial.</p>
           </div>
         </div>
       </a>
@@ -148,9 +148,11 @@
   </section>
 
   <footer class="mt-12 border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-    <p class="mt-1">Sistema Interno de Apoio à Gestão.</p>
+    <p class="mt-1">Sistema Interno de Apoio à gestão.</p>
     <p>HRRO • Fisioterapia</p>
   </footer>
 
 </main>
 {% endblock %}
+
+

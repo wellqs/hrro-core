@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatórios Fisioterapia</title>
+  <style>
+    body { font-family: "Arial", sans-serif; color: #0f172a; margin: 32px; }
+    h1 { font-size: 20px; margin-bottom: 6px; }
+    .subtitle { color: #64748b; font-size: 12px; margin-bottom: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+    th { background: #f1f5f9; text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
+  </style>
+</head>
+<body>
+  <h1>Relatórios de Fisioterapia</h1>
+  <div class="subtitle">Gerado em {{ generated_at|date:"d/m/Y" }}</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Profissional</th>
+        <th>Data</th>
+        <th>Plantão</th>
+        <th>Atendimentos</th>
+        <th>Recusas</th>
+        <th>Região</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td>{{ report.user.get_full_name|default:report.user.username }}</td>
+        <td>{{ report.report_date|date:"d/m/Y" }}</td>
+        <td>{{ report.get_shift_type_display }}</td>
+        <td>{{ report.attendances }}</td>
+        <td>{{ report.refusals }}</td>
+        <td>{{ report.body_part }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">Nenhum relatório encontrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
