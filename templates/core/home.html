@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Início — HRRO{% endblock %}
+
+{% block content %}
+{# Cabeçalho de boas-vindas #}
+<div class="flex flex-col gap-1 mb-2">
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Portal de Módulos</p>
+    <h1 class="text-2xl font-bold text-slate-800">Bem-vindo, {{ user.get_full_name|default:user.username }}</h1>
+    <p class="text-sm text-slate-500">Selecione um módulo para começar</p>
+</div>
+
+{# ── Módulos Ativos ─────────────────────────────────────────────── #}
+<div>
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Módulos Disponíveis</p>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+        {# Recepção #}
+        {% if can_reception or user.is_superuser %}
+        <a href="{% url 'reception_home' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                <i class="bi bi-person-check fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">Recepção</span>
+                    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Cadastro de pacientes, triagem e gestão de fila de atendimento.</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-lock fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-500">Recepção</span>
+                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-snug">Cadastro de pacientes, triagem e gestão de fila de atendimento.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {# NIR #}
+        {% if can_nir or user.is_superuser %}
+        <a href="{% url 'nir_panel' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition-colors">
+                <i class="bi bi-hospital fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">NIR — Regulação de Leitos</span>
+                    <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Painel de leitos, internações, altas e histórico de ocupação.</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-lock fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-500">NIR — Regulação de Leitos</span>
+                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-snug">Painel de leitos, internações, altas e histórico de ocupação.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Centro Cirúrgico #}
+        <a href="{% url 'surgery_list' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-100 transition-colors">
+                <i class="bi bi-scissors fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">Centro Cirúrgico</span>
+                    <span class="text-xs bg-violet-50 text-violet-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Agendamento, fluxo setorial e controle de cirurgias.</p>
+            </div>
+        </a>
+
+        {# NSP #}
+        {% if can_nsp or user.is_superuser %}
+        <a href="{% url 'nsp_landing' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
+                <i class="bi bi-shield-check fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">NSP — Segurança do Paciente</span>
+                    <span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-lock fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-500">NSP — Segurança do Paciente</span>
+                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-snug">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Indicadores #}
+        {% if can_nsp or user.is_superuser %}
+        <a href="{% url 'indicator_dashboard' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition-colors">
+                <i class="bi bi-bar-chart-line fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">Indicadores</span>
+                    <span class="text-xs bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Painel de indicadores por setor, histórico e análise comparativa.</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-lock fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-500">Indicadores</span>
+                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-snug">Painel de indicadores por setor, histórico e análise comparativa.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Fisioterapia #}
+        {% if can_fisio or user.is_superuser %}
+        <a href="{% url 'fisioterapia:home' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
+            <div class="h-12 w-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
+                <i class="bi bi-heart-pulse fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-800">Fisioterapia</span>
+                    <span class="text-xs bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-snug">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-lock fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-500">Fisioterapia</span>
+                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                </div>
+                <p class="text-sm text-slate-400 leading-snug">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{# ── Módulos em Implantação ─────────────────────────────────────── #}
+<div>
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Em Implantação</p>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+        {# Exames #}
+        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-file-medical fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-400">Exames</span>
+                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                </div>
+                <p class="text-xs text-slate-400 leading-snug">Solicitação, controle e resultados de exames laboratoriais e imagem.</p>
+            </div>
+        </div>
+
+        {# Pacientes #}
+        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-people fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-400">Pacientes</span>
+                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                </div>
+                <p class="text-xs text-slate-400 leading-snug">Prontuário unificado, histórico clínico e documentos do paciente.</p>
+            </div>
+        </div>
+
+        {# Faturamento #}
+        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-cash-coin fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-400">Faturamento</span>
+                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                </div>
+                <p class="text-xs text-slate-400 leading-snug">Faturamento de procedimentos, convênios e relatórios financeiros.</p>
+            </div>
+        </div>
+
+        {# CME #}
+        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
+            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
+                <i class="bi bi-thermometer-half fs-4"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-slate-400">CME</span>
+                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                </div>
+                <p class="text-xs text-slate-400 leading-snug">Central de material e esterilização, rastreabilidade de instrumentais.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

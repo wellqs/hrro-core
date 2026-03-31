@@ -62,7 +62,11 @@ class NIRPermissionMixin(UserPassesTestMixin):
 
     def handle_no_permission(self):
         messages.error(self.request, 'Você não tem permissão para acessar esta área do NIR.')
-        return redirect('dashboard')
+        return redirect('home')
+
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = "core/home.html"
 
 
 # --- Views existentes (sem alterações) ---
@@ -544,7 +548,7 @@ class IndicatorHistoryView(LoginRequiredMixin, ListView):
 class IndicatorAnalysisView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'core/indicator_analysis.html'; NSP_GROUP_NAME = "NSP (NÚCLEO DE SEGURANÇA DO PACIENTE)"
     def test_func(self): user = self.request.user; return user.is_superuser or user.groups.filter(name=self.NSP_GROUP_NAME).exists()
-    def handle_no_permission(self): messages.error(self.request, "Você não tem permissão para acessar esta página."); return redirect('dashboard')
+    def handle_no_permission(self): messages.error(self.request, "Você não tem permissão para acessar esta página."); return redirect('home')
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs); context['page_title'] = "Análise de Indicadores NSP"; context['all_sectors'] = Sector.objects.order_by('name')
         start_date_str = self.request.GET.get('start_date'); end_date_str = self.request.GET.get('end_date'); sector_id_str = self.request.GET.get('sector')
@@ -711,38 +715,65 @@ class NSPEventoAdversoPDFView(LoginRequiredMixin, View):
 
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 
-# View para a página inicial do NIR com resumos das clínicas
+# View para a página inicial do NIR com todos os leitos agrupados por clínica
 class NIRPanelView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
     template_name = 'core/nir_landing.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        clinic_names = Bed.objects.filter(is_active=True).values_list('clinic', flat=True)
-        unique_clinics = {}
-        for name in clinic_names:
-            slug = nir_clinic_slug(name)
-            if slug not in unique_clinics:
-                unique_clinics[slug] = name
-        clinics = unique_clinics.values()
+        user = self.request.user
+        context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=NIR_GROUP_NAME).exists()
+
+        # Subquery para pegar a internação ativa de cada leito
+        active_hosp_subquery = Hospitalization.objects.filter(
+            bed=OuterRef('pk'),
+            discharge_date__isnull=True
+        ).order_by('-admission_date')
+
+        group_defs = OrderedDict([
+            ('A', {'label': 'Clínica A', 'badge': 'A'}),
+            ('B', {'label': 'Clínica B', 'badge': 'B'}),
+            ('C', {'label': 'Clínica C', 'badge': 'C'}),
+            ('EXTRA', {'label': 'EXTRA', 'badge': 'E'}),
+        ])
+
         clinic_data = []
-        for clinic_name in clinics:
-            total_beds = Bed.objects.filter(is_active=True, clinic=clinic_name).count()
-            occupied_beds = Hospitalization.objects.filter(
-                bed__clinic=clinic_name,
-                bed__is_active=True,
-                discharge_date__isnull=True
-            ).count()
-            vacant_beds = total_beds - occupied_beds
-            occupancy_rate = (occupied_beds / total_beds * 100) if total_beds > 0 else 0
+        for key, meta in group_defs.items():
+            if key in ('A', 'B', 'C'):
+                bed_qs = Bed.objects.filter(is_active=True, identifier__istartswith=key)
+            else:
+                bed_qs = Bed.objects.filter(is_active=True).exclude(identifier__regex=r'^[ABC]')
+
+            beds = (
+                bed_qs
+                .annotate(active_hospitalization_id=Subquery(active_hosp_subquery.values('id')[:1]))
+                .prefetch_related('hospitalizations', 'hospitalizations__patient')
+                .order_by('identifier')
+            )
+
+            # Anexa a internação ativa a cada leito
+            for bed in beds:
+                bed.active_hospitalization = next(
+                    (h for h in bed.hospitalizations.all() if h.id == bed.active_hospitalization_id),
+                    None
+                )
+
+            total = beds.count()
+            occupied = sum(1 for b in beds if b.active_hospitalization)
+            vacant = total - occupied
+
             clinic_data.append({
-                'name': clinic_name,
-                'total_beds': total_beds,
-                'occupied_beds': occupied_beds,
-                'vacant_beds': vacant_beds,
-                'occupancy_rate': round(occupancy_rate, 1),
-                'chart_data': [occupied_beds, vacant_beds],
-                'detail_url': reverse('clinic_bed_list', kwargs={'clinic_name_slug': nir_clinic_slug(clinic_name)})
+                'key': key,
+                'name': meta['label'],
+                'badge': meta['badge'],
+                'slug': key.lower(),
+                'total_beds': total,
+                'occupied_beds': occupied,
+                'vacant_beds': vacant,
+                'occupancy_rate': round(occupied / total * 100, 1) if total else 0,
+                'beds': beds,
             })
+
         context['clinic_data'] = clinic_data
         return context
 

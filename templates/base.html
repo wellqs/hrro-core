@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -38,6 +38,8 @@
             --hrro-surface: #ffffff;
             --hrro-border: #e2e8f0;
             --hrro-text: #0f172a;
+            --sidebar-w: 272px;
+            --sidebar-w-collapsed: 64px;
         }
         body {
             background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
@@ -60,11 +62,7 @@
         .card-body { padding: 1.5rem; }
         .container, .container-fluid { padding-left: 1rem; padding-right: 1rem; }
         /* Botões */
-        .btn {
-            border-radius: 12px;
-            font-weight: 600;
-            border: none;
-        }
+        .btn { border-radius: 12px; font-weight: 600; border: none; }
         .btn-primary { background: var(--hrro-navy); }
         .btn-primary:hover { background: #0b1322; }
         .btn-success { background: #22c55e; }
@@ -109,13 +107,23 @@
         .text-muted { color: #64748b !important; }
         .shadow-soft { box-shadow: 0 24px 50px -28px rgba(15,23,42,0.25); }
         .table-responsive { border: 1px solid var(--hrro-border); border-radius: 16px; overflow: hidden; background: #fff; }
-        /* Sidebar fallback (garante contraste mesmo sem Tailwind) */
-        .hrro-sidebar {
-            width: 280px;
+
+        /* ── Sidebar ─────────────────────────────────────────────────── */
+        #hrro-sidebar {
+            width: var(--sidebar-w);
+            min-width: var(--sidebar-w);
             background: var(--hrro-navy);
             color: #ffffff;
+            transition: width 0.22s ease, min-width 0.22s ease;
+            overflow: hidden;
         }
-        .hrro-sidebar .hrro-nav a {
+        #hrro-sidebar.collapsed {
+            width: var(--sidebar-w-collapsed) !important;
+            min-width: var(--sidebar-w-collapsed) !important;
+        }
+
+        /* Nav links */
+        #hrro-sidebar .hrro-nav a {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -123,55 +131,176 @@
             border-radius: 12px;
             color: rgba(255, 255, 255, 0.86);
             text-decoration: none;
+            white-space: nowrap;
+            transition: background 0.15s ease, padding 0.22s ease;
         }
-        .hrro-sidebar .hrro-nav a:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
+        #hrro-sidebar .hrro-nav a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        #hrro-sidebar .hrro-nav a.active { background: rgba(255,255,255,0.16); color: #fff; }
+
+        /* Estado retraído */
+        #hrro-sidebar.collapsed .sidebar-label,
+        #hrro-sidebar.collapsed .sidebar-section,
+        #hrro-sidebar.collapsed .sidebar-logo-text,
+        #hrro-sidebar.collapsed .sidebar-user-info,
+        #hrro-sidebar.collapsed .sidebar-logo-block {
+            display: none !important;
         }
-        .hrro-sidebar .hrro-nav a.active {
-            background: rgba(255, 255, 255, 0.16);
-            color: #ffffff;
+        #hrro-sidebar.collapsed .hrro-nav a {
+            justify-content: center;
+            padding: 10px 0;
+            gap: 0;
         }
+        #hrro-sidebar.collapsed .sidebar-toggle-row {
+            justify-content: center;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 10px 0;
+        }
+        #hrro-sidebar.collapsed .sidebar-footer {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Tooltip nos itens retraídos */
+        #hrro-sidebar.collapsed .hrro-nav a {
+            position: relative;
+        }
+        #hrro-sidebar.collapsed .hrro-nav a:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            left: calc(var(--sidebar-w-collapsed) - 4px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1e293b;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        /* Botão toggle */
+        #sidebar-toggle {
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            padding: 4px 6px;
+            transition: background 0.15s ease, color 0.15s ease;
+            flex-shrink: 0;
+        }
+        #sidebar-toggle:hover { background: rgba(255,255,255,0.18); color: #fff; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800">
     <div class="min-h-screen flex">
+
         <!-- Sidebar -->
         {% if request.resolver_match.url_name != 'login' %}
-        <aside class="hrro-sidebar hidden md:flex w-72 bg-hrro-navy text-white flex-col border-r border-slate-800/70 shadow-xl">
-            <div class="flex items-center gap-3 px-6 py-6">
-                <div class="h-10 w-10 rounded-2xl bg-slate-800/60 flex items-center justify-center">
-                    <i class="bi bi-hospital fs-5"></i>
+        <aside id="hrro-sidebar" class="hidden md:flex flex-col border-r border-slate-800/70 shadow-xl collapsed">
+
+            <!-- Cabeçalho: logo (some quando retraído) -->
+            <div class="sidebar-logo-block flex items-center gap-3 px-5 pt-5 pb-3">
+                <div class="h-9 w-9 rounded-xl bg-slate-800/60 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-hospital" style="font-size:1.1rem;"></i>
                 </div>
-                <div>
-                    <div class="text-lg font-semibold leading-tight">HRRO</div>
-                    <div class="text-xs text-slate-200/70 uppercase tracking-wide">Centro Cirúrgico</div>
+                <div class="sidebar-logo-text flex-1 min-w-0">
+                    <div class="text-base font-semibold leading-tight">HRRO</div>
+                    <div class="text-xs text-slate-200/60 uppercase tracking-wide">Sistema Hospitalar</div>
                 </div>
             </div>
+
+            <!-- Linha do toggle: sempre visível -->
+            <div class="sidebar-toggle-row flex items-center justify-end px-4 pb-3">
+                <button id="sidebar-toggle" title="Retrair/Expandir menu">
+                    <i class="bi bi-chevron-left" id="toggle-icon" style="font-size:0.85rem;"></i>
+                </button>
+            </div>
+
+            <!-- Navegação -->
             {% with current=request.resolver_match.url_name|default:'' %}
-            <nav class="hrro-nav flex-1 px-4 space-y-1">
-                <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if current == 'dashboard' %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
-                    <i class="bi bi-graph-up"></i><span>Dashboard Geral</span>
+            <nav class="hrro-nav flex-1 px-3 space-y-0.5 overflow-y-auto">
+
+                <a href="{% url 'home' %}"
+                   data-label="Início"
+                   class="{% if current == 'home' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2 flex-shrink-0"></i>
+                    <span class="sidebar-label">Início</span>
                 </a>
-                <a href="{% url 'nsp_landing' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if 'nsp' in request.path or 'indicator' in current %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
-                    <i class="bi bi-bar-chart-line"></i><span>NSP / Indicadores</span>
+
+                <div class="sidebar-section pt-3 pb-1 px-2 text-xs font-semibold uppercase tracking-widest text-slate-400/60">Módulos</div>
+
+                <a href="{% url 'reception_home' %}"
+                   data-label="Recepção"
+                   class="{% if 'reception' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-check flex-shrink-0"></i>
+                    <span class="sidebar-label">Recepção</span>
                 </a>
-                <a href="{% url 'fisioterapia:home' %}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm {% if 'fisioterapia' in request.path %}active bg-white/10 text-white{% else %}text-slate-200 hover:bg-white/10{% endif %}">
-                    <i class="bi bi-heart-pulse"></i><span>Fisioterapia</span>
+                <a href="{% url 'nir_panel' %}"
+                   data-label="NIR"
+                   class="{% if 'nir' in request.path %}active{% endif %}">
+                    <i class="bi bi-hospital flex-shrink-0"></i>
+                    <span class="sidebar-label">NIR</span>
                 </a>
+                <a href="{% url 'surgery_list' %}"
+                   data-label="Centro Cirúrgico"
+                   class="{% if 'surg' in request.path %}active{% endif %}">
+                    <i class="bi bi-scissors flex-shrink-0"></i>
+                    <span class="sidebar-label">Centro Cirúrgico</span>
+                </a>
+                <a href="{% url 'nsp_landing' %}"
+                   data-label="NSP"
+                   class="{% if 'nsp' in request.path %}active{% endif %}">
+                    <i class="bi bi-shield-check flex-shrink-0"></i>
+                    <span class="sidebar-label">NSP</span>
+                </a>
+                <a href="{% url 'indicator_dashboard' %}"
+                   data-label="Indicadores"
+                   class="{% if 'indicator' in current %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line flex-shrink-0"></i>
+                    <span class="sidebar-label">Indicadores</span>
+                </a>
+                <a href="{% url 'fisioterapia:home' %}"
+                   data-label="Fisioterapia"
+                   class="{% if 'fisioterapia' in request.path %}active{% endif %}">
+                    <i class="bi bi-heart-pulse flex-shrink-0"></i>
+                    <span class="sidebar-label">Fisioterapia</span>
+                </a>
+
+                <div class="sidebar-section pt-3 pb-1 px-2 text-xs font-semibold uppercase tracking-widest text-slate-400/60">Outros</div>
+
+                <a href="{% url 'dashboard' %}"
+                   data-label="Dashboard Cirúrgico"
+                   class="{% if current == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-graph-up flex-shrink-0"></i>
+                    <span class="sidebar-label">Dashboard Cirúrgico</span>
+                </a>
+
             </nav>
             {% endwith %}
+
+            <!-- Rodapé com usuário -->
             {% if user.is_authenticated %}
-            <div class="px-6 py-5 border-t border-slate-800/70">
-                <div class="text-xs text-slate-200/70 mb-2">Usuário</div>
-                <div class="flex items-center justify-between">
-                    <span class="font-semibold">{{ user.username }}</span>
-                    <form action="{% url 'logout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white">Sair</button>
-                    </form>
+            <div class="sidebar-footer flex items-center gap-2 px-4 py-4 border-t border-slate-800/70">
+                <div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0 text-xs font-bold uppercase">
+                    {{ user.username|slice:":1" }}
                 </div>
+                <div class="sidebar-user-info flex-1 min-w-0">
+                    <div class="text-sm font-semibold truncate">{{ user.username }}</div>
+                </div>
+                <form action="{% url 'logout' %}" method="post" class="sidebar-user-info">
+                    {% csrf_token %}
+                    <button type="submit" title="Sair"
+                        class="text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
             </div>
             {% endif %}
         </aside>
@@ -179,43 +308,77 @@
 
         <!-- Conteúdo principal -->
         <main class="flex-1 min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
-                {% if request.resolver_match.url_name == 'login' %}
-                    <div class="min-h-screen flex items-center justify-center px-4 py-6">
-                        <div class="w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl shadow-slate-300/60 bg-white">
-                {% else %}
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                {% endif %}
+            {% if request.resolver_match.url_name == 'login' %}
+                <div class="min-h-screen flex items-center justify-center px-4 py-6">
+                    <div class="w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl shadow-slate-300/60 bg-white">
+            {% else %}
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {% endif %}
 
-                {% if messages %}
-                    <div class="space-y-2 {% if request.resolver_match.url_name == 'login' %}mb-6{% endif %}">
-                        {% for message in messages %}
-                            <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border shadow-sm
-                                {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-900{% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
-                                <i class="bi bi-info-circle mt-0.5"></i>
-                                <div class="text-sm">{{ message }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                {% if request.resolver_match.url_name != 'login' %}
-                    <div class="grid gap-6">
-                {% endif %}
-                        {% block content %}{% endblock %}
-                {% if request.resolver_match.url_name != 'login' %}
-                    </div>
-                {% endif %}
-
+            {% if messages %}
+                <div class="space-y-2 {% if request.resolver_match.url_name == 'login' %}mb-6{% endif %}">
+                    {% for message in messages %}
+                        <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border shadow-sm
+                            {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-900
+                            {% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
+                            {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-900
+                            {% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
+                            <i class="bi bi-info-circle mt-0.5"></i>
+                            <div class="text-sm">{{ message }}</div>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% if request.resolver_match.url_name == 'login' %}
-                    </div>
-                {% endif %}
+            {% endif %}
+
+            {% if request.resolver_match.url_name != 'login' %}
+                <div class="grid gap-6">
+            {% endif %}
+                    {% block content %}{% endblock %}
+            {% if request.resolver_match.url_name != 'login' %}
+                </div>
+            {% endif %}
+
+            </div>
+            {% if request.resolver_match.url_name == 'login' %}
+                </div>
+            {% endif %}
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block extra_js %}{% endblock %}
+
+    <script>
+    (function () {
+        const sidebar = document.getElementById('hrro-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const toggleIcon = document.getElementById('toggle-icon');
+        if (!sidebar || !toggleBtn) return;
+
+        const KEY = 'hrro-sidebar-collapsed';
+
+        function applyState(collapsed) {
+            if (collapsed) {
+                sidebar.classList.add('collapsed');
+                toggleIcon.className = 'bi bi-chevron-right';
+            } else {
+                sidebar.classList.remove('collapsed');
+                toggleIcon.className = 'bi bi-chevron-left';
+            }
+        }
+
+        // Padrão: retraído (só abre se o usuário explicitamente expandiu antes)
+        const stored = localStorage.getItem(KEY);
+        const isCollapsed = stored === null ? true : stored === '1';
+        applyState(isCollapsed);
+
+        toggleBtn.addEventListener('click', function () {
+            const nowCollapsed = !sidebar.classList.contains('collapsed');
+            applyState(nowCollapsed);
+            localStorage.setItem(KEY, nowCollapsed ? '1' : '0');
+        });
+    })();
+    </script>
 </body>
 </html>
-
