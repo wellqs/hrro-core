@@ -715,6 +715,17 @@ class NSPEventoAdversoPDFView(LoginRequiredMixin, View):
 
 # --- VIEWS DO NIR (ATUALIZADAS) ---
 
+# Página de entrada do NIR
+class NIREntryView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
+    template_name = 'core/nir_entry.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context['user_display'] = user.first_name or user.username
+        context['can_edit_nir'] = user.is_superuser or user.groups.filter(name=NIR_GROUP_NAME).exists()
+        return context
+
 # View para a página inicial do NIR com todos os leitos agrupados por clínica
 class NIRPanelView(LoginRequiredMixin, NIRPermissionMixin, TemplateView):
     template_name = 'core/nir_landing.html'

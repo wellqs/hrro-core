@@ -120,6 +120,11 @@ A arquitetura é modular, baseada em Django, com separação por apps e template
 4. Relatórios diários de fisioterapia;
 5. Dashboards e indicadores.
 
+### 5.1 Regra de Base Única de Pacientes (NIR)
+Todo setor que necessitar de pacientes deve utilizar **exclusivamente** a base central do NIR.
+Não é permitido manter cadastros paralelos ou criar pacientes fora do fluxo central.
+Isso garante rastreabilidade, consistência de dados e integração entre setores.
+
 ---
 
 ## 6. Modelo de Dados

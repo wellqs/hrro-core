@@ -242,7 +242,7 @@
                     <i class="bi bi-person-check flex-shrink-0"></i>
                     <span class="sidebar-label">Recepção</span>
                 </a>
-                <a href="{% url 'nir_panel' %}"
+                <a href="{% url 'nir_entry' %}"
                    data-label="NIR"
                    class="{% if 'nir' in request.path %}active{% endif %}">
                     <i class="bi bi-hospital flex-shrink-0"></i>
@@ -259,12 +259,6 @@
                    class="{% if 'nsp' in request.path %}active{% endif %}">
                     <i class="bi bi-shield-check flex-shrink-0"></i>
                     <span class="sidebar-label">NSP</span>
-                </a>
-                <a href="{% url 'indicator_dashboard' %}"
-                   data-label="Indicadores"
-                   class="{% if 'indicator' in current %}active{% endif %}">
-                    <i class="bi bi-bar-chart-line flex-shrink-0"></i>
-                    <span class="sidebar-label">Indicadores</span>
                 </a>
                 <a href="{% url 'fisioterapia:home' %}"
                    data-label="Fisioterapia"
