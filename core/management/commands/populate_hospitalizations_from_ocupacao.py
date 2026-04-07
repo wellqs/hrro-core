@@ -1,10 +1,12 @@
 import csv
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
+from django.utils import timezone
 
-from core.models import Bed, Patient, Hospitalization
+from core.models import Bed, Hospitalization, Patient
 
 
 class Command(BaseCommand):
@@ -18,13 +20,18 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--encoding",
-            default="latin-1",
-            help="Encoding do CSV (default: latin-1).",
+            default="utf-8-sig",
+            help="Encoding do CSV (default: utf-8-sig).",
+        )
+        parser.add_argument(
+            "--delimiter",
+            default=";",
+            help="Delimitador do CSV (default: ;).",
         )
         parser.add_argument(
             "--clear",
             action="store_true",
-            help="Remove todas as internacoes ativas antes de importar.",
+            help="Remove todas as internacoes antes de importar.",
         )
 
     def handle(self, *args, **options):
@@ -37,92 +44,122 @@ class Command(BaseCommand):
             Hospitalization.objects.all().delete()
             self.stdout.write(self.style.WARNING("Internacoes removidas antes da importacao."))
 
+        def normalize_fieldnames(fieldnames):
+            normalized = []
+            for index, field in enumerate(fieldnames or []):
+                key = (field or "").strip()
+                normalized.append(key or f"__blank_{index}")
+            return normalized
+
+        def get_first(row, *keys):
+            for key in keys:
+                value = (row.get(key) or "").strip()
+                if value:
+                    return value
+            return ""
+
         def parse_date(value):
             if not value:
                 return None
             value = value.strip()
             for fmt in ("%d/%m/%Y", "%d/%m/%y"):
                 try:
-                    return datetime.strptime(value, fmt)
+                    return timezone.make_aware(
+                        datetime.strptime(value, fmt),
+                        timezone.get_current_timezone(),
+                    )
                 except ValueError:
                     continue
             return None
 
+        def infer_clinic(identifier):
+            prefix = (identifier or "").strip().upper()[:1]
+            if prefix == "A":
+                return "CLÍNICA A"
+            if prefix == "B":
+                return "CLÍNICA B"
+            if prefix == "C":
+                return "CLÍNICA C"
+            return "EXTRA"
+
         created_patients = 0
+        updated_patients = 0
         created_beds = 0
+        updated_beds = 0
         created_hosp = 0
+        skipped_rows = 0
 
         with csv_path.open("r", encoding=options["encoding"], newline="") as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter=options["delimiter"])
+            reader.fieldnames = normalize_fieldnames(reader.fieldnames)
+
             if "LEITO" not in reader.fieldnames:
                 self.stderr.write(self.style.ERROR("CSV nao possui coluna 'LEITO'."))
                 return
 
-            for row in reader:
-                bed_raw = (row.get("LEITO") or "").strip()
-                if not bed_raw:
-                    continue
+            with transaction.atomic():
+                for row in reader:
+                    bed_raw = get_first(row, "LEITO")
+                    patient_name = get_first(row, "PACIENTE")
+                    if not bed_raw or not patient_name:
+                        skipped_rows += 1
+                        continue
 
-                patient_name = (row.get("PACIENTE") or "").strip()
-                if not patient_name:
-                    continue
+                    prontuario = get_first(row, "REGISTRO", "PRONTUÁRIO", "PRONTUARIO")
+                    admission_raw = get_first(row, "DATA DE ENTRADA", "DATA ADM HOSP ORIGEM", "DATA DE ADMISSÃO", "DATA DE ADMISSAO")
+                    procedure_planned = get_first(row, "PROCED")
+                    current_status = get_first(row, "CONDUTA")
+                    expected_surgery_raw = get_first(row, "PREVISÃO ORTOPÉDICA", "PREVISAO ORTOPAEDICA")
+                    date_of_birth_raw = get_first(row, "DATA NASC", "DATA DE NASCIMENTO")
+                    diagnosis_raw = get_first(row, "HIPÓTESE DIAGNÓSTICO", "HIPOTESE DIAGNOSTICO")
+                    pending_exams_raw = get_first(row, "EXAMES PENDENTES")
+                    infected_raw = get_first(row, "INFECTADO")
 
-                prontuario = (row.get("PRONTUÁRIO") or row.get("PRONTUARIO") or "").strip()
-                admission_raw = (row.get("DATA DE ADMISSÃO") or row.get("DATA DE ADMISSAO") or "").strip()
-                procedure_planned = (row.get("PROCED") or row.get("HIPÓTESE DIAGNÓSTICO") or row.get("HIPOTESE DIAGNOSTICO") or "").strip()
-                current_status = (row.get("CONDUTA") or "").strip()
-                expected_surgery_raw = (row.get("PREVISAO ORTOPAÉDICA") or row.get("PREVISAO ORTOPAEDICA") or "").strip()
+                    admission_date = parse_date(admission_raw)
+                    expected_surgery_date = parse_date(expected_surgery_raw)
+                    date_of_birth = parse_date(date_of_birth_raw)
 
-                admission_date = parse_date(admission_raw)
-                expected_surgery_date = parse_date(expected_surgery_raw)
-
-                # Bed
-                bed_obj = Bed.objects.filter(identifier=bed_raw).first()
-                if not bed_obj:
-                    clinic = bed_raw.split("/")[0].strip()
-                    bed_obj = Bed.objects.create(
+                    bed_obj, bed_created = Bed.objects.update_or_create(
                         identifier=bed_raw,
-                        clinic=clinic,
-                        category="NORMAL",
-                        is_active=True,
+                        defaults={
+                            "clinic": infer_clinic(bed_raw),
+                            "category": "INFECTADO" if infected_raw else "NORMAL",
+                            "is_active": True,
+                        },
                     )
-                    created_beds += 1
-
-                # Patient
-                if prontuario:
-                    patient_obj = Patient.objects.filter(medical_record_number=prontuario).first()
-                else:
-                    patient_obj = None
-                if not patient_obj:
-                    if not prontuario:
-                        # fallback: use name as unique-ish key (no guarantee)
-                        existing = Patient.objects.filter(name=patient_name).first()
-                        if existing:
-                            patient_obj = existing
-                        else:
-                            patient_obj = Patient.objects.create(
-                                name=patient_name,
-                                medical_record_number=f"TEMP-{bed_raw}",
-                            )
-                            created_patients += 1
+                    if bed_created:
+                        created_beds += 1
                     else:
-                        patient_obj = Patient.objects.create(
-                            name=patient_name,
-                            medical_record_number=prontuario,
-                        )
-                        created_patients += 1
+                        updated_beds += 1
 
-                # Hospitalization
-                Hospitalization.objects.create(
-                    patient=patient_obj,
-                    bed=bed_obj,
-                    admission_date=admission_date or datetime.now(),
-                    procedure_planned=procedure_planned or None,
-                    expected_surgery_date=expected_surgery_date.date() if expected_surgery_date else None,
-                    current_status=current_status or None,
-                )
-                created_hosp += 1
+                    patient_obj, patient_created = Patient.objects.update_or_create(
+                        medical_record_number=prontuario or f"TEMP-{bed_raw}",
+                        defaults={
+                            "name": patient_name,
+                            "date_of_birth": date_of_birth.date() if date_of_birth else None,
+                        },
+                    )
+                    if patient_created:
+                        created_patients += 1
+                    else:
+                        updated_patients += 1
+
+                    Hospitalization.objects.create(
+                        patient=patient_obj,
+                        bed=bed_obj,
+                        admission_date=admission_date or timezone.now(),
+                        procedure_planned=procedure_planned or None,
+                        expected_surgery_date=expected_surgery_date.date() if expected_surgery_date else None,
+                        current_status=current_status or None,
+                        hipotese_diagnostica=diagnosis_raw or None,
+                        exames_pendentes=pending_exams_raw or None,
+                        necessidade_isolamento="Sim" if infected_raw else None,
+                    )
+                    created_hosp += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f"Importacao concluida. Pacientes: {created_patients}, Leitos: {created_beds}, Internacoes: {created_hosp}"
+            "Importacao concluida. "
+            f"Pacientes criados: {created_patients}, atualizados: {updated_patients}, "
+            f"Leitos criados: {created_beds}, atualizados: {updated_beds}, "
+            f"Internacoes criadas: {created_hosp}, linhas ignoradas: {skipped_rows}"
         ))

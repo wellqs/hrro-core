@@ -47,6 +47,7 @@
                 <th>Tempos (dias)</th>
                 <th>Registrado por</th>
                 <th>Observações</th>
+                <th class="text-end">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -68,6 +69,12 @@
                   </td>
                   <td class="text-sm">{{ r.created_by.username|default:"-" }}</td>
                   <td class="text-sm">{{ r.observacoes|default:"-" }}</td>
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-2">
+                      <a href="{% url 'nsp_evento_adverso_edit' r.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                      <a href="{% url 'nsp_evento_adverso_delete' r.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                    </div>
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

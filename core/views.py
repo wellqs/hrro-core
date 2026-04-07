@@ -1,4 +1,4 @@
-﻿from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, FormView
+﻿from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, FormView, DeleteView
 from django.views import View
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
@@ -15,7 +15,7 @@ from django.contrib import messages
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Count, Q, Min, Max, Sum, Avg, OuterRef, Subquery, Case, When
-from django.db import models
+from django.db import models, transaction
 from django.db.models.functions import TruncMonth, TruncDay
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 import unicodedata
@@ -424,9 +424,6 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
         def sum_bool(field):
             return Sum(Case(When(**{field: True}, then=1), default=0, output_field=models.IntegerField()))
 
-        def sum_any(field):
-            return Sum(Case(When(**{f"{field}__isnull": False}, then=1), default=0, output_field=models.IntegerField()))
-
         agg = qs.aggregate(
             pulseira=sum_bool('pulseira_identificacao'),
             medicacao=sum_bool('identificacao_medicacao'),
@@ -435,8 +432,8 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
             flebite=sum_bool('flebite'),
             leito=sum_bool('identificacao_leito'),
             estruturas=sum_bool('nao_conformidade_estruturas'),
-            acesso=sum_any('tempo_acesso_dias'),
-            roupa=sum_any('tempo_roupa_cama_dias'),
+            acesso=Avg('tempo_acesso_dias'),
+            roupa=Avg('tempo_roupa_cama_dias'),
             pacientes=Count('patient', distinct=True),
         )
         for k, v in agg.items():
@@ -458,8 +455,9 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
         total_pacientes = Patient.objects.count()
         pulseira_pacientes = qs.filter(pulseira_identificacao=True).values('patient').distinct().count()
         total_pulseiras = pulseira_pacientes
-        taxa_inconformidade = round((total_ea_nsp / total_pacientes) * 100, 2) if total_pacientes else 0
-        taxa_conformidade = round(100 - taxa_inconformidade, 2) if total_pacientes else 0
+        total_sem_pulseira = max(total_pacientes - total_pulseiras, 0)
+        taxa_conformidade = round((total_pulseiras / total_pacientes) * 100, 2) if total_pacientes else 0
+        taxa_inconformidade = round((total_sem_pulseira / total_pacientes) * 100, 2) if total_pacientes else 0
 
         context['stats'] = {
             'total_ea_nsp': total_ea_nsp,
@@ -468,14 +466,15 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
             'total_ea_flebite': agg['flebite'],
             'total_pacientes': total_pacientes,
             'total_pulseiras': total_pulseiras,
+            'total_sem_pulseira': total_sem_pulseira,
             'taxa_conformidade': taxa_conformidade,
             'taxa_inconformidade': taxa_inconformidade,
             'total_ident_medicacao': agg['medicacao'],
             'total_lesao_pressao': agg['lesao'],
             'total_ident_leito': agg['leito'],
             'total_nao_conformidade': agg['estruturas'],
-            'total_tempo_acesso': agg['acesso'],
-            'total_tempo_roupa': agg['roupa'],
+            'total_tempo_acesso': round(agg['acesso'], 2) if agg['acesso'] else 0,
+            'total_tempo_roupa': round(agg['roupa'], 2) if agg['roupa'] else 0,
         }
 
         monthly = AdverseEventReport.objects.filter(date_evento__year=year).annotate(
@@ -503,6 +502,10 @@ class IndicatorDashboardView(LoginRequiredMixin, ListView):
             (7, 'Jul'), (8, 'Ago'), (9, 'Set'), (10, 'Out'), (11, 'Nov'), (12, 'Dez')
         ]
         context['mes_selecionado'] = month
+        month_map = dict(context['meses'])
+        context['periodo_label'] = f"{month_map.get(month, 'Ano inteiro')} de {year}" if month else f"Ano inteiro de {year}"
+        context['titulo'] = 'NSP Dashboard'
+        context['setores'] = list(Sector.objects.order_by('name').values_list('name', flat=True))
         return context
     def post(self, request, *args, **kwargs):
         date_str = request.POST.get('date'); period = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -579,9 +582,15 @@ class NSPClinicLandingView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        group_meta = {
+            'A': {'badge': 'A', 'name': 'Clínica A'},
+            'B': {'badge': 'B', 'name': 'Clínica B'},
+            'C': {'badge': 'C', 'name': 'Clínica C'},
+            'OUTROS': {'badge': '+', 'name': 'Outros'},
+        }
         beds = Bed.objects.filter(is_active=True).values_list('identifier', flat=True)
-        groups = OrderedDict((k, {'name': f'Clinica {k}', 'beds': []}) for k in ('A', 'B', 'C'))
-        groups['OUTROS'] = {'name': 'Outros', 'beds': []}
+        groups = OrderedDict((k, {'name': group_meta[k]['name'], 'beds': []}) for k in ('A', 'B', 'C'))
+        groups['OUTROS'] = {'name': group_meta['OUTROS']['name'], 'beds': []}
         for identifier in beds:
             first = (identifier or '').strip()[:1].upper()
             key = first if first in ('A', 'B', 'C') else 'OUTROS'
@@ -601,6 +610,8 @@ class NSPClinicLandingView(LoginRequiredMixin, TemplateView):
             vacant_beds = total_beds - occupied_beds
             occupancy_rate = (occupied_beds / total_beds * 100) if total_beds > 0 else 0
             group_data.append({
+                'key': key,
+                'badge': group_meta[key]['badge'],
                 'name': group['name'],
                 'total_beds': total_beds,
                 'occupied_beds': occupied_beds,
@@ -660,6 +671,61 @@ class NSPEventoAdversoView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
 
 
+class NSPEventoAdversoBulkView(LoginRequiredMixin, FormView):
+    template_name = 'nsp/evento_adverso_bulk.html'
+    form_class = NSPEventoAdversoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        raw_ids = request.POST.getlist('patient_ids') if request.method == 'POST' else request.GET.getlist('patient_ids')
+        self.patient_ids = list(OrderedDict.fromkeys(pid for pid in raw_ids if pid))
+        self.patients = list(Patient.objects.filter(pk__in=self.patient_ids).order_by('name'))
+        self.return_url = request.POST.get('next') or request.GET.get('next') or reverse('nsp_coleta')
+
+        if not self.patients:
+            messages.error(request, 'Selecione ao menos um paciente para lançamento em massa.')
+            return redirect(self.return_url)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['patients'] = self.patients
+        context['patient_count'] = len(self.patients)
+        context['return_url'] = self.return_url
+        return context
+
+    def form_valid(self, form):
+        cleaned_data = form.cleaned_data
+        report_fields = [
+            'date_evento',
+            'pulseira_identificacao',
+            'identificacao_medicacao',
+            'risco_queda',
+            'lesao_pressao',
+            'flebite',
+            'tempo_acesso_dias',
+            'tempo_roupa_cama_dias',
+            'identificacao_leito',
+            'nao_conformidade_estruturas',
+            'observacoes',
+        ]
+
+        with transaction.atomic():
+            for patient in self.patients:
+                AdverseEventReport.objects.create(
+                    patient=patient,
+                    created_by=self.request.user,
+                    **{field: cleaned_data.get(field) for field in report_fields},
+                )
+
+        messages.success(self.request, f'Evento adverso registrado para {len(self.patients)} pacientes.')
+        return redirect(self.return_url)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Não foi possível salvar o lançamento em massa. Verifique os campos obrigatórios.')
+        return super().form_invalid(form)
+
+
 class NSPEventoAdversoListView(LoginRequiredMixin, ListView):
     template_name = 'nsp/eventos_list.html'
     context_object_name = 'reports'
@@ -681,6 +747,41 @@ class NSPEventoAdversoListView(LoginRequiredMixin, ListView):
         date_str = self.request.GET.get('date')
         context['selected_date'] = date_str or ''
         return context
+
+
+class NSPEventoAdversoUpdateView(LoginRequiredMixin, UpdateView):
+    model = AdverseEventReport
+    form_class = NSPEventoAdversoForm
+    template_name = 'nsp/evento_adverso.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['patient'] = self.object.patient
+        context['report'] = self.object
+        context['is_edit'] = True
+        return context
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Evento adverso atualizado.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Não foi possível atualizar. Verifique os campos obrigatórios.')
+        return super().form_invalid(form)
+
+    def get_success_url(self):
+        return reverse('nsp_eventos_list')
+
+
+class NSPEventoAdversoDeleteView(LoginRequiredMixin, DeleteView):
+    model = AdverseEventReport
+    template_name = 'nsp/evento_adverso_confirm_delete.html'
+    success_url = reverse_lazy('nsp_eventos_list')
+    context_object_name = 'report'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Evento adverso excluído.')
+        return super().form_valid(form)
 
 
 class NSPEventoAdversoPDFView(LoginRequiredMixin, View):

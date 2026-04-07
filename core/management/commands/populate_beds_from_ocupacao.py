@@ -17,8 +17,13 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--encoding",
-            default="latin-1",
-            help="Encoding do CSV (default: latin-1).",
+            default="utf-8-sig",
+            help="Encoding do CSV (default: utf-8-sig).",
+        )
+        parser.add_argument(
+            "--delimiter",
+            default=";",
+            help="Delimitador do CSV (default: ;).",
         )
         parser.add_argument(
             "--clear",
@@ -36,10 +41,29 @@ class Command(BaseCommand):
             Bed.objects.all().delete()
             self.stdout.write(self.style.WARNING("Leitos removidos antes da importacao."))
 
+        def normalize_fieldnames(fieldnames):
+            normalized = []
+            for index, field in enumerate(fieldnames or []):
+                key = (field or "").strip()
+                normalized.append(key or f"__blank_{index}")
+            return normalized
+
+        def infer_clinic(identifier):
+            prefix = (identifier or "").strip().upper()[:1]
+            if prefix == "A":
+                return "CLÍNICA A"
+            if prefix == "B":
+                return "CLÍNICA B"
+            if prefix == "C":
+                return "CLÍNICA C"
+            return "EXTRA"
+
         created = 0
         updated = 0
+        skipped = 0
         with csv_path.open("r", encoding=options["encoding"], newline="") as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter=options["delimiter"])
+            reader.fieldnames = normalize_fieldnames(reader.fieldnames)
             if "LEITO" not in reader.fieldnames:
                 self.stderr.write(self.style.ERROR("CSV nao possui coluna 'LEITO'."))
                 return
@@ -47,10 +71,10 @@ class Command(BaseCommand):
             for row in reader:
                 bed_raw = (row.get("LEITO") or "").strip()
                 if not bed_raw:
+                    skipped += 1
                     continue
 
-                # Clinica = parte antes da barra (ex: "A 1 / 1" -> "A 1")
-                clinic = bed_raw.split("/")[0].strip()
+                clinic = infer_clinic(bed_raw)
                 identifier = bed_raw
 
                 obj, was_created = Bed.objects.update_or_create(
@@ -66,4 +90,6 @@ class Command(BaseCommand):
                 else:
                     updated += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Importacao concluida. Criados: {created}, Atualizados: {updated}"))
+        self.stdout.write(self.style.SUCCESS(
+            f"Importacao concluida. Criados: {created}, Atualizados: {updated}, Ignorados: {skipped}"
+        ))

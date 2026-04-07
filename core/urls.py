@@ -25,6 +25,9 @@ from .views import (
     NSPClinicBedGroupView,
     NSPEquipeView,
     NSPEventoAdversoView,
+    NSPEventoAdversoBulkView,
+    NSPEventoAdversoUpdateView,
+    NSPEventoAdversoDeleteView,
     NSPEventoAdversoListView,
     NSPEventoAdversoPDFView,
     NIREntryView,
@@ -65,6 +68,7 @@ urlpatterns = [
 
     # URLs de Indicadores
     path('indicators/', IndicatorDashboardView.as_view(), name='indicator_dashboard'),
+    path('nsp/dashboard/', IndicatorDashboardView.as_view(), name='nsp_dashboard'),
     path('indicators/pdf/', IndicatorPDFView.as_view(), name='indicator_pdf'),
     path('indicators/history/', IndicatorHistoryView.as_view(), name='indicator_history'),
     path('indicators/analysis/', IndicatorAnalysisView.as_view(), name='indicator_analysis'),
@@ -74,6 +78,9 @@ urlpatterns = [
     path('nsp/coleta/grupo/<slug:group_key>/', NSPClinicBedGroupView.as_view(), name='nsp_coleta_group'),
     path('nsp/equipe/', NSPEquipeView.as_view(), name='nsp_equipe'),
     path('nsp/eventos/paciente/<int:patient_id>/', NSPEventoAdversoView.as_view(), name='nsp_evento_adverso'),
+    path('nsp/eventos/lote/', NSPEventoAdversoBulkView.as_view(), name='nsp_evento_adverso_bulk'),
+    path('nsp/eventos/<int:pk>/editar/', NSPEventoAdversoUpdateView.as_view(), name='nsp_evento_adverso_edit'),
+    path('nsp/eventos/<int:pk>/excluir/', NSPEventoAdversoDeleteView.as_view(), name='nsp_evento_adverso_delete'),
     path('nsp/eventos/', NSPEventoAdversoListView.as_view(), name='nsp_eventos_list'),
     path('nsp/eventos/pdf/', NSPEventoAdversoPDFView.as_view(), name='nsp_eventos_pdf'),
 

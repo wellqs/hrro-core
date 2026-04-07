@@ -1,0 +1,37 @@
+{% extends "nsp/base.html" %}
+
+{% block title %}Excluir | Evento Adverso{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h2 class="mb-1 text-danger fw-bold">Excluir Evento Adverso</h2>
+      <p class="text-muted mb-0">Paciente: {{ report.patient.name }} (Prontuário {{ report.patient.medical_record_number }})</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'nsp_eventos_list' %}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm" style="border-radius: 16px; background: #fff;">
+    <div class="card-body p-4 p-md-5">
+      <div class="alert alert-warning">
+        Você está prestes a excluir o registro de <strong>{{ report.date_evento|date:"d/m/Y" }}</strong>.
+        Esta ação não poderá ser desfeita.
+      </div>
+
+      <div class="mb-4 text-sm text-muted">
+        <div><strong>Registrado por:</strong> {{ report.created_by.username|default:"-" }}</div>
+        <div><strong>Observações:</strong> {{ report.observacoes|default:"-" }}</div>
+      </div>
+
+      <form method="post" class="d-flex gap-2 justify-content-end">
+        {% csrf_token %}
+        <a href="{% url 'nsp_eventos_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Excluir registro</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

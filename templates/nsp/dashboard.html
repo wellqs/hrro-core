@@ -1,188 +1,329 @@
 {% extends "nsp/base.html" %}
 
-{% block title %}{{ titulo }}{% endblock %}
+{% block title %}{{ titulo|default:"NSP Dashboard" }}{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --nsp-navy: #0f172a;
+    --nsp-sky: #0ea5e9;
+    --nsp-mint: #10b981;
+    --nsp-amber: #f59e0b;
+    --nsp-rose: #f43f5e;
+    --nsp-violet: #6366f1;
+  }
   body { font-family: 'Inter', sans-serif; }
-  .chart-container { position: relative; height: 300px; width: 100%; }
-  .glass-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  .nsp-shell {
+    background:
+      radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 24%),
+      linear-gradient(180deg, #f8fafc 0%, #eef4f8 100%);
+  }
+  .panel-card {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 20px 48px -40px rgba(15, 23, 42, 0.22);
+    backdrop-filter: blur(6px);
+  }
+  .chart-panel {
+    position: relative;
+    min-height: 320px;
+  }
+  .mini-chart-panel {
+    position: relative;
+    min-height: 240px;
+  }
+  .metric-chip {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(255, 255, 255, 0.72);
+  }
+  .metric-ring {
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-ring::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.28), transparent 55%);
+    pointer-events: none;
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="bg-slate-50 text-slate-900 min-h-screen">
+<div class="nsp-shell min-h-screen">
+  <div class="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+    <section class="panel-card overflow-hidden rounded-[28px]">
+      <div class="grid gap-0 lg:grid-cols-[1.35fr_0.95fr]">
+        <div class="border-b border-slate-100 bg-white px-6 py-7 sm:px-8 lg:border-b-0 lg:border-r">
+          <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-600">NSP Dashboard</p>
+              <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.1rem]">Painel executivo de segurança do paciente</h1>
+              <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                Leitura rápida dos eventos adversos, conformidade de identificação e cobertura operacional do período selecionado.
+              </p>
+            </div>
 
-  <header class="bg-white border-b border-slate-200 px-6 md:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h2 class="text-lg font-semibold text-slate-800">Segurança do Paciente</h2>
-      <p class="text-sm text-slate-500">Monitoramento de eventos adversos e conformidades</p>
-    </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700">
+                <i data-lucide="calendar-range" class="h-4 w-4 text-sky-600"></i>
+                {{ periodo_label }}
+              </span>
+              <a href="{% url 'nsp_landing' %}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 no-underline transition-colors hover:bg-slate-50">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                Voltar ao NSP
+              </a>
+            </div>
+          </div>
 
-    <form class="flex flex-wrap items-center gap-3" id="filterForm" method="get">
-      <select id="anoSelect" name="ano" class="bg-slate-100 border-none text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
-        {% for ano in anos %}
-          <option value="{{ ano }}" {% if ano == ano_selecionado %}selected{% endif %}>{{ ano }}</option>
-        {% endfor %}
-      </select>
-      <select id="mesSelect" class="bg-slate-100 border-none text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" name="mes">
-        <option value="" {% if not mes_selecionado %}selected{% endif %}>Todos os meses</option>
-        {% for num, nome in meses %}
-          <option value="{{ num }}" {% if num == mes_selecionado %}selected{% endif %}>{{ nome }}</option>
-        {% endfor %}
-      </select>
-      <select id="setorSelect" class="bg-slate-100 border-none text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
-        <option value="">Todos os setores</option>
-        {% for setor in setores %}
-          <option value="{{ setor }}">{{ setor }}</option>
-        {% endfor %}
-      </select>
-      <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-800 transition-colors" type="submit">
-        <i data-lucide="filter" class="w-4 h-4"></i>
-        Filtrar
-      </button>
-    </form>
-  </header>
-
-  <div class="p-6 md:p-8 overflow-y-auto">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-amber-50 rounded-lg text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div class="metric-chip rounded-2xl px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Base monitorada</div>
+              <div class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_pacientes }}</div>
+              <div class="text-xs text-slate-500">Pacientes ativos na base central</div>
+            </div>
+            <div class="metric-chip rounded-2xl px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-400">Eventos no período</div>
+              <div class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_ea_nsp }}</div>
+              <div class="text-xs text-slate-500">Registros com ao menos uma não conformidade</div>
+            </div>
+            <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Conformidade</div>
+              <div class="mt-2 text-3xl font-bold text-emerald-700">{{ stats.taxa_conformidade|floatformat:2 }}%</div>
+              <div class="text-xs text-emerald-600/80">Percentual estimado de pacientes conformes</div>
+            </div>
           </div>
         </div>
-        <p class="text-2xl font-bold">{{ stats.total_ea_nsp }}</p>
-        <p class="text-xs font-medium text-slate-500 uppercase tracking-tight">Total de EA</p>
-      </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
+        <div class="bg-slate-50/70 px-6 py-7 sm:px-8">
+          <div class="mb-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Filtro analítico</p>
+            <h2 class="mt-2 text-xl font-bold text-slate-900">Refine a leitura do dashboard</h2>
           </div>
-        </div>
-        <p class="text-2xl font-bold">{{ stats.total_pulseiras }}</p>
-        <p class="text-xs font-medium text-slate-500 uppercase tracking-tight">Pulseiras</p>
-      </div>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-rose-50 rounded-lg text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-            <i data-lucide="trending-down" class="w-5 h-5"></i>
+          <form method="get" class="grid gap-4">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Ano</span>
+                <select name="ano" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
+                  {% for ano in anos %}
+                    <option value="{{ ano }}" {% if ano == ano_selecionado %}selected{% endif %}>{{ ano }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+
+              <label class="block">
+                <span class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Mês</span>
+                <select name="mes" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100">
+                  <option value="" {% if not mes_selecionado %}selected{% endif %}>Ano inteiro</option>
+                  {% for num, nome in meses %}
+                    <option value="{{ num }}" {% if num == mes_selecionado %}selected{% endif %}>{{ nome }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Leitura do período</div>
+              <div class="mt-2 text-sm text-slate-700">
+                O painel está mostrando os registros agregados de <span class="font-semibold">{{ periodo_label }}</span>.
+              </div>
+            </div>
+
+            <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800">
+              <i data-lucide="filter" class="h-4 w-4"></i>
+              Atualizar dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <article class="metric-ring panel-card rounded-[24px] p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pulseiras</p>
+            <h3 class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_pulseiras }}</h3>
+            <p class="mt-2 text-sm text-slate-500">Pacientes com identificação registrada como conforme.</p>
           </div>
+          <span class="rounded-2xl bg-sky-50 p-3 text-sky-600">
+            <i data-lucide="badge-check" class="h-5 w-5"></i>
+          </span>
         </div>
-        <p class="text-2xl font-bold">{{ stats.total_ea_queda }}</p>
-        <p class="text-xs font-medium text-slate-500 uppercase tracking-tight">Quedas</p>
-      </div>
+      </article>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-            <i data-lucide="pill" class="w-5 h-5"></i>
+      <article class="metric-ring panel-card rounded-[24px] p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Medicação</p>
+            <h3 class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_ident_medicacao }}</h3>
+            <p class="mt-2 text-sm text-slate-500">Ocorrências ligadas à identificação da medicação.</p>
           </div>
+          <span class="rounded-2xl bg-violet-50 p-3 text-violet-600">
+            <i data-lucide="pill" class="h-5 w-5"></i>
+          </span>
         </div>
-        <p class="text-2xl font-bold">{{ stats.total_ident_medicacao }}</p>
-        <p class="text-xs font-medium text-slate-500 uppercase tracking-tight">Medicação</p>
-      </div>
+      </article>
 
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-slate-50 rounded-lg text-slate-600 group-hover:bg-slate-600 group-hover:text-white transition-colors">
-            <i data-lucide="users" class="w-5 h-5"></i>
+      <article class="metric-ring panel-card rounded-[24px] p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Quedas</p>
+            <h3 class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_ea_queda }}</h3>
+            <p class="mt-2 text-sm text-slate-500">Registros com risco de queda ou queda observada.</p>
           </div>
+          <span class="rounded-2xl bg-rose-50 p-3 text-rose-600">
+            <i data-lucide="triangle-alert" class="h-5 w-5"></i>
+          </span>
         </div>
-        <p class="text-2xl font-bold">{{ stats.total_pacientes }}</p>
-        <p class="text-xs font-medium text-slate-500 uppercase tracking-tight">Pacientes</p>
-      </div>
+      </article>
 
-      <div class="bg-emerald-600 p-5 rounded-2xl shadow-lg shadow-emerald-100 text-white hover:scale-[1.02] transition-transform">
-        <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-white/20 rounded-lg text-white">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
+      <article class="metric-ring panel-card rounded-[24px] p-5">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Estruturas</p>
+            <h3 class="mt-2 text-3xl font-bold text-slate-900">{{ stats.total_nao_conformidade }}</h3>
+            <p class="mt-2 text-sm text-slate-500">Não conformidades ligadas a leito e estrutura física.</p>
           </div>
+          <span class="rounded-2xl bg-amber-50 p-3 text-amber-600">
+            <i data-lucide="shield-alert" class="h-5 w-5"></i>
+          </span>
         </div>
-        <p class="text-2xl font-bold">{{ stats.taxa_conformidade }}%</p>
-        <p class="text-xs font-medium text-emerald-100 uppercase tracking-tight">Conformidade</p>
-      </div>
-    </div>
+      </article>
+    </section>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Flebite</p>
-        <p class="text-xl font-bold">{{ stats.total_ea_flebite }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Lesão Pressão</p>
-        <p class="text-xl font-bold">{{ stats.total_lesao_pressao }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Ident. Leito</p>
-        <p class="text-xl font-bold">{{ stats.total_ident_leito }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Não Conf.</p>
-        <p class="text-xl font-bold">{{ stats.total_nao_conformidade }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Tempo Acesso</p>
-        <p class="text-xl font-bold">{{ stats.total_tempo_acesso }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-100">
-        <p class="text-xs text-slate-500 mb-1">Tempo Roupa</p>
-        <p class="text-xl font-bold">{{ stats.total_tempo_roupa }}</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="font-bold text-slate-800">Evolução dos Eventos Adversos</h3>
-          <div class="flex gap-2">
-            <span class="flex items-center gap-1 text-xs font-medium text-slate-500">
-              <span class="w-3 h-3 bg-blue-500 rounded-full"></span> {{ ano_selecionado }}
-            </span>
+    <section class="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
+      <article class="panel-card rounded-[28px] p-6 sm:p-7">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Evolução temporal</p>
+            <h2 class="mt-2 text-xl font-bold text-slate-900">Volume mensal de eventos adversos</h2>
           </div>
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ ano_selecionado }}</span>
         </div>
-        <div class="chart-container">
+        <div class="chart-panel">
           <canvas id="evolucaoChart"></canvas>
         </div>
-      </div>
+      </article>
 
-      <div class="space-y-8">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 class="font-bold text-slate-800 mb-4 text-center">Conformidade Identificação</h3>
-          <div class="relative h-[200px] flex justify-center">
-            <canvas id="conformidadeChart"></canvas>
+      <article class="panel-card rounded-[28px] p-6 sm:p-7">
+        <div class="mb-5">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Conformidade</p>
+          <h2 class="mt-2 text-xl font-bold text-slate-900">Identificação do paciente</h2>
+        </div>
+        <div class="mini-chart-panel">
+          <canvas id="conformidadeChart"></canvas>
+        </div>
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4">
+            <div class="text-xs font-semibold uppercase tracking-wide text-emerald-600">Correta</div>
+            <div class="mt-1 text-2xl font-bold text-emerald-700">{{ stats.taxa_conformidade|floatformat:2 }}%</div>
           </div>
-          <div class="mt-4 flex justify-around">
-            <div class="text-center">
-              <p class="text-xs text-slate-400">Correta</p>
-              <p class="font-bold text-emerald-600">{{ stats.taxa_conformidade }}%</p>
+          <div class="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-4">
+            <div class="text-xs font-semibold uppercase tracking-wide text-rose-600">Incorreta</div>
+            <div class="mt-1 text-2xl font-bold text-rose-700">{{ stats.taxa_inconformidade|floatformat:2 }}%</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section>
+      <article class="panel-card rounded-[28px] p-6 sm:p-7">
+        <div class="mb-5">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Cobertura operacional</p>
+          <h2 class="mt-2 text-xl font-bold text-slate-900">Sinais rápidos do período</h2>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="mb-2 flex items-center justify-between text-sm">
+              <span class="font-medium text-slate-600">Pacientes com pulseira conforme</span>
+              <span class="font-semibold text-slate-900">{{ stats.total_pulseiras }}/{{ stats.total_pacientes }}</span>
             </div>
-            <div class="text-center">
-              <p class="text-xs text-slate-400">Incorreta</p>
-              <p class="font-bold text-rose-500">{{ stats.taxa_inconformidade }}%</p>
+            <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+              <div class="h-full rounded-full bg-emerald-500" style="width: {{ stats.taxa_conformidade }}%"></div>
+            </div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Média de acesso</div>
+              <div class="mt-2 text-2xl font-bold text-slate-900">{{ stats.total_tempo_acesso|floatformat:2 }}</div>
+            </div>
+            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Média roupa de cama</div>
+              <div class="mt-2 text-2xl font-bold text-slate-900">{{ stats.total_tempo_roupa|floatformat:2 }}</div>
+            </div>
+            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Flebite</div>
+              <div class="mt-2 text-2xl font-bold text-slate-900">{{ stats.total_ea_flebite }}</div>
+            </div>
+            <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+              <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Lesão por pressão</div>
+              <div class="mt-2 text-2xl font-bold text-slate-900">{{ stats.total_lesao_pressao }}</div>
             </div>
           </div>
         </div>
+      </article>
+    </section>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 class="font-bold text-slate-800 mb-4">Distribuição de Checklist</h3>
-          <div class="h-[200px]">
-            <canvas id="checklistChart"></canvas>
+    <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <article class="panel-card rounded-[28px] p-6 sm:p-7">
+        <div class="mb-6">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Distribuição</p>
+          <h2 class="mt-2 text-xl font-bold text-slate-900">Panorama dos critérios de checklist</h2>
+        </div>
+        <div class="chart-panel">
+          <canvas id="checklistChart"></canvas>
+        </div>
+      </article>
+
+      <article class="panel-card rounded-[28px] p-6 sm:p-7">
+        <div class="mb-6">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Leitura assistencial</p>
+          <h2 class="mt-2 text-xl font-bold text-slate-900">Onde concentrar atenção</h2>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+            <span class="rounded-xl bg-rose-100 p-2 text-rose-600"><i data-lucide="activity" class="h-4 w-4"></i></span>
+            <div>
+              <div class="font-semibold text-slate-900">Risco de evento</div>
+              <div class="text-sm text-slate-600">Há <strong>{{ stats.total_ea_nsp }}</strong> registros de evento adverso no período filtrado.</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+            <span class="rounded-xl bg-sky-100 p-2 text-sky-600"><i data-lucide="bed-single" class="h-4 w-4"></i></span>
+            <div>
+              <div class="font-semibold text-slate-900">Identificação de leito</div>
+              <div class="text-sm text-slate-600"><strong>{{ stats.total_ident_leito }}</strong> registros envolveram identificação de leito.</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+            <span class="rounded-xl bg-amber-100 p-2 text-amber-600"><i data-lucide="scan-search" class="h-4 w-4"></i></span>
+            <div>
+              <div class="font-semibold text-slate-900">Cobertura de pulseira</div>
+              <div class="text-sm text-slate-600"><strong>{{ stats.total_pulseiras }}</strong> pacientes tiveram conferência positiva de pulseira.</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+            <span class="rounded-xl bg-emerald-100 p-2 text-emerald-600"><i data-lucide="timer-reset" class="h-4 w-4"></i></span>
+            <div>
+              <div class="font-semibold text-slate-900">Tempos monitorados</div>
+              <div class="text-sm text-slate-600">A média registrada foi de <strong>{{ stats.total_tempo_acesso|floatformat:2 }}</strong> dias de acesso e <strong>{{ stats.total_tempo_roupa|floatformat:2 }}</strong> dias para roupa de cama.</div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </article>
+    </section>
   </div>
 </div>
 
@@ -193,20 +334,23 @@
 {% block extra_js %}
 <script>
   lucide.createIcons();
-  const stats = JSON.parse(document.getElementById("stats-data").textContent);
-  const chartData = JSON.parse(document.getElementById("chart-data").textContent);
 
   document.addEventListener("DOMContentLoaded", () => {
-    const ctxEvolucao = document.getElementById("evolucaoChart").getContext("2d");
-    new Chart(ctxEvolucao, {
+    const stats = JSON.parse(document.getElementById("stats-data").textContent);
+    const chartData = JSON.parse(document.getElementById("chart-data").textContent);
+    const chartLabels = chartData.chart_labels && chartData.chart_labels.length ? chartData.chart_labels : ["Sem dados"];
+    const chartEventos = chartData.chart_ea_nsp && chartData.chart_ea_nsp.length ? chartData.chart_ea_nsp : [0];
+
+    new Chart(document.getElementById("evolucaoChart").getContext("2d"), {
       type: "bar",
       data: {
-        labels: chartData.chart_labels,
+        labels: chartLabels,
         datasets: [{
-          label: "Eventos Adversos",
-          data: chartData.chart_ea_nsp,
-          backgroundColor: "rgba(59, 130, 246, 0.8)",
-          borderRadius: 8
+          label: "Eventos adversos",
+          data: chartEventos,
+          backgroundColor: ["rgba(14, 165, 233, 0.88)"],
+          borderRadius: 12,
+          borderSkipped: false
         }]
       },
       options: {
@@ -214,17 +358,20 @@
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true, grid: { display: false } },
-          x: { grid: { display: false } }
+          x: { grid: { display: false } },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(148, 163, 184, 0.16)" }
+          }
         }
       }
     });
 
-    const ctxConf = document.getElementById("conformidadeChart").getContext("2d");
-    new Chart(ctxConf, {
+    new Chart(document.getElementById("conformidadeChart").getContext("2d"), {
       type: "doughnut",
       data: {
-        labels: ["Correta", "Incorreta"],
+        labels: ["Conforme", "Inconforme"],
         datasets: [{
           data: [
             stats.total_pulseiras,
@@ -232,19 +379,18 @@
           ],
           backgroundColor: ["#10b981", "#f43f5e"],
           borderWidth: 0,
-          hoverOffset: 4
+          hoverOffset: 6
         }]
       },
       options: {
-        cutout: "75%",
+        cutout: "76%",
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } }
       }
     });
 
-    const ctxCheck = document.getElementById("checklistChart").getContext("2d");
-    new Chart(ctxCheck, {
+    new Chart(document.getElementById("checklistChart").getContext("2d"), {
       type: "bar",
       data: {
         labels: ["Pulseira", "Medicação", "Queda", "Lesão", "Flebite", "Leito", "Estruturas", "Tempo Acesso", "Tempo Roupa"],
@@ -260,8 +406,9 @@
             stats.total_tempo_acesso,
             stats.total_tempo_roupa
           ],
-          backgroundColor: ["#3b82f6", "#6366f1", "#f43f5e", "#f59e0b", "#f59e0b", "#8b5cf6", "#ef4444", "#10b981", "#22c55e"],
-          borderRadius: 4
+          backgroundColor: ["#0ea5e9", "#6366f1", "#f43f5e", "#f59e0b", "#fb923c", "#8b5cf6", "#ef4444", "#10b981", "#22c55e"],
+          borderRadius: 8,
+          borderSkipped: false
         }]
       },
       options: {
@@ -270,7 +417,11 @@
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { beginAtZero: true, grid: { display: false } },
+          x: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            grid: { color: "rgba(148, 163, 184, 0.16)" }
+          },
           y: { grid: { display: false } }
         }
       }
