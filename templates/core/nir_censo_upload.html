@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}NIR — Atualizar Censo{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-0.5">NIR · Núcleo Interno de Regulação</p>
+        <h1 class="text-2xl font-bold text-slate-800">Atualizar Censo Nominal</h1>
+    </div>
+    <a href="{% url 'nir_panel' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
+        <i class="bi bi-arrow-left"></i> Voltar ao Painel
+    </a>
+</div>
+
+{# ── Resultado da importação ──────────────────────────────────────────── #}
+{% if stats %}
+<div class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden mb-6">
+    <div class="bg-emerald-50 px-5 py-4 border-b border-emerald-100 flex items-center gap-3">
+        <div class="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+            <i class="bi bi-check-circle-fill text-lg"></i>
+        </div>
+        <div>
+            <div class="font-semibold text-emerald-800">Importação concluída com sucesso</div>
+            <div class="text-xs text-emerald-600 mt-0.5">Arquivo: <span class="font-mono">{{ filename }}</span></div>
+        </div>
+    </div>
+    <div class="p-5">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+            <div class="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
+                <div class="text-2xl font-bold text-slate-800">{{ stats.beds_created|add:stats.beds_updated }}</div>
+                <div class="text-xs text-slate-500 mt-1">Leitos processados</div>
+                <div class="text-xs text-slate-400 mt-0.5">{{ stats.beds_created }} novos · {{ stats.beds_updated }} atualizados</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
+                <div class="text-2xl font-bold text-slate-800">{{ stats.vacant_beds }}</div>
+                <div class="text-xs text-slate-500 mt-1">Leitos vagos</div>
+                <div class="text-xs text-slate-400 mt-0.5">Sem internação ativa</div>
+            </div>
+
+            <div class="rounded-xl bg-violet-50 border border-violet-100 p-4 text-center">
+                <div class="text-2xl font-bold text-violet-700">{{ stats.hosp_created }}</div>
+                <div class="text-xs text-violet-600 mt-1">Internações criadas</div>
+                <div class="text-xs text-violet-400 mt-0.5">{{ stats.patients_created }} pacientes novos</div>
+            </div>
+
+            {% if stats.hosp_closed %}
+            <div class="rounded-xl bg-amber-50 border border-amber-100 p-4 text-center">
+                <div class="text-2xl font-bold text-amber-700">{{ stats.hosp_closed }}</div>
+                <div class="text-xs text-amber-600 mt-1">Internações encerradas</div>
+                <div class="text-xs text-amber-400 mt-0.5">Sincronização ativa</div>
+            </div>
+            {% else %}
+            <div class="rounded-xl bg-slate-50 border border-slate-100 p-4 text-center">
+                <div class="text-2xl font-bold text-slate-800">{{ stats.patients_updated }}</div>
+                <div class="text-xs text-slate-500 mt-1">Pacientes atualizados</div>
+                <div class="text-xs text-slate-400 mt-0.5">Dados revisados</div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <div class="mt-4 flex gap-3">
+            <a href="{% url 'nir_panel' %}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition-colors no-underline">
+                <i class="bi bi-grid"></i> Ver Painel de Leitos
+            </a>
+            <a href="{% url 'nir_censo_upload' %}"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline">
+                <i class="bi bi-arrow-repeat"></i> Importar outro arquivo
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Formulário de upload ─────────────────────────────────────────────── #}
+{% if not stats %}
+<div class="grid gap-6 lg:grid-cols-3">
+
+    {# Card principal de upload #}
+    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/60">
+            <h2 class="font-semibold text-slate-700 text-sm">Enviar arquivo CSV</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Censo Nominal exportado do KANBAN diário</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="p-5 space-y-5">
+            {% csrf_token %}
+
+            {# Drop zone #}
+            <div id="drop-zone"
+                 class="relative border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-violet-400 hover:bg-violet-50/30 transition-colors cursor-pointer">
+                <input type="file" name="csv_file" id="csv_file" accept=".csv"
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                       onchange="updateFileName(this)">
+                <div id="drop-label">
+                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                        <i class="bi bi-file-earmark-spreadsheet text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-700">Clique ou arraste o arquivo CSV aqui</p>
+                    <p class="text-xs text-slate-400 mt-1">Formato: KANBAN 2026 - CENSO_NOMINAL_DD_MM.csv</p>
+                </div>
+                <div id="file-selected" class="hidden">
+                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                        <i class="bi bi-file-earmark-check-fill text-2xl"></i>
+                    </div>
+                    <p id="file-name" class="text-sm font-semibold text-slate-800"></p>
+                    <p class="text-xs text-emerald-600 mt-1">Arquivo pronto para importar</p>
+                </div>
+            </div>
+
+            {# Opção de sincronização #}
+            <label class="flex items-start gap-3 p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                <input type="checkbox" name="sync_hosp" id="sync_hosp"
+                       class="mt-0.5 h-4 w-4 rounded text-violet-600 border-slate-300 focus:ring-violet-500 flex-shrink-0">
+                <div>
+                    <span class="text-sm font-medium text-slate-800">Sincronizar internações</span>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Encerra todas as internações ativas antes de importar.
+                        Use para obter um <strong>snapshot limpo</strong> do censo do dia.
+                    </p>
+                </div>
+            </label>
+
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors shadow-sm">
+                <i class="bi bi-upload"></i> Importar Censo
+            </button>
+        </form>
+    </div>
+
+    {# Card de instruções #}
+    <div class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
+            <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <i class="bi bi-info-circle text-violet-500"></i> Como usar
+            </h3>
+            <ol class="space-y-3 text-xs text-slate-600">
+                <li class="flex gap-2">
+                    <span class="flex-shrink-0 h-5 w-5 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs">1</span>
+                    Exporte o CSV do KANBAN diário (arquivo <span class="font-mono bg-slate-100 px-1 rounded">CENSO_NOMINAL_DD_MM.csv</span>)
+                </li>
+                <li class="flex gap-2">
+                    <span class="flex-shrink-0 h-5 w-5 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs">2</span>
+                    Clique na área de upload e selecione o arquivo
+                </li>
+                <li class="flex gap-2">
+                    <span class="flex-shrink-0 h-5 w-5 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs">3</span>
+                    Marque <strong>Sincronizar</strong> para refletir o censo do dia com precisão
+                </li>
+                <li class="flex gap-2">
+                    <span class="flex-shrink-0 h-5 w-5 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs">4</span>
+                    Clique em <strong>Importar Censo</strong> e aguarde o resultado
+                </li>
+            </ol>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-2">
+            <h3 class="text-sm font-semibold text-amber-800 flex items-center gap-2">
+                <i class="bi bi-exclamation-triangle text-amber-500"></i> Atenção
+            </h3>
+            <p class="text-xs text-amber-700">
+                Com <strong>Sincronizar</strong> ativado, todas as internações ativas serão encerradas antes da importação.
+                Essa opção é recomendada para a atualização diária do censo.
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateFileName(input) {
+    const label = document.getElementById('drop-label');
+    const selected = document.getElementById('file-selected');
+    const nameEl = document.getElementById('file-name');
+    if (input.files && input.files[0]) {
+        nameEl.textContent = input.files[0].name;
+        label.classList.add('hidden');
+        selected.classList.remove('hidden');
+    }
+}
+</script>
+{% endblock %}

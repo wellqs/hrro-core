@@ -10,7 +10,7 @@ try:
 except Exception:
     HTML = None
 from django.urls import reverse_lazy, reverse # Adicionado reverse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from datetime import date, datetime, timedelta
 from django.utils import timezone
@@ -33,6 +33,7 @@ from .forms import (
 )
 from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm, HospitalizationForm, HospitalizationDischargeForm, PatientDocumentForm, NSPCollectForm, NSPEventoAdversoForm
 from .filters import SurgeryFilter
+from .censo_import import parse_censo_csv, import_censo, VACANT_LABELS
 
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
 
@@ -1151,6 +1152,44 @@ class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
         context['documents'] = docs
         context['page_title'] = f'Documentos de {patient.name}'
         return context
+
+class NIRCensoUploadView(LoginRequiredMixin, NIRPermissionMixin, View):
+    template_name = 'core/nir_censo_upload.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        csv_file = request.FILES.get('csv_file')
+        sync_hosp = request.POST.get('sync_hosp') == 'on'
+
+        if not csv_file:
+            messages.error(request, 'Selecione um arquivo CSV antes de enviar.')
+            return render(request, self.template_name)
+
+        if not csv_file.name.lower().endswith('.csv'):
+            messages.error(request, 'O arquivo deve ter extensão .csv.')
+            return render(request, self.template_name)
+
+        try:
+            rows = parse_censo_csv(csv_file)
+        except Exception as e:
+            messages.error(request, f'Erro ao ler o arquivo: {e}')
+            return render(request, self.template_name)
+
+        if not rows:
+            messages.warning(request, 'Nenhum leito encontrado no arquivo. Verifique o formato do CSV.')
+            return render(request, self.template_name)
+
+        try:
+            stats = import_censo(rows, sync_hosp=sync_hosp)
+        except Exception as e:
+            messages.error(request, f'Erro durante a importação: {e}')
+            return render(request, self.template_name)
+
+        occupied = stats['hosp_created'] + stats['patients_updated']
+        return render(request, self.template_name, {'stats': stats, 'filename': csv_file.name})
+
 
 class NIRHospitalizationHistoryView(LoginRequiredMixin, NIRPermissionMixin, ListView):
     model = Hospitalization

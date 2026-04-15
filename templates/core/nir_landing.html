@@ -12,11 +12,17 @@
         <h1 class="text-2xl font-bold text-slate-800">Painel de Leitos</h1>
     </div>
     {% if can_nir %}
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
         <a href="{% url 'nir_hospitalization_history' %}"
            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
             <i class="bi bi-clock-history"></i> Histórico
         </a>
+        {% if can_edit_nir %}
+        <a href="{% url 'nir_censo_upload' %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-teal-200 bg-teal-50 text-teal-700 text-sm font-medium hover:bg-teal-100 transition-colors no-underline shadow-sm">
+            <i class="bi bi-upload"></i> Atualizar Censo
+        </a>
+        {% endif %}
         <a href="{% url 'nir_hospitalization_create' %}"
            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition-colors no-underline shadow-sm">
             <i class="bi bi-plus-circle"></i> Alocar Paciente

@@ -118,6 +118,18 @@
       </a>
 
       {% if can_edit_nir %}
+      <a href="{% url 'nir_censo_upload' %}" class="block rounded-2xl bg-teal-600 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+        <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
+          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-500/70">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-lg font-bold">Atualizar Censo</h3>
+            <p class="text-sm text-teal-100">Importar o CSV do KANBAN diário e sincronizar leitos.</p>
+          </div>
+        </div>
+      </a>
+
       <a href="{% url 'nir_hospitalization_create' %}" class="block rounded-2xl bg-purple-500 text-white shadow-md transition hover:-translate-y-1 hover:shadow-lg">
         <div class="p-6 text-center space-y-3 min-h-[220px] flex flex-col justify-center">
           <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-400/70">

@@ -38,6 +38,7 @@ from .views import (
     NIRHospitalizationUpdateView,
     NIRHospitalizationDischargeView,
     NIRHospitalizationHistoryView,
+    NIRCensoUploadView,
     PatientDocumentListView,
     ExamsLandingView,
     PatientExamsView,
@@ -95,6 +96,7 @@ urlpatterns = [
     path('nir/hospitalization/<int:pk>/discharge/', NIRHospitalizationDischargeView.as_view(), name='nir_hospitalization_discharge'),
 
     path('nir/hospitalizations/', NIRHospitalizationHistoryView.as_view(), name='nir_hospitalization_history'),
+    path('nir/censo/upload/', NIRCensoUploadView.as_view(), name='nir_censo_upload'),
     path('nir/patient/<int:patient_id>/documents/', PatientDocumentListView.as_view(), name='patient_documents'),
 
     path('exams/', ExamsLandingView.as_view(), name='exams_landing'),
