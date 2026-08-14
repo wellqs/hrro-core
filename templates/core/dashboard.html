@@ -1,72 +1,100 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard Estratégico{% endblock %}
+{% block title %}Dashboard Cirúrgico — HRRO{% endblock %}
 
 {% block content %}
-<div class="flex flex-col gap-2">
-    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Visão geral</p>
-    <h1 class="text-2xl font-semibold text-slate-800">Dashboard de Indicadores Estratégicos</h1>
+
+{# ── Cabeçalho ───────────────────────────────────────────────── #}
+<div>
+    <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Visão Geral</p>
+    <h1 class="text-2xl font-bold" style="color:var(--c-text)">Dashboard de Indicadores Cirúrgicos</h1>
 </div>
 
+{# ── KPI Cards ────────────────────────────────────────────────── #}
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
-        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Total de Cirurgias</div>
-        <div class="flex items-center justify-between">
-            <div class="text-3xl font-bold text-slate-900">{{ total_surgeries }}</div>
-            <div class="h-10 w-10 rounded-xl bg-hrro-sky/20 text-hrro-sky flex items-center justify-center">
-                <i class="bi bi-activity"></i>
+
+    <div class="bg-white rounded-xl border overflow-hidden" style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div style="height:3px;background:var(--c-navy,#0d1b3e);"></div>
+        <div class="p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--c-muted)">Total de Cirurgias</p>
+            <div class="flex items-end justify-between">
+                <div class="text-3xl font-bold" style="color:var(--c-text)">{{ total_surgeries }}</div>
+                <div class="h-10 w-10 rounded-lg flex items-center justify-center"
+                     style="background:#e0e7ff;color:#4338ca;">
+                    <i class="bi bi-activity"></i>
+                </div>
             </div>
         </div>
     </div>
-    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
-        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Agendadas</div>
-        <div class="flex items-center justify-between">
-            <div class="text-3xl font-bold text-slate-900">{{ agendadas_count }}</div>
-            <div class="h-10 w-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center">
-                <i class="bi bi-calendar-week"></i>
+
+    <div class="bg-white rounded-xl border overflow-hidden" style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div style="height:3px;background:var(--c-sky,#0284c7);"></div>
+        <div class="p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--c-muted)">Agendadas</p>
+            <div class="flex items-end justify-between">
+                <div class="text-3xl font-bold" style="color:var(--c-text)">{{ agendadas_count }}</div>
+                <div class="h-10 w-10 rounded-lg flex items-center justify-center"
+                     style="background:#e0f2fe;color:#0369a1;">
+                    <i class="bi bi-calendar-week"></i>
+                </div>
             </div>
         </div>
     </div>
-    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
-        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Realizadas</div>
-        <div class="flex items-center justify-between">
-            <div class="text-3xl font-bold text-slate-900">{{ realizadas_count }}</div>
-            <div class="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <i class="bi bi-check2-circle"></i>
+
+    <div class="bg-white rounded-xl border overflow-hidden" style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div style="height:3px;background:var(--c-emerald,#059669);"></div>
+        <div class="p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--c-muted)">Realizadas</p>
+            <div class="flex items-end justify-between">
+                <div class="text-3xl font-bold" style="color:var(--c-text)">{{ realizadas_count }}</div>
+                <div class="h-10 w-10 rounded-lg flex items-center justify-center"
+                     style="background:#d1fae5;color:#065f46;">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
             </div>
         </div>
     </div>
-    <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-slate-100 p-5">
-        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Canceladas</div>
-        <div class="flex items-center justify-between">
-            <div class="text-3xl font-bold text-slate-900">{{ canceladas_count }}</div>
-            <div class="h-10 w-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
-                <i class="bi bi-x-circle"></i>
+
+    <div class="bg-white rounded-xl border overflow-hidden" style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div style="height:3px;background:#dc2626;"></div>
+        <div class="p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--c-muted)">Canceladas</p>
+            <div class="flex items-end justify-between">
+                <div class="text-3xl font-bold" style="color:var(--c-text)">{{ canceladas_count }}</div>
+                <div class="h-10 w-10 rounded-lg flex items-center justify-center"
+                     style="background:#fee2e2;color:#991b1b;">
+                    <i class="bi bi-x-circle"></i>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
+{# ── Gráficos ─────────────────────────────────────────────────── #}
 <div class="grid gap-4 lg:grid-cols-3">
-    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 lg:col-span-2 p-6">
-        <div class="flex items-center justify-between mb-4">
+
+    <div class="bg-white rounded-xl border lg:col-span-2 p-5"
+         style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div class="flex items-start justify-between mb-5">
             <div>
-                <p class="text-xs uppercase tracking-wide text-slate-500">Tendência</p>
-                <h6 class="text-base font-semibold text-slate-800">Volume de Cirurgias por Mês</h6>
+                <p class="text-xs font-semibold uppercase tracking-wide mb-0.5" style="color:var(--c-soft)">Tendência</p>
+                <h6 class="font-semibold" style="color:var(--c-text);">Volume de Cirurgias por Mês</h6>
             </div>
         </div>
-        <div class="h-80"><canvas id="volumeChart" class="w-full h-full"></canvas></div>
+        <div style="height:300px;"><canvas id="volumeChart"></canvas></div>
     </div>
-    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <p class="text-xs uppercase tracking-wide text-slate-500">Distribuição</p>
-                <h6 class="text-base font-semibold text-slate-800">Status das Cirurgias</h6>
-            </div>
+
+    <div class="bg-white rounded-xl border p-5"
+         style="border-color:var(--c-border);box-shadow:0 1px 3px rgba(13,27,62,0.06);">
+        <div class="mb-5">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-0.5" style="color:var(--c-soft)">Distribuição</p>
+            <h6 class="font-semibold" style="color:var(--c-text);">Status das Cirurgias</h6>
         </div>
-        <div class="h-80"><canvas id="statusChart" class="w-full h-full"></canvas></div>
+        <div style="height:300px;"><canvas id="statusChart"></canvas></div>
     </div>
+
 </div>
 
 {{ status_distribution_json|json_script:"status-data" }}
@@ -79,7 +107,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusData = JSON.parse(document.getElementById('status-data').textContent);
     const volumeData = JSON.parse(document.getElementById('volume-data').textContent);
 
-    // Grafico doughnut
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.size   = 12;
+    Chart.defaults.color       = '#4a5c7a';
+
     const ctxStatus = document.getElementById('statusChart');
     if (ctxStatus) {
         new Chart(ctxStatus, {
@@ -88,18 +119,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: statusData.labels,
                 datasets: [{
                     data: statusData.data,
-                    backgroundColor: ['#22c55e', '#e11d48', '#38bdf8']
+                    backgroundColor: ['#059669', '#dc2626', '#0284c7'],
+                    borderColor: '#ffffff',
+                    borderWidth: 3,
+                    hoverOffset: 4,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 16, boxWidth: 12, borderRadius: 4 }
+                    }
+                }
             }
         });
     }
 
-    // Grafico de barras empilhadas
     const ctxVolume = document.getElementById('volumeChart');
     if (ctxVolume) {
         new Chart(ctxVolume, {
@@ -110,17 +149,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         label: 'Realizadas',
                         data: volumeData.datasets.realizadas,
-                        backgroundColor: '#22c55e'
+                        backgroundColor: '#059669',
+                        borderRadius: 4,
                     },
                     {
                         label: 'Canceladas',
                         data: volumeData.datasets.canceladas,
-                        backgroundColor: '#e11d48'
+                        backgroundColor: '#dc2626',
+                        borderRadius: 4,
                     },
                     {
                         label: 'Agendadas',
                         data: volumeData.datasets.agendadas,
-                        backgroundColor: '#38bdf8'
+                        backgroundColor: '#0284c7',
+                        borderRadius: 4,
                     }
                 ]
             },
@@ -128,12 +170,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'top' },
+                    legend: {
+                        position: 'top',
+                        labels: { padding: 14, boxWidth: 12, borderRadius: 3 }
+                    },
                     tooltip: { mode: 'index', intersect: false }
                 },
                 scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        border: { display: false },
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        border: { display: false },
+                    }
                 }
             }
         });
@@ -141,4 +195,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
-

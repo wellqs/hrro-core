@@ -4,173 +4,211 @@
 {% block title %}Início — HRRO{% endblock %}
 
 {% block content %}
-{# Cabeçalho de boas-vindas #}
-<div class="flex flex-col gap-1 mb-2">
-    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">Portal de Módulos</p>
-    <h1 class="text-2xl font-bold text-slate-800">Bem-vindo, {{ user.get_full_name|default:user.username }}</h1>
-    <p class="text-sm text-slate-500">Selecione um módulo para começar</p>
+
+{# ── Cabeçalho ───────────────────────────────────────────────── #}
+<div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Portal de Módulos</p>
+        <h1 class="text-2xl font-bold" style="color:var(--c-text)">
+            Bem-vindo, {{ user.get_full_name|default:user.username }}
+        </h1>
+        <p class="text-sm mt-0.5" style="color:var(--c-muted)">Selecione um módulo para iniciar.</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border" style="border-color:var(--c-border);background:#fff;color:var(--c-muted)">
+        <i class="bi bi-calendar3"></i>
+        <span id="hrro-date">—</span>
+    </div>
 </div>
 
-{# ── Módulos Ativos ─────────────────────────────────────────────── #}
+{# ── Módulos Ativos ──────────────────────────────────────────── #}
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Módulos Disponíveis</p>
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Módulos Disponíveis</p>
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 
         {# Recepção #}
         {% if can_reception or user.is_superuser %}
-        <a href="{% url 'reception_home' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-                <i class="bi bi-person-check fs-4"></i>
+        <a href="{% url 'reception_home' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05); hover:box-shadow:0 6px 20px rgba(13,27,62,0.1);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#dbeafe;color:#1d4ed8;">
+                <i class="bi bi-person-check" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">Recepção</span>
-                    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">Recepção</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:var(--c-emerald-pale,#d1fae5);color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Cadastro de pacientes, triagem e gestão de fila de atendimento.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Cadastro de pacientes, triagem e gestão de fila.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
         {% else %}
-        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-lock fs-4"></i>
+        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
+             style="background:#f8fafc;border-color:var(--c-border);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-lock" style="font-size:1rem;"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-500">Recepção</span>
-                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Recepção</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
                 </div>
-                <p class="text-sm text-slate-400 leading-snug">Cadastro de pacientes, triagem e gestão de fila de atendimento.</p>
+                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Cadastro de pacientes, triagem e gestão de fila.</p>
             </div>
         </div>
         {% endif %}
 
         {# NIR #}
         {% if can_nir or user.is_superuser %}
-        <a href="{% url 'nir_entry' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition-colors">
-                <i class="bi bi-hospital fs-4"></i>
+        <a href="{% url 'nir_entry' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#e0e7ff;color:#4338ca;">
+                <i class="bi bi-hospital" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">NIR — Regulação de Leitos</span>
-                    <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">NIR — Regulação de Leitos</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Painel de leitos, internações, altas e histórico de ocupação.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Painel de leitos, internações, altas e histórico de ocupação.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
         {% else %}
-        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-lock fs-4"></i>
+        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
+             style="background:#f8fafc;border-color:var(--c-border);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-lock" style="font-size:1rem;"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-500">NIR — Regulação de Leitos</span>
-                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-soft)">NIR — Regulação de Leitos</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
                 </div>
-                <p class="text-sm text-slate-400 leading-snug">Painel de leitos, internações, altas e histórico de ocupação.</p>
+                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Painel de leitos, internações, altas e histórico de ocupação.</p>
             </div>
         </div>
         {% endif %}
 
         {# Centro Cirúrgico #}
-        <a href="{% url 'surgery_list' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-100 transition-colors">
-                <i class="bi bi-scissors fs-4"></i>
+        <a href="{% url 'surgery_list' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#ede9fe;color:#6d28d9;">
+                <i class="bi bi-scissors" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">Centro Cirúrgico</span>
-                    <span class="text-xs bg-violet-50 text-violet-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">Centro Cirúrgico</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Agendamento, fluxo setorial e controle de cirurgias.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Agendamento, fluxo setorial e controle de cirurgias.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
 
         {# NSP #}
         {% if can_nsp or user.is_superuser %}
-        <a href="{% url 'nsp_landing' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
-                <i class="bi bi-shield-check fs-4"></i>
+        <a href="{% url 'nsp_landing' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#d1fae5;color:#065f46;">
+                <i class="bi bi-shield-check" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">NSP — Segurança do Paciente</span>
-                    <span class="text-xs bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">NSP — Segurança do Paciente</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
         {% else %}
-        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-lock fs-4"></i>
+        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
+             style="background:#f8fafc;border-color:var(--c-border);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-lock" style="font-size:1rem;"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-500">NSP — Segurança do Paciente</span>
-                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-soft)">NSP — Segurança do Paciente</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
                 </div>
-                <p class="text-sm text-slate-400 leading-snug">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
+                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
             </div>
         </div>
         {% endif %}
 
         {# Indicadores #}
         {% if can_nsp or user.is_superuser %}
-        <a href="{% url 'indicator_dashboard' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition-colors">
-                <i class="bi bi-bar-chart-line fs-4"></i>
+        <a href="{% url 'indicator_dashboard' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#e0f2fe;color:#0369a1;">
+                <i class="bi bi-bar-chart-line" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">Indicadores</span>
-                    <span class="text-xs bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">Indicadores</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Painel de indicadores por setor, histórico e análise comparativa.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Painel de indicadores por setor, histórico e análise comparativa.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
         {% else %}
-        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-lock fs-4"></i>
+        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
+             style="background:#f8fafc;border-color:var(--c-border);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-lock" style="font-size:1rem;"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-500">Indicadores</span>
-                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Indicadores</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
                 </div>
-                <p class="text-sm text-slate-400 leading-snug">Painel de indicadores por setor, histórico e análise comparativa.</p>
+                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Painel de indicadores por setor, histórico e análise comparativa.</p>
             </div>
         </div>
         {% endif %}
 
         {# Fisioterapia #}
         {% if can_fisio or user.is_superuser %}
-        <a href="{% url 'fisioterapia:home' %}" class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 flex items-start gap-4 no-underline">
-            <div class="h-12 w-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
-                <i class="bi bi-heart-pulse fs-4"></i>
+        <a href="{% url 'fisioterapia:home' %}"
+           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
+           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                 style="background:#fce7f3;color:#9d174d;">
+                <i class="bi bi-heart-pulse" style="font-size:1.1rem;"></i>
             </div>
-            <div>
+            <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-800">Fisioterapia</span>
-                    <span class="text-xs bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-text)">Fisioterapia</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
                 </div>
-                <p class="text-sm text-slate-500 leading-snug">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
+                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
             </div>
+            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
         </a>
         {% else %}
-        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex items-start gap-4 opacity-50 cursor-not-allowed">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-lock fs-4"></i>
+        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
+             style="background:#f8fafc;border-color:var(--c-border);">
+            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-lock" style="font-size:1rem;"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-500">Fisioterapia</span>
-                    <span class="text-xs bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-medium">Sem acesso</span>
+                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Fisioterapia</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
                 </div>
-                <p class="text-sm text-slate-400 leading-snug">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
+                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
             </div>
         </div>
         {% endif %}
@@ -178,67 +216,79 @@
     </div>
 </div>
 
-{# ── Módulos em Implantação ─────────────────────────────────────── #}
+{# ── Em Implantação ──────────────────────────────────────────── #}
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Em Implantação</p>
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Em Implantação</p>
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-        {# Exames #}
-        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-file-medical fs-4"></i>
+        {% for mod in coming_modules|default:"" %}{% empty %}
+
+        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-file-medical" style="font-size:0.95rem;"></i>
             </div>
             <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-400">Exames</span>
-                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold" style="color:#94a3b8;">Exames</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
                 </div>
-                <p class="text-xs text-slate-400 leading-snug">Solicitação, controle e resultados de exames laboratoriais e imagem.</p>
+                <p class="text-xs" style="color:#94a3b8;">Solicitação, controle e resultados de exames.</p>
             </div>
         </div>
 
-        {# Pacientes #}
-        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-people fs-4"></i>
+        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-people" style="font-size:0.95rem;"></i>
             </div>
             <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-400">Pacientes</span>
-                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold" style="color:#94a3b8;">Pacientes</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
                 </div>
-                <p class="text-xs text-slate-400 leading-snug">Prontuário unificado, histórico clínico e documentos do paciente.</p>
+                <p class="text-xs" style="color:#94a3b8;">Prontuário unificado e histórico clínico.</p>
             </div>
         </div>
 
-        {# Faturamento #}
-        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-cash-coin fs-4"></i>
+        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-cash-coin" style="font-size:0.95rem;"></i>
             </div>
             <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-400">Faturamento</span>
-                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold" style="color:#94a3b8;">Faturamento</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
                 </div>
-                <p class="text-xs text-slate-400 leading-snug">Faturamento de procedimentos, convênios e relatórios financeiros.</p>
+                <p class="text-xs" style="color:#94a3b8;">Procedimentos, convênios e relatórios financeiros.</p>
             </div>
         </div>
 
-        {# CME #}
-        <div class="bg-white/60 rounded-2xl border border-dashed border-slate-200 p-5 flex items-start gap-4">
-            <div class="h-12 w-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">
-                <i class="bi bi-thermometer-half fs-4"></i>
+        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
+            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
+                <i class="bi bi-thermometer-half" style="font-size:0.95rem;"></i>
             </div>
             <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-slate-400">CME</span>
-                    <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Em breve</span>
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold" style="color:#94a3b8;">CME</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
                 </div>
-                <p class="text-xs text-slate-400 leading-snug">Central de material e esterilização, rastreabilidade de instrumentais.</p>
+                <p class="text-xs" style="color:#94a3b8;">Central de material e esterilização.</p>
             </div>
         </div>
 
+        {% endfor %}
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const el = document.getElementById('hrro-date');
+    if (!el) return;
+    const d = new Date();
+    const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+    el.textContent = d.toLocaleDateString('pt-BR', opts);
+})();
+</script>
 {% endblock %}

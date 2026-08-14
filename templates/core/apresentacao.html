@@ -1,0 +1,425 @@
+<!--
+  HRRO — Apresentação institucional (tela exibida antes do login)
+  Adaptado do modelo em Modelos/siscg-landing (1).html para a identidade
+  visual do HRRO (navy + emerald), com os módulos reais do sistema.
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>HRRO — Sistema de Gestão Hospitalar</title>
+<meta name="description" content="Plataforma integrada de gestão hospitalar: recepção, internações (NIR), centro cirúrgico, segurança do paciente (NSP), indicadores e fisioterapia, em um só lugar." />
+<meta name="theme-color" content="#0d1b3e" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter','system-ui','sans-serif'],
+          display: ['Fraunces','Georgia','serif'],
+        },
+        colors: {
+          brand: {50:'#eef2f9',100:'#dbe3f0',200:'#b9c8e0',300:'#8fa4c8',400:'#5c76a0',500:'#2d4a78',600:'#1a2d55',700:'#132140',800:'#0d1b3e',900:'#08112a',950:'#050b1c'},
+        },
+        boxShadow: {
+          soft:'0 1px 2px rgba(13,27,62,.04), 0 12px 32px -12px rgba(13,27,62,.14)',
+          lift:'0 1px 2px rgba(13,27,62,.05), 0 28px 56px -20px rgba(13,27,62,.22)',
+          glow:'0 20px 60px -20px rgba(13,27,62,.45)',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root { color-scheme: light dark; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { text-rendering: optimizeLegibility; }
+
+  .fluid-h1 { font-size: clamp(2.1rem, 1.3rem + 3.4vw, 3.6rem); line-height: 1.05; letter-spacing:-.02em; }
+  .fluid-h2 { font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.5rem); line-height: 1.1; letter-spacing:-.02em; }
+
+  em.hl { font-family:'Fraunces',serif; font-style:italic; font-weight:600; color:#059669; }
+  .dark em.hl { color:#34d399; }
+
+  .grid-faint{
+    background-image:
+      linear-gradient(to right, rgba(13,27,62,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(13,27,62,.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 70% 60% at 30% 20%, #000 40%, transparent 100%);
+  }
+  .dark .grid-faint{
+    background-image:
+      linear-gradient(to right, rgba(147,187,253,.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(147,187,253,.06) 1px, transparent 1px);
+  }
+
+  @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  .floaty { animation: floaty 6s ease-in-out infinite; }
+
+  .fade-up { opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); }
+  .fade-up.visible { opacity:1; transform:none; }
+
+  .focus-ring:focus-visible{ outline:2px solid #1a2d55; outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none!important;transition-duration:.001ms!important}
+    .fade-up{opacity:1;transform:none}
+  }
+</style>
+</head>
+
+<body class="bg-white font-sans text-brand-900 antialiased selection:bg-brand-200/60 dark:bg-slate-950 dark:text-slate-200">
+
+<!-- ============================ NAVBAR ============================ -->
+<nav class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur-md dark:border-slate-800/70 dark:bg-slate-950/80">
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+    <a href="#top" class="flex items-center gap-2.5">
+      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 text-white shadow-glow">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
+      </span>
+      <span class="leading-none">
+        <span class="block text-base font-extrabold tracking-tight text-slate-900 dark:text-white">HRRO</span>
+        <span class="block text-[10px] font-medium uppercase tracking-wide text-slate-400">Sistema Hospitalar</span>
+      </span>
+    </a>
+
+    <div class="hidden items-center gap-7 md:flex">
+      <a href="#funcionalidades" class="text-sm font-medium text-slate-600 transition hover:text-brand-700 dark:text-slate-400 dark:hover:text-white">Funcionalidades</a>
+      <a href="#como-funciona" class="text-sm font-medium text-slate-600 transition hover:text-brand-700 dark:text-slate-400 dark:hover:text-white">Como funciona</a>
+      <a href="#perfis" class="text-sm font-medium text-slate-600 transition hover:text-brand-700 dark:text-slate-400 dark:hover:text-white">Perfis</a>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="themeToggle" type="button" aria-label="Alternar tema"
+        class="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">
+        <svg class="h-5 w-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"/></svg>
+        <svg class="hidden h-5 w-5 dark:block" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>
+      </button>
+      <a href="{% url 'login' %}"
+        class="focus-ring inline-flex items-center gap-1.5 rounded-lg bg-brand-800 px-3.5 py-2 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-600">
+        Acessar Sistema
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================ HERO ============================ -->
+<header id="top" class="relative overflow-hidden pt-16">
+  <div aria-hidden="true" class="grid-faint absolute inset-0"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-brand-300/30 blur-[110px] dark:bg-brand-700/20"></div>
+  <div aria-hidden="true" class="pointer-events-none absolute right-0 top-40 h-72 w-72 rounded-full bg-emerald-400/20 blur-[110px]"></div>
+
+  <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:py-24">
+    <!-- Texto -->
+    <div>
+      <div class="fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:border-brand-800/60 dark:bg-brand-950/50 dark:text-brand-300">
+        <span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span></span>
+        Sistema Hospitalar Integrado
+      </div>
+
+      <h1 class="fluid-h1 fade-up font-display font-bold text-slate-900 dark:text-white">
+        Gestão hospitalar unificada.<br />
+        Cuidado que <em class="hl">faz a diferença</em>.
+      </h1>
+
+      <p class="fade-up mt-5 max-w-xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
+        Plataforma integrada para recepção, internações, centro cirúrgico, segurança do paciente,
+        indicadores e fisioterapia — do primeiro atendimento à alta, em um só lugar.
+      </p>
+
+      <div class="fade-up mt-8 flex flex-wrap items-center gap-3">
+        <a href="{% url 'login' %}"
+          class="focus-ring group inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 px-5 py-3 text-sm font-semibold text-white shadow-glow transition hover:from-brand-600 hover:to-brand-800">
+          Acessar o Sistema
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#funcionalidades"
+          class="focus-ring inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-brand-400 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z"/></svg>
+          Conhecer os módulos
+        </a>
+      </div>
+      <p class="fade-up mt-3 text-xs text-slate-400">Acesso restrito à equipe autorizada do hospital.</p>
+    </div>
+
+    <!-- Mockup de navegador -->
+    <div class="fade-up relative">
+      <div class="absolute -left-3 top-6 z-10 hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-lift sm:flex">
+        <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+        Leito liberado
+      </div>
+      <div class="absolute -right-2 bottom-8 z-10 hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-lift sm:flex">
+        <svg class="h-4 w-4 text-brand-700" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg>
+        Nova internação registrada
+      </div>
+
+      <div class="floaty overflow-hidden rounded-2xl border border-slate-200 shadow-lift">
+        <!-- barra do navegador -->
+        <div class="flex items-center gap-2 bg-brand-900 px-4 py-2.5">
+          <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
+          <div class="ml-2 flex-1 rounded-md bg-brand-700 px-3 py-1 font-mono text-[10px] text-slate-300">hrro.local/painel</div>
+        </div>
+        <!-- corpo do app -->
+        <div class="flex h-[350px] bg-slate-50">
+          <!-- sidebar -->
+          <aside class="w-40 flex-shrink-0 border-r border-slate-200 bg-white py-3">
+            <div class="mb-2 flex items-center gap-2 border-b border-slate-100 px-3 pb-3">
+              <div class="flex h-7 w-7 items-center justify-center rounded-md bg-brand-800 text-[10px] font-bold text-white">HR</div>
+              <div class="text-[10px] font-semibold leading-tight text-slate-700">Portal de<br>Módulos</div>
+            </div>
+            <div class="flex items-center gap-2 border-r-2 border-brand-800 bg-brand-50 px-3 py-1.5">
+              <svg class="h-3.5 w-3.5 text-brand-800" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+              <span class="text-[11px] font-medium text-brand-800">Início</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5"><svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg><span class="text-[11px] text-slate-500">Recepção</span></div>
+            <div class="flex items-center gap-2 px-3 py-1.5"><svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75"/></svg><span class="text-[11px] text-slate-500">NIR</span></div>
+            <div class="flex items-center gap-2 px-3 py-1.5"><svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg><span class="text-[11px] text-slate-500">NSP</span></div>
+            <div class="flex items-center gap-2 px-3 py-1.5"><svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg><span class="text-[11px] text-slate-500">Fisioterapia</span></div>
+          </aside>
+          <!-- conteúdo -->
+          <div class="flex-1 overflow-hidden p-4">
+            <div class="font-display text-base font-bold text-slate-800">Portal de Módulos</div>
+            <div class="mb-3 text-[10px] text-slate-400">Visão geral do hospital</div>
+
+            <div class="mb-2.5 rounded-xl bg-gradient-to-br from-brand-800 to-brand-900 p-3.5 text-white">
+              <div class="mb-1 text-[8px] font-semibold uppercase tracking-wider opacity-70">Ocupação de leitos — rede</div>
+              <div class="flex items-end justify-between">
+                <div class="font-display text-xl font-bold">78%</div>
+                <div class="text-[9px] opacity-80">leitos monitorados pelo NIR</div>
+              </div>
+              <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/20"><div class="h-full w-[78%] rounded-full bg-emerald-400"></div></div>
+            </div>
+
+            <div class="mb-2.5 grid grid-cols-2 gap-2">
+              <div class="rounded-lg border border-slate-200 bg-white p-2.5">
+                <div class="text-[8px] text-slate-400">Internações no mês</div>
+                <div class="font-display text-lg font-bold text-slate-800">128</div>
+                <div class="text-[9px] text-emerald-600">Fluxo regular</div>
+              </div>
+              <div class="rounded-lg border border-slate-200 bg-white p-2.5">
+                <div class="text-[8px] text-slate-400">Cirurgias realizadas</div>
+                <div class="font-display text-lg font-bold text-slate-800">54</div>
+                <div class="text-[9px] text-amber-500">6 agendadas</div>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-2.5">
+              <div class="mb-2 text-[9px] font-semibold text-slate-600">Indicadores críticos</div>
+              <div class="mb-1.5 flex items-center justify-between">
+                <span class="text-[9px] text-slate-500">Adesão à higiene das mãos</span>
+                <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[8px] font-semibold text-emerald-700">no alvo</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[9px] text-slate-500">Taxa de infecção hospitalar</span>
+                <span class="rounded bg-red-100 px-1.5 py-0.5 text-[8px] font-semibold text-red-600">atenção</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ STRIP ============================ -->
+<div class="border-y border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 py-4 text-center text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
+    <span>Recepção</span><span class="text-slate-300 dark:text-slate-700">·</span>
+    <span>NIR — Regulação de Leitos</span><span class="text-slate-300 dark:text-slate-700">·</span>
+    <span>Centro Cirúrgico</span><span class="text-slate-300 dark:text-slate-700">·</span>
+    <span>NSP — Segurança do Paciente</span><span class="text-slate-300 dark:text-slate-700">·</span>
+    <span>Indicadores</span><span class="text-slate-300 dark:text-slate-700">·</span>
+    <span>Fisioterapia</span>
+  </div>
+</div>
+
+<!-- ============================ FUNCIONALIDADES ============================ -->
+<section id="funcionalidades" class="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+  <div class="mx-auto max-w-2xl text-center">
+    <div class="fade-up mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">✦ Funcionalidades</div>
+    <h2 class="fluid-h2 fade-up font-display font-bold text-slate-900 dark:text-white">Tudo que o hospital precisa, <em class="hl">em um lugar só</em></h2>
+    <p class="fade-up mx-auto mt-4 max-w-xl text-slate-600 dark:text-slate-400">Da recepção do paciente à alta, passando por internação, cirurgia e segurança do paciente — o HRRO centraliza a gestão hospitalar.</p>
+  </div>
+
+  <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Recepção</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Cadastro de pacientes, triagem e gestão de fila de atendimento, do primeiro contato ao encaminhamento setorial.</p>
+    </div>
+
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">NIR — Regulação de Leitos</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Painel de leitos em tempo real, internações, altas e histórico de ocupação por clínica.</p>
+    </div>
+
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Centro Cirúrgico</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Agendamento e fluxo setorial completo: regulação, dados cirúrgicos, faturamento, CME, OPME e enfermagem.</p>
+    </div>
+
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">NSP — Segurança do Paciente</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Registro e classificação de eventos adversos, coleta por leito e acompanhamento de indicadores de qualidade.</p>
+    </div>
+
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Indicadores</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Painel de indicadores por setor, com histórico e análise comparativa para apoiar a gestão.</p>
+    </div>
+
+    <div class="fade-up group rounded-2xl border border-slate-200 bg-white p-6 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-lift dark:border-slate-800 dark:bg-slate-900">
+      <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-400"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg></div>
+      <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Fisioterapia</h3>
+      <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Relatórios assistenciais por turno e região, coordenação de equipe e acompanhamento de produção.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMO FUNCIONA ============================ -->
+<section id="como-funciona" class="border-y border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40">
+  <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <div class="fade-up mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">✦ Como funciona</div>
+      <h2 class="fluid-h2 fade-up font-display font-bold text-slate-900 dark:text-white">Do primeiro atendimento à <em class="hl">alta do paciente</em></h2>
+      <p class="fade-up mx-auto mt-4 max-w-xl text-slate-600 dark:text-slate-400">Um fluxo pensado para dar visibilidade à operação hospitalar sem sobrecarregar as equipes de cada setor.</p>
+    </div>
+
+    <div class="mt-12 grid gap-5 md:grid-cols-3">
+      <div class="fade-up relative rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-4 font-display text-4xl font-bold text-brand-100 dark:text-brand-900">01</div>
+        <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Recepção registra</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">O paciente é cadastrado, triado e encaminhado para o setor adequado, com fila acompanhada em tempo real.</p>
+      </div>
+      <div class="fade-up relative rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-4 font-display text-4xl font-bold text-brand-100 dark:text-brand-900">02</div>
+        <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Equipes assistenciais atuam</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">NIR aloca o leito, o Centro Cirúrgico conduz o procedimento e a Fisioterapia acompanha a evolução do paciente.</p>
+      </div>
+      <div class="fade-up relative rounded-2xl border border-slate-200 bg-white p-6 shadow-soft dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-4 font-display text-4xl font-bold text-brand-100 dark:text-brand-900">03</div>
+        <h3 class="font-display text-lg font-semibold text-slate-900 dark:text-white">Gestão e NSP acompanham</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Indicadores, eventos adversos e ocupação de leitos ficam visíveis em painéis consolidados por perfil de acesso.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PERFIS ============================ -->
+<section id="perfis" class="mx-auto max-w-6xl px-5 py-20 sm:px-8">
+  <div class="mx-auto max-w-2xl text-center">
+    <div class="fade-up mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">✦ Para cada perfil</div>
+    <h2 class="fluid-h2 fade-up font-display font-bold text-slate-900 dark:text-white">Um sistema para <em class="hl">todo o hospital</em></h2>
+    <p class="fade-up mx-auto mt-4 max-w-xl text-slate-600 dark:text-slate-400">Cada perfil acessa exatamente os módulos que precisa, com permissões que protegem dados sensíveis.</p>
+  </div>
+
+  <div class="mt-12 grid gap-6 md:grid-cols-3">
+    <!-- Gestão -->
+    <div class="fade-up overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center gap-3 bg-gradient-to-br from-brand-700 to-brand-900 p-5 text-white">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"/></svg>
+        <div><div class="font-display text-lg font-semibold">Gestão</div><div class="text-xs text-white/70">Visão consolidada do hospital</div></div>
+      </div>
+      <ul class="space-y-2.5 p-5 text-sm text-slate-600 dark:text-slate-400">
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Dashboard cirúrgico e indicadores por setor</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Histórico e análise comparativa</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Acompanhamento de todos os módulos</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Acesso total via superusuário</li>
+      </ul>
+    </div>
+
+    <!-- Equipe Assistencial -->
+    <div class="fade-up overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center gap-3 bg-gradient-to-br from-emerald-600 to-emerald-800 p-5 text-white">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125V21M3 3h18M4.5 3v18m15-18v18M9 6.75h.008v.008H9V6.75Zm0 3h.008v.008H9V9.75Zm0 3h.008v.008H9v-.008Zm6-6h.008v.008H15V6.75Zm0 3h.008v.008H15V9.75Zm0 3h.008v.008H15v-.008Z"/></svg>
+        <div><div class="font-display text-lg font-semibold">Equipe Assistencial</div><div class="text-xs text-white/70">Operação do dia a dia</div></div>
+      </div>
+      <ul class="space-y-2.5 p-5 text-sm text-slate-600 dark:text-slate-400">
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Recepção, triagem e fila de atendimento</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Internações, altas e leitos (NIR)</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Fluxo cirúrgico setorial</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Relatórios de fisioterapia por turno</li>
+      </ul>
+    </div>
+
+    <!-- NSP -->
+    <div class="fade-up overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-slate-900">
+      <div class="flex items-center gap-3 bg-gradient-to-br from-violet-600 to-violet-900 p-5 text-white">
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+        <div><div class="font-display text-lg font-semibold">NSP</div><div class="text-xs text-white/70">Segurança do paciente</div></div>
+      </div>
+      <ul class="space-y-2.5 p-5 text-sm text-slate-600 dark:text-slate-400">
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Registra e classifica eventos adversos</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Coleta de indicadores por leito</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Emite PDFs de indicadores e eventos</li>
+        <li class="flex gap-2"><svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-500" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Acompanha tratativas até o encerramento</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
+  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950 px-6 py-14 text-center text-white shadow-glow sm:px-12">
+    <div aria-hidden="true" class="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-brand-400/20 blur-3xl"></div>
+    <div aria-hidden="true" class="pointer-events-none absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-emerald-400/15 blur-3xl"></div>
+    <div class="relative">
+      <div class="fade-up mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-brand-100">✦ Comece agora</div>
+      <h2 class="fluid-h2 fade-up font-display font-bold">Pronto para acessar o <em class="hl" style="color:#6ee7b7">sistema hospitalar</em>?</h2>
+      <p class="fade-up mx-auto mt-4 max-w-lg text-brand-100/80">Entre com suas credenciais e acompanhe recepção, internações, cirurgias, segurança do paciente e indicadores.</p>
+      <div class="fade-up mt-8 flex flex-wrap justify-center gap-3">
+        <a href="{% url 'login' %}"
+          class="focus-ring group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 shadow-lg transition hover:bg-brand-50">
+          Acessar o Sistema
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOOTER ============================ -->
+<footer class="border-t border-slate-200 dark:border-slate-800">
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row sm:px-8">
+    <div class="flex items-center gap-2.5">
+      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-700 to-brand-900 text-white">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
+      </span>
+      <span class="text-sm text-slate-500 dark:text-slate-400">HRRO &copy; {% now "Y" %} &middot; Sistema Hospitalar</span>
+    </div>
+    <div class="text-xs font-medium text-slate-400 dark:text-slate-500">
+      Desenvolvido por <span class="font-semibold text-slate-500 dark:text-slate-300">UÉLINTON QUINTÃO SILVÉRIO</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // tema
+  const root = document.documentElement;
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark');
+  document.getElementById('themeToggle').addEventListener('click', () => root.classList.toggle('dark'));
+
+  // fade-up ao rolar
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

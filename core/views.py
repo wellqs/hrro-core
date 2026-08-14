@@ -66,6 +66,15 @@ class NIRPermissionMixin(UserPassesTestMixin):
         return redirect('home')
 
 
+class LandingView(TemplateView):
+    template_name = "core/apresentacao.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        return super().get(request, *args, **kwargs)
+
+
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 

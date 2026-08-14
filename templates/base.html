@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}HRRO Dashboard{% endblock %}</title>
+    <title>{% block title %}HRRO{% endblock %}</title>
 
-    <!-- Tailwind via CDN (preflight desligado para manter compatibilidade com estilos existentes) -->
     <script>
         tailwind = window.tailwind || {};
         tailwind.config = {
@@ -15,10 +14,10 @@
                 extend: {
                     colors: {
                         hrro: {
-                            navy: '#0f172a',
-                            slate: '#1e293b',
-                            sky: '#38bdf8',
-                            lime: '#a3e635',
+                            navy:    '#0d1b3e',
+                            light:   '#1a2d55',
+                            emerald: '#059669',
+                            sky:     '#0284c7',
                         }
                     }
                 }
@@ -26,353 +25,435 @@
         }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Bootstrap base para compatibilidade com templates existentes -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
     <style>
+        /* ── Design Tokens ─────────────────────────────────────── */
         :root {
-            --hrro-navy: #0f172a;
-            --hrro-slate: #1e293b;
-            --hrro-sky: #38bdf8;
-            --hrro-lime: #a3e635;
-            --hrro-surface: #ffffff;
-            --hrro-border: #e2e8f0;
-            --hrro-text: #0f172a;
-            --sidebar-w: 272px;
-            --sidebar-w-collapsed: 64px;
+            --c-navy:         #0d1b3e;
+            --c-navy-light:   #1a2d55;
+            --c-navy-dark:    #08112a;
+            --c-emerald:      #059669;
+            --c-emerald-hov:  #047857;
+            --c-emerald-pale: #d1fae5;
+            --c-sky:          #0284c7;
+            --c-surface:      #ffffff;
+            --c-bg:           #f0f4f8;
+            --c-border:       #d0d9e6;
+            --c-text:         #0d1b3e;
+            --c-muted:        #4a5c7a;
+            --c-soft:         #8898aa;
+            --sidebar-w:      264px;
+            --sidebar-col:    64px;
+            --radius:         10px;
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
-            background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
-            color: var(--hrro-text);
-            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--c-bg);
+            color: var(--c-text);
+            font-family: "Inter", system-ui, -apple-system, sans-serif;
+            font-size: 0.875rem;
+            min-height: 100vh;
         }
-        /* Cards e containers */
+
+        /* ── Cards ─────────────────────────────────────────────── */
         .card {
-            border: 1px solid var(--hrro-border);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.25);
-            background: var(--hrro-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px rgba(13,27,62,0.05), 0 4px 10px rgba(13,27,62,0.04);
+            background: var(--c-surface);
         }
         .card-header {
-            border-bottom: 1px solid var(--hrro-border);
-            background: linear-gradient(90deg, rgba(56,189,248,0.08), rgba(163,230,53,0.06));
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-        }
-        .card-body { padding: 1.5rem; }
-        .container, .container-fluid { padding-left: 1rem; padding-right: 1rem; }
-        /* Botões */
-        .btn { border-radius: 12px; font-weight: 600; border: none; }
-        .btn-primary { background: var(--hrro-navy); }
-        .btn-primary:hover { background: #0b1322; }
-        .btn-success { background: #22c55e; }
-        .btn-success:hover { background: #16a34a; }
-        .btn-secondary { background: #cbd5e1; color: #0f172a; }
-        .btn-secondary:hover { background: #94a3b8; color: #0f172a; }
-        .btn-outline-primary { color: var(--hrro-navy); border: 1px solid var(--hrro-navy); background: transparent; }
-        .btn-outline-primary:hover { background: var(--hrro-navy); color: #fff; }
-        /* Inputs */
-        input[type="text"], input[type="number"], input[type="date"], input[type="datetime-local"],
-        input[type="email"], input[type="password"], select, textarea {
-            width: 100%;
-            border: 1px solid var(--hrro-border);
-            border-radius: 12px;
-            padding: 10px 12px;
+            border-bottom: 1px solid var(--c-border);
             background: #f8fafc;
-            transition: all 0.2s ease;
+            border-top-left-radius: var(--radius);
+            border-top-right-radius: var(--radius);
+            padding: 0.875rem 1.25rem;
+        }
+        .card-body    { padding: 1.25rem; }
+        .container, .container-fluid { padding-left: 1rem; padding-right: 1rem; }
+
+        /* ── Botões ────────────────────────────────────────────── */
+        .btn { border-radius: 8px; font-weight: 600; border: none; font-size: 0.8125rem; }
+        .btn-primary   { background: var(--c-navy); color: #fff; }
+        .btn-primary:hover { background: var(--c-navy-light); color: #fff; }
+        .btn-success   { background: var(--c-emerald); color: #fff; }
+        .btn-success:hover { background: var(--c-emerald-hov); color: #fff; }
+        .btn-secondary { background: #e2e8f0; color: var(--c-navy); }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-outline-primary {
+            color: var(--c-navy); border: 1.5px solid var(--c-navy); background: transparent;
+        }
+        .btn-outline-primary:hover { background: var(--c-navy); color: #fff; }
+        .btn-danger  { background: #dc2626; color: #fff; }
+        .btn-danger:hover { background: #b91c1c; color: #fff; }
+        .btn-warning { background: #d97706; color: #fff; }
+        .btn-warning:hover { background: #b45309; color: #fff; }
+
+        /* ── Inputs ────────────────────────────────────────────── */
+        input[type="text"], input[type="number"], input[type="date"],
+        input[type="datetime-local"], input[type="email"], input[type="password"],
+        select, textarea {
+            width: 100%;
+            border: 1.5px solid var(--c-border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            background: #fff;
+            color: var(--c-text);
+            font-size: 0.875rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
         input:focus, select:focus, textarea:focus {
-            outline: 2px solid rgba(56,189,248,0.35);
-            border-color: #38bdf8;
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(56,189,248,0.12);
+            outline: none;
+            border-color: var(--c-navy);
+            box-shadow: 0 0 0 3px rgba(13,27,62,0.1);
         }
-        label { font-weight: 600; color: #475569; }
-        /* Tabelas */
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 14px; }
-        thead th {
-            background: rgba(56,189,248,0.08);
-            color: #0f172a;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.08em;
-        }
-        tbody tr { border-bottom: 1px solid var(--hrro-border); }
-        tbody tr:hover { background: #f8fafc; }
-        /* Badges genéricas */
-        .badge { padding: 6px 10px; border-radius: 10px; font-weight: 600; }
-        /* Helpers */
-        .bg-soft { background: linear-gradient(180deg, rgba(56,189,248,0.07), rgba(15,23,42,0.03)); }
-        .text-muted { color: #64748b !important; }
-        .shadow-soft { box-shadow: 0 24px 50px -28px rgba(15,23,42,0.25); }
-        .table-responsive { border: 1px solid var(--hrro-border); border-radius: 16px; overflow: hidden; background: #fff; }
+        label { font-weight: 500; color: var(--c-muted); font-size: 0.8125rem; }
 
-        /* ── Sidebar ─────────────────────────────────────────────────── */
+        /* ── Tabelas ───────────────────────────────────────────── */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 14px; }
+        thead th {
+            background: #f8fafc;
+            color: var(--c-muted);
+            text-transform: uppercase;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            border-bottom: 1px solid var(--c-border);
+        }
+        tbody tr { border-bottom: 1px solid #f1f5f9; }
+        tbody tr:hover { background: #fafbfc; }
+        tbody tr:last-child { border-bottom: none; }
+
+        /* ── Badges ────────────────────────────────────────────── */
+        .badge { padding: 3px 9px; border-radius: 6px; font-weight: 600; font-size: 0.7rem; }
+        .table-responsive {
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: #fff;
+        }
+        .text-muted { color: var(--c-muted) !important; }
+
+        /* ── Sidebar ───────────────────────────────────────────── */
         #hrro-sidebar {
             width: var(--sidebar-w);
             min-width: var(--sidebar-w);
-            background: var(--hrro-navy);
-            color: #ffffff;
+            background: var(--c-navy);
+            color: #fff;
             transition: width 0.22s ease, min-width 0.22s ease;
             overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
         #hrro-sidebar.collapsed {
-            width: var(--sidebar-w-collapsed) !important;
-            min-width: var(--sidebar-w-collapsed) !important;
+            width: var(--sidebar-col) !important;
+            min-width: var(--sidebar-col) !important;
         }
 
-        /* Nav links */
-        #hrro-sidebar .hrro-nav a {
+        /* Brand */
+        .s-brand {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
-            border-radius: 12px;
-            color: rgba(255, 255, 255, 0.86);
+            padding: 18px 14px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .s-brand-icon {
+            width: 34px; height: 34px;
+            background: var(--c-emerald);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.95rem;
+            color: #fff;
+        }
+        .s-brand-name  { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.2; }
+        .s-brand-sub   { font-size: 0.6rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
+
+        /* Brand retraído */
+        .s-brand-collapsed {
+            display: none;
+            justify-content: center;
+            padding: 14px 0 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        #hrro-sidebar.collapsed .s-brand          { display: none; }
+        #hrro-sidebar.collapsed .s-brand-collapsed { display: flex; }
+
+        /* Toggle row */
+        .s-toggle-row {
+            display: flex; align-items: center; justify-content: flex-end;
+            padding: 8px 10px;
+        }
+        #hrro-sidebar.collapsed .s-toggle-row { justify-content: center; }
+
+        #sidebar-toggle {
+            background: rgba(255,255,255,0.07);
+            border: none; border-radius: 6px;
+            color: rgba(255,255,255,0.55);
+            cursor: pointer; padding: 4px 6px;
+            transition: background 0.15s;
+        }
+        #sidebar-toggle:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+        /* Section headers */
+        .s-section {
+            padding: 12px 14px 3px;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255,255,255,0.26);
+        }
+        #hrro-sidebar.collapsed .s-section { display: none; }
+
+        /* Nav links */
+        .hrro-nav a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 10px;
+            border-radius: 7px;
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
             white-space: nowrap;
-            transition: background 0.15s ease, padding 0.22s ease;
-        }
-        #hrro-sidebar .hrro-nav a:hover { background: rgba(255,255,255,0.12); color: #fff; }
-        #hrro-sidebar .hrro-nav a.active { background: rgba(255,255,255,0.16); color: #fff; }
-
-        /* Estado retraído */
-        #hrro-sidebar.collapsed .sidebar-label,
-        #hrro-sidebar.collapsed .sidebar-section,
-        #hrro-sidebar.collapsed .sidebar-logo-text,
-        #hrro-sidebar.collapsed .sidebar-user-info,
-        #hrro-sidebar.collapsed .sidebar-logo-block {
-            display: none !important;
-        }
-        #hrro-sidebar.collapsed .hrro-nav a {
-            justify-content: center;
-            padding: 10px 0;
-            gap: 0;
-        }
-        #hrro-sidebar.collapsed .sidebar-toggle-row {
-            justify-content: center;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            padding: 10px 0;
-        }
-        #hrro-sidebar.collapsed .sidebar-footer {
-            justify-content: center;
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        /* Tooltip nos itens retraídos */
-        #hrro-sidebar.collapsed .hrro-nav a {
+            transition: background 0.15s, color 0.15s;
+            font-size: 0.84375rem;
+            font-weight: 500;
             position: relative;
         }
+        .hrro-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .hrro-nav a.active {
+            background: rgba(5,150,105,0.18);
+            color: #fff;
+        }
+        .hrro-nav a.active::before {
+            content: '';
+            position: absolute; left: 0; top: 6px; bottom: 6px;
+            width: 3px; background: var(--c-emerald);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* Nav retraído */
+        #hrro-sidebar.collapsed .nav-label { display: none; }
+        #hrro-sidebar.collapsed .hrro-nav a {
+            justify-content: center; padding: 10px 0; gap: 0;
+        }
+        #hrro-sidebar.collapsed .hrro-nav a.active::before { display: none; }
+
+        /* Tooltip */
         #hrro-sidebar.collapsed .hrro-nav a:hover::after {
             content: attr(data-label);
             position: absolute;
-            left: calc(var(--sidebar-w-collapsed) - 4px);
-            top: 50%;
-            transform: translateY(-50%);
-            background: #1e293b;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 8px;
-            white-space: nowrap;
-            z-index: 9999;
+            left: calc(var(--sidebar-col) + 4px);
+            top: 50%; transform: translateY(-50%);
+            background: var(--c-navy-light);
+            color: #fff; font-size: 0.75rem; font-weight: 500;
+            padding: 5px 10px; border-radius: 6px;
+            white-space: nowrap; z-index: 9999;
             pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        /* Botão toggle */
-        #sidebar-toggle {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.7);
-            cursor: pointer;
-            padding: 4px 6px;
-            transition: background 0.15s ease, color 0.15s ease;
+        /* Footer */
+        .s-footer {
+            display: flex; align-items: center; gap: 9px;
+            padding: 12px 12px;
+            border-top: 1px solid rgba(255,255,255,0.07);
             flex-shrink: 0;
         }
-        #sidebar-toggle:hover { background: rgba(255,255,255,0.18); color: #fff; }
+        .s-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: var(--c-emerald);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6875rem; font-weight: 700;
+            text-transform: uppercase; color: #fff; flex-shrink: 0;
+        }
+        .s-user-name { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+        .s-logout {
+            background: rgba(255,255,255,0.08);
+            border: none; border-radius: 6px;
+            color: rgba(255,255,255,0.55);
+            padding: 4px 7px; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .s-logout:hover { background: rgba(255,255,255,0.16); color: #fff; }
+        #hrro-sidebar.collapsed .s-footer { justify-content: center; padding: 10px 0; }
+        #hrro-sidebar.collapsed .s-user-info { display: none; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800">
-    <div class="min-h-screen flex">
+<body>
+<div class="flex min-h-screen">
 
-        <!-- Sidebar -->
-        {% if request.resolver_match.url_name != 'login' %}
-        <aside id="hrro-sidebar" class="hidden md:flex flex-col border-r border-slate-800/70 shadow-xl collapsed">
+    {% if request.resolver_match.url_name != 'login' %}
+    <!-- ── Sidebar ── -->
+    <aside id="hrro-sidebar" class="hidden md:flex collapsed">
 
-            <!-- Cabeçalho: logo (some quando retraído) -->
-            <div class="sidebar-logo-block flex items-center gap-3 px-5 pt-5 pb-3">
-                <div class="h-9 w-9 rounded-xl bg-slate-800/60 flex items-center justify-center flex-shrink-0">
-                    <i class="bi bi-hospital" style="font-size:1.1rem;"></i>
-                </div>
-                <div class="sidebar-logo-text flex-1 min-w-0">
-                    <div class="text-base font-semibold leading-tight">HRRO</div>
-                    <div class="text-xs text-slate-200/60 uppercase tracking-wide">Sistema Hospitalar</div>
-                </div>
+        <div class="s-brand">
+            <div class="s-brand-icon"><i class="bi bi-plus-lg"></i></div>
+            <div>
+                <div class="s-brand-name">HRRO</div>
+                <div class="s-brand-sub">Sistema Hospitalar</div>
             </div>
+        </div>
 
-            <!-- Linha do toggle: sempre visível -->
-            <div class="sidebar-toggle-row flex items-center justify-end px-4 pb-3">
-                <button id="sidebar-toggle" title="Retrair/Expandir menu">
-                    <i class="bi bi-chevron-left" id="toggle-icon" style="font-size:0.85rem;"></i>
+        <div class="s-brand-collapsed">
+            <div class="s-brand-icon"><i class="bi bi-plus-lg"></i></div>
+        </div>
+
+        <div class="s-toggle-row">
+            <button id="sidebar-toggle" title="Expandir/Retrair">
+                <i class="bi bi-chevron-left" id="toggle-icon" style="font-size:0.75rem;"></i>
+            </button>
+        </div>
+
+        {% with current=request.resolver_match.url_name|default:'' %}
+        <nav class="hrro-nav flex-1 px-2 space-y-0.5 overflow-y-auto pb-4">
+
+            <a href="{% url 'home' %}" data-label="Início"
+               class="{% if current == 'home' %}active{% endif %}">
+                <i class="bi bi-grid-1x2 flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">Início</span>
+            </a>
+
+            <div class="s-section">Módulos</div>
+
+            <a href="{% url 'reception_home' %}" data-label="Recepção"
+               class="{% if 'reception' in request.path %}active{% endif %}">
+                <i class="bi bi-person-check flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">Recepção</span>
+            </a>
+
+            <a href="{% url 'nir_entry' %}" data-label="NIR"
+               class="{% if 'nir' in request.path %}active{% endif %}">
+                <i class="bi bi-hospital flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">NIR</span>
+            </a>
+
+            <a href="{% url 'surgery_list' %}" data-label="Centro Cirúrgico"
+               class="{% if 'surg' in request.path %}active{% endif %}">
+                <i class="bi bi-scissors flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">Centro Cirúrgico</span>
+            </a>
+
+            <a href="{% url 'nsp_landing' %}" data-label="NSP"
+               class="{% if 'nsp' in request.path %}active{% endif %}">
+                <i class="bi bi-shield-check flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">NSP</span>
+            </a>
+
+            <a href="{% url 'fisioterapia:home' %}" data-label="Fisioterapia"
+               class="{% if 'fisioterapia' in request.path %}active{% endif %}">
+                <i class="bi bi-heart-pulse flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">Fisioterapia</span>
+            </a>
+
+            <div class="s-section">Analytics</div>
+
+            <a href="{% url 'dashboard' %}" data-label="Dashboard"
+               class="{% if current == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-graph-up flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+
+        </nav>
+        {% endwith %}
+
+        {% if user.is_authenticated %}
+        <div class="s-footer">
+            <div class="s-avatar">{{ user.username|slice:":1" }}</div>
+            <div class="s-user-info flex-1 min-w-0">
+                <div class="s-user-name truncate">{{ user.username }}</div>
+            </div>
+            <form action="{% url 'logout' %}" method="post" class="s-user-info flex-shrink-0">
+                {% csrf_token %}
+                <button type="submit" class="s-logout" title="Sair">
+                    <i class="bi bi-box-arrow-right"></i>
                 </button>
-            </div>
-
-            <!-- Navegação -->
-            {% with current=request.resolver_match.url_name|default:'' %}
-            <nav class="hrro-nav flex-1 px-3 space-y-0.5 overflow-y-auto">
-
-                <a href="{% url 'home' %}"
-                   data-label="Início"
-                   class="{% if current == 'home' %}active{% endif %}">
-                    <i class="bi bi-grid-1x2 flex-shrink-0"></i>
-                    <span class="sidebar-label">Início</span>
-                </a>
-
-                <div class="sidebar-section pt-3 pb-1 px-2 text-xs font-semibold uppercase tracking-widest text-slate-400/60">Módulos</div>
-
-                <a href="{% url 'reception_home' %}"
-                   data-label="Recepção"
-                   class="{% if 'reception' in request.path %}active{% endif %}">
-                    <i class="bi bi-person-check flex-shrink-0"></i>
-                    <span class="sidebar-label">Recepção</span>
-                </a>
-                <a href="{% url 'nir_entry' %}"
-                   data-label="NIR"
-                   class="{% if 'nir' in request.path %}active{% endif %}">
-                    <i class="bi bi-hospital flex-shrink-0"></i>
-                    <span class="sidebar-label">NIR</span>
-                </a>
-                <a href="{% url 'surgery_list' %}"
-                   data-label="Centro Cirúrgico"
-                   class="{% if 'surg' in request.path %}active{% endif %}">
-                    <i class="bi bi-scissors flex-shrink-0"></i>
-                    <span class="sidebar-label">Centro Cirúrgico</span>
-                </a>
-                <a href="{% url 'nsp_landing' %}"
-                   data-label="NSP"
-                   class="{% if 'nsp' in request.path %}active{% endif %}">
-                    <i class="bi bi-shield-check flex-shrink-0"></i>
-                    <span class="sidebar-label">NSP</span>
-                </a>
-                <a href="{% url 'fisioterapia:home' %}"
-                   data-label="Fisioterapia"
-                   class="{% if 'fisioterapia' in request.path %}active{% endif %}">
-                    <i class="bi bi-heart-pulse flex-shrink-0"></i>
-                    <span class="sidebar-label">Fisioterapia</span>
-                </a>
-
-                <div class="sidebar-section pt-3 pb-1 px-2 text-xs font-semibold uppercase tracking-widest text-slate-400/60">Outros</div>
-
-                <a href="{% url 'dashboard' %}"
-                   data-label="Dashboard Cirúrgico"
-                   class="{% if current == 'dashboard' %}active{% endif %}">
-                    <i class="bi bi-graph-up flex-shrink-0"></i>
-                    <span class="sidebar-label">Dashboard Cirúrgico</span>
-                </a>
-
-            </nav>
-            {% endwith %}
-
-            <!-- Rodapé com usuário -->
-            {% if user.is_authenticated %}
-            <div class="sidebar-footer flex items-center gap-2 px-4 py-4 border-t border-slate-800/70">
-                <div class="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0 text-xs font-bold uppercase">
-                    {{ user.username|slice:":1" }}
-                </div>
-                <div class="sidebar-user-info flex-1 min-w-0">
-                    <div class="text-sm font-semibold truncate">{{ user.username }}</div>
-                </div>
-                <form action="{% url 'logout' %}" method="post" class="sidebar-user-info">
-                    {% csrf_token %}
-                    <button type="submit" title="Sair"
-                        class="text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-        </aside>
+            </form>
+        </div>
         {% endif %}
 
-        <!-- Conteúdo principal -->
-        <main class="flex-1 min-h-screen bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
-            {% if request.resolver_match.url_name == 'login' %}
-                <div class="min-h-screen flex items-center justify-center px-4 py-6">
-                    <div class="w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl shadow-slate-300/60 bg-white">
-            {% else %}
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-            {% endif %}
+    </aside>
+    {% endif %}
+
+    <!-- ── Conteúdo ── -->
+    <main class="flex-1 min-h-screen overflow-x-hidden" style="background:var(--c-bg)">
+
+        {% if request.resolver_match.url_name == 'login' %}
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="w-full max-w-6xl overflow-hidden rounded-2xl shadow-2xl bg-white" style="max-height:92vh;">
+        {% else %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {% endif %}
 
             {% if messages %}
-                <div class="space-y-2 {% if request.resolver_match.url_name == 'login' %}mb-6{% endif %}">
-                    {% for message in messages %}
-                        <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border shadow-sm
-                            {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-900
-                            {% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
-                            {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-900
-                            {% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
-                            <i class="bi bi-info-circle mt-0.5"></i>
-                            <div class="text-sm">{{ message }}</div>
-                        </div>
-                    {% endfor %}
+            <div class="space-y-2{% if request.resolver_match.url_name == 'login' %} mb-4{% endif %}">
+                {% for message in messages %}
+                <div class="flex items-start gap-3 rounded-xl px-4 py-3 border text-sm
+                    {% if message.tags == 'success'  %}bg-green-50  border-green-200  text-green-900
+                    {% elif message.tags == 'warning' %}bg-amber-50  border-amber-200  text-amber-900
+                    {% elif message.tags == 'error'   %}bg-red-50    border-red-200    text-red-900
+                    {% else %}bg-slate-50 border-slate-200 text-slate-900{% endif %}">
+                    <i class="bi bi-info-circle mt-0.5 flex-shrink-0"></i>
+                    <span>{{ message }}</span>
                 </div>
-            {% endif %}
-
-            {% if request.resolver_match.url_name != 'login' %}
-                <div class="grid gap-6">
-            {% endif %}
-                    {% block content %}{% endblock %}
-            {% if request.resolver_match.url_name != 'login' %}
-                </div>
-            {% endif %}
-
+                {% endfor %}
             </div>
-            {% if request.resolver_match.url_name == 'login' %}
-                </div>
             {% endif %}
-        </main>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    {% block extra_js %}{% endblock %}
+            {% if request.resolver_match.url_name != 'login' %}
+            <div class="grid gap-6">
+            {% endif %}
+                {% block content %}{% endblock %}
+            {% if request.resolver_match.url_name != 'login' %}
+            </div>
+            {% endif %}
 
-    <script>
-    (function () {
-        const sidebar = document.getElementById('hrro-sidebar');
-        const toggleBtn = document.getElementById('sidebar-toggle');
-        const toggleIcon = document.getElementById('toggle-icon');
-        if (!sidebar || !toggleBtn) return;
+        </div>
+        {% if request.resolver_match.url_name == 'login' %}
+            </div>
+        {% endif %}
 
-        const KEY = 'hrro-sidebar-collapsed';
+    </main>
+</div>
 
-        function applyState(collapsed) {
-            if (collapsed) {
-                sidebar.classList.add('collapsed');
-                toggleIcon.className = 'bi bi-chevron-right';
-            } else {
-                sidebar.classList.remove('collapsed');
-                toggleIcon.className = 'bi bi-chevron-left';
-            }
-        }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block extra_js %}{% endblock %}
 
-        // Padrão: retraído (só abre se o usuário explicitamente expandiu antes)
-        const stored = localStorage.getItem(KEY);
-        const isCollapsed = stored === null ? true : stored === '1';
-        applyState(isCollapsed);
+<script>
+(function () {
+    const sidebar   = document.getElementById('hrro-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const icon      = document.getElementById('toggle-icon');
+    if (!sidebar || !toggleBtn) return;
 
-        toggleBtn.addEventListener('click', function () {
-            const nowCollapsed = !sidebar.classList.contains('collapsed');
-            applyState(nowCollapsed);
-            localStorage.setItem(KEY, nowCollapsed ? '1' : '0');
-        });
-    })();
-    </script>
+    const KEY = 'hrro-sidebar-v2';
+
+    function apply(collapsed) {
+        sidebar.classList.toggle('collapsed', collapsed);
+        icon.className = collapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+        icon.style.fontSize = '0.75rem';
+    }
+
+    const stored = localStorage.getItem(KEY);
+    apply(stored === null ? true : stored === '1');
+
+    toggleBtn.addEventListener('click', function () {
+        const next = !sidebar.classList.contains('collapsed');
+        apply(next);
+        localStorage.setItem(KEY, next ? '1' : '0');
+    });
+})();
+</script>
 </body>
 </html>

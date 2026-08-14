@@ -3,6 +3,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from .views import (
+    LandingView,
     HomeView,
     DashboardView,
     SurgeryListView,
@@ -53,12 +54,15 @@ from .views import (
 )
 
 urlpatterns = [
+    # Apresentação institucional (antes do login)
+    path('', LandingView.as_view(), name='landing'),
+
     # URLs de Autenticação
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Portal de módulos (tela principal após login)
-    path('', HomeView.as_view(), name='home'),
+    path('painel/', HomeView.as_view(), name='home'),
 
     # URLs do Dashboard e CRUD de Cirurgias
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
