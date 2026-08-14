@@ -25,6 +25,7 @@ from .models import (
     Sector, Indicator, IndicatorData,
     Patient, Bed, Hospitalization,
     PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry, AdverseEventReport,
+    OrgUnit,
 )
 from .forms import (
     SurgeryForm,
@@ -36,6 +37,18 @@ from .filters import SurgeryFilter
 from .censo_import import parse_censo_csv, import_censo, VACANT_LABELS
 
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
+
+# Cores por tipo de setor no organograma institucional (paleta HRRO)
+ORG_TIPO_COLORS = {
+    'direcao': '#0d1b3e',
+    'diretoria': '#0284c7',
+    'gerencia': '#4338ca',
+    'nucleo': '#059669',
+    'assistencial': '#9d174d',
+    'administrativo': '#475569',
+    'unidade': '#b91c1c',
+    'comissao': '#b45309',
+}
 
 
 
@@ -77,6 +90,37 @@ class LandingView(TemplateView):
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        units = (
+            OrgUnit.objects.filter(is_active=True)
+            .annotate(subordinados_count=Count('subordinados', filter=Q(subordinados__is_active=True)))
+            .select_related('parent')
+            .order_by('nivel', 'nome')
+        )
+        niveis = OrderedDict((nivel_value, {'label': nivel_label, 'units': []})
+                              for nivel_value, nivel_label in OrgUnit.NIVEL_CHOICES)
+        for unit in units:
+            unit.cor = ORG_TIPO_COLORS.get(unit.tipo, '#64748b')
+            niveis[unit.nivel]['units'].append(unit)
+        context['org_niveis'] = [v for v in niveis.values() if v['units']]
+        context['org_tipos'] = OrgUnit.TIPO_CHOICES
+        return context
+
+
+class OrgUnitDetailView(LoginRequiredMixin, DetailView):
+    model = OrgUnit
+    template_name = "core/orgunit_detail.html"
+    slug_field = 'codigo'
+    slug_url_kwarg = 'codigo'
+    context_object_name = 'unit'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subordinados'] = self.object.subordinados.filter(is_active=True).order_by('nome')
+        context['cor'] = ORG_TIPO_COLORS.get(self.object.tipo, '#64748b')
+        return context
 
 
 # --- Views existentes (sem alterações) ---

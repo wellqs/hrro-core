@@ -1,8 +1,18 @@
 from django.contrib import admin
 from .models import (
     Surgery, RegulationData, SurgicalData, CMEData,
-    OPMEData, BillingData, NursingChecklist, AdverseEventReport
+    OPMEData, BillingData, NursingChecklist, AdverseEventReport,
+    OrgUnit,
 )
+
+
+@admin.register(OrgUnit)
+class OrgUnitAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nome', 'tipo', 'nivel', 'parent', 'is_active')
+    list_filter = ('nivel', 'tipo', 'is_active')
+    search_fields = ('codigo', 'nome')
+    autocomplete_fields = ('parent',)
+    ordering = ('nivel', 'nome')
 
 
 # --- Inlines para os Modelos Setoriais ---

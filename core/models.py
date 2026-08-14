@@ -141,6 +141,41 @@ class Sector(models.Model):
     class Meta: verbose_name = "Setor"; verbose_name_plural = "Setores"; ordering = ['name']
     def __str__(self): return self.name
 
+
+# Organograma institucional (hierarquia real de setores do hospital)
+class OrgUnit(models.Model):
+    TIPO_CHOICES = [
+        ('direcao', 'Direção'),
+        ('diretoria', 'Diretoria'),
+        ('gerencia', 'Gerência'),
+        ('nucleo', 'Núcleo'),
+        ('assistencial', 'Assistencial'),
+        ('administrativo', 'Administrativo'),
+        ('unidade', 'Unidade'),
+        ('comissao', 'Comissão'),
+    ]
+    NIVEL_CHOICES = [
+        (0, 'Direção Máxima'),
+        (1, 'Diretorias e Adjuntos'),
+        (2, 'Gerências, Núcleos e Centrais'),
+        (3, 'Unidades Especializadas'),
+    ]
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nome = models.CharField(max_length=150, verbose_name="Nome")
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name="Tipo")
+    nivel = models.PositiveSmallIntegerField(choices=NIVEL_CHOICES, verbose_name="Nível hierárquico")
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='subordinados', verbose_name="Superior imediato")
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")
+
+    class Meta:
+        verbose_name = "Setor do Organograma"
+        verbose_name_plural = "Organograma — Setores"
+        ordering = ['nivel', 'nome']
+
+    def __str__(self):
+        return f"{self.codigo} — {self.nome}"
+
 class Indicator(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nome do Indicador")
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE, related_name="indicators", verbose_name="Setor")

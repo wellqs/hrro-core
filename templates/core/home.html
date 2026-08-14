@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Início — HRRO{% endblock %}
+{% block title %}Organograma — HRRO{% endblock %}
 
 {% block content %}
 
 {# ── Cabeçalho ───────────────────────────────────────────────── #}
 <div class="flex items-center justify-between flex-wrap gap-3 mb-1">
     <div>
-        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Portal de Módulos</p>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Painel</p>
         <h1 class="text-2xl font-bold" style="color:var(--c-text)">
             Bem-vindo, {{ user.get_full_name|default:user.username }}
         </h1>
-        <p class="text-sm mt-0.5" style="color:var(--c-muted)">Selecione um módulo para iniciar.</p>
+        <p class="text-sm mt-0.5" style="color:var(--c-muted)">Organograma institucional do HRRO.</p>
     </div>
     <div class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border" style="border-color:var(--c-border);background:#fff;color:var(--c-muted)">
         <i class="bi bi-calendar3"></i>
@@ -20,275 +20,174 @@
     </div>
 </div>
 
-{# ── Módulos Ativos ──────────────────────────────────────────── #}
+{# ── Acesso rápido aos módulos ──────────────────────────────── #}
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Módulos Disponíveis</p>
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Acesso Rápido</p>
+    <div class="flex flex-wrap gap-2">
 
-        {# Recepção #}
         {% if can_reception or user.is_superuser %}
-        <a href="{% url 'reception_home' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05); hover:box-shadow:0 6px 20px rgba(13,27,62,0.1);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#dbeafe;color:#1d4ed8;">
-                <i class="bi bi-person-check" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">Recepção</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:var(--c-emerald-pale,#d1fae5);color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Cadastro de pacientes, triagem e gestão de fila.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
+        <a href="{% url 'reception_home' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-person-check" style="color:#1d4ed8;"></i> Recepção
         </a>
-        {% else %}
-        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
-             style="background:#f8fafc;border-color:var(--c-border);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-lock" style="font-size:1rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Recepção</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Cadastro de pacientes, triagem e gestão de fila.</p>
-            </div>
-        </div>
         {% endif %}
 
-        {# NIR #}
         {% if can_nir or user.is_superuser %}
-        <a href="{% url 'nir_entry' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#e0e7ff;color:#4338ca;">
-                <i class="bi bi-hospital" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">NIR — Regulação de Leitos</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Painel de leitos, internações, altas e histórico de ocupação.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
+        <a href="{% url 'nir_entry' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-hospital" style="color:#4338ca;"></i> NIR
         </a>
-        {% else %}
-        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
-             style="background:#f8fafc;border-color:var(--c-border);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-lock" style="font-size:1rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-soft)">NIR — Regulação de Leitos</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Painel de leitos, internações, altas e histórico de ocupação.</p>
-            </div>
-        </div>
         {% endif %}
 
-        {# Centro Cirúrgico #}
-        <a href="{% url 'surgery_list' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#ede9fe;color:#6d28d9;">
-                <i class="bi bi-scissors" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">Centro Cirúrgico</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Agendamento, fluxo setorial e controle de cirurgias.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
+        <a href="{% url 'surgery_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-scissors" style="color:#6d28d9;"></i> Centro Cirúrgico
         </a>
 
-        {# NSP #}
         {% if can_nsp or user.is_superuser %}
-        <a href="{% url 'nsp_landing' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#d1fae5;color:#065f46;">
-                <i class="bi bi-shield-check" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">NSP — Segurança do Paciente</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
+        <a href="{% url 'nsp_landing' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-shield-check" style="color:#065f46;"></i> NSP
         </a>
-        {% else %}
-        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
-             style="background:#f8fafc;border-color:var(--c-border);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-lock" style="font-size:1rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-soft)">NSP — Segurança do Paciente</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Eventos adversos, coleta por leito e indicadores de qualidade.</p>
-            </div>
-        </div>
+
+        <a href="{% url 'indicator_dashboard' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-bar-chart-line" style="color:#0369a1;"></i> Indicadores
+        </a>
         {% endif %}
 
-        {# Indicadores #}
-        {% if can_nsp or user.is_superuser %}
-        <a href="{% url 'indicator_dashboard' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#e0f2fe;color:#0369a1;">
-                <i class="bi bi-bar-chart-line" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">Indicadores</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Painel de indicadores por setor, histórico e análise comparativa.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
-        </a>
-        {% else %}
-        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
-             style="background:#f8fafc;border-color:var(--c-border);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-lock" style="font-size:1rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Indicadores</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Painel de indicadores por setor, histórico e análise comparativa.</p>
-            </div>
-        </div>
-        {% endif %}
-
-        {# Fisioterapia #}
         {% if can_fisio or user.is_superuser %}
-        <a href="{% url 'fisioterapia:home' %}"
-           class="group flex items-start gap-4 p-5 rounded-xl border bg-white no-underline transition-all duration-200 hover:-translate-y-0.5"
-           style="border-color:var(--c-border); box-shadow:0 1px 3px rgba(13,27,62,0.05);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                 style="background:#fce7f3;color:#9d174d;">
-                <i class="bi bi-heart-pulse" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-text)">Fisioterapia</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:#d1fae5;color:#065f46;">Ativo</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:var(--c-muted)">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
-            </div>
-            <i class="bi bi-chevron-right text-xs flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style="color:var(--c-muted)"></i>
+        <a href="{% url 'fisioterapia:home' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
+           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
+            <i class="bi bi-heart-pulse" style="color:#9d174d;"></i> Fisioterapia
         </a>
-        {% else %}
-        <div class="flex items-start gap-4 p-5 rounded-xl border opacity-50 cursor-not-allowed"
-             style="background:#f8fafc;border-color:var(--c-border);">
-            <div class="h-11 w-11 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-lock" style="font-size:1rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-sm" style="color:var(--c-soft)">Fisioterapia</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-200 text-slate-500">Sem acesso</span>
-                </div>
-                <p class="text-xs leading-relaxed" style="color:#94a3b8;">Relatórios assistenciais, coordenação de equipe e produção por turno.</p>
-            </div>
-        </div>
         {% endif %}
 
     </div>
 </div>
 
-{# ── Em Implantação ──────────────────────────────────────────── #}
+{# ── Organograma ────────────────────────────────────────────── #}
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Em Implantação</p>
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+        <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Organograma Institucional</p>
+    </div>
 
-        {% for mod in coming_modules|default:"" %}{% empty %}
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+        <div class="relative" style="width:220px;">
+            <i class="bi bi-search absolute" style="left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.8rem;"></i>
+            <input id="org-busca" type="text" placeholder="Buscar setor..."
+                   style="width:100%;padding:7px 10px 7px 30px;border:1.5px solid var(--c-border);border-radius:8px;font-size:0.8125rem;background:#fff;color:var(--c-text);">
+        </div>
+        <div class="flex flex-wrap gap-1.5 text-xs" id="org-filtros">
+            <button type="button" class="org-nivel-btn active" data-nivel=""
+                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">Todos</button>
+            {% for nivel in org_niveis %}
+            <button type="button" class="org-nivel-btn" data-nivel="{{ forloop.counter0 }}"
+                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">{{ nivel.label }}</button>
+            {% endfor %}
+        </div>
+    </div>
 
-        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
-            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-file-medical" style="font-size:0.95rem;"></i>
+    <div id="org-root" class="space-y-6">
+        {% for nivel in org_niveis %}
+        <div class="org-nivel-section" data-nivel="{{ forloop.counter0 }}">
+            <div class="flex items-center gap-3 mb-3">
+                <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">{{ nivel.label }}</h2>
+                <span class="text-xs" style="color:#cbd5e1">{{ nivel.units|length }} setor(es)</span>
             </div>
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-sm font-semibold" style="color:#94a3b8;">Exames</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
-                </div>
-                <p class="text-xs" style="color:#94a3b8;">Solicitação, controle e resultados de exames.</p>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {% for unit in nivel.units %}
+                <a href="{% url 'orgunit_detail' unit.codigo %}" class="org-setor-node no-underline transition-all duration-150"
+                   data-busca="{{ unit.codigo|lower }} {{ unit.nome|lower }}"
+                   style="border-left:3px solid {{ unit.cor }};background:#fff;border-top:1px solid var(--c-border);border-right:1px solid var(--c-border);border-bottom:1px solid var(--c-border);border-radius:10px;padding:14px;display:block;">
+                    <div class="text-xs font-bold mb-1" style="color:{{ unit.cor }}">{{ unit.codigo }}</div>
+                    <div class="text-xs leading-snug mb-2" style="color:var(--c-text)">{{ unit.nome }}</div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs" style="color:var(--c-soft)">{{ unit.get_tipo_display }}</span>
+                        {% if unit.parent %}
+                        <span class="text-xs" style="color:#cbd5e1">↑ {{ unit.parent.codigo }}</span>
+                        {% endif %}
+                    </div>
+                    {% if unit.subordinados_count %}
+                    <div class="text-xs mt-1" style="color:var(--c-soft)">{{ unit.subordinados_count }} subordinado(s)</div>
+                    {% endif %}
+                </a>
+                {% endfor %}
             </div>
         </div>
-
-        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
-            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-people" style="font-size:0.95rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-sm font-semibold" style="color:#94a3b8;">Pacientes</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
-                </div>
-                <p class="text-xs" style="color:#94a3b8;">Prontuário unificado e histórico clínico.</p>
-            </div>
+        {% empty %}
+        <div class="flex items-start gap-3 p-5 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;color:var(--c-muted);">
+            <i class="bi bi-diagram-3 mt-0.5"></i>
+            <p class="text-sm">Organograma ainda não cadastrado. Os setores serão adicionados progressivamente.</p>
         </div>
-
-        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
-            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-cash-coin" style="font-size:0.95rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-sm font-semibold" style="color:#94a3b8;">Faturamento</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
-                </div>
-                <p class="text-xs" style="color:#94a3b8;">Procedimentos, convênios e relatórios financeiros.</p>
-            </div>
-        </div>
-
-        <div class="flex items-start gap-3 p-4 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;">
-            <div class="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f1f5f9;color:#94a3b8;">
-                <i class="bi bi-thermometer-half" style="font-size:0.95rem;"></i>
-            </div>
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-sm font-semibold" style="color:#94a3b8;">CME</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-600">Em breve</span>
-                </div>
-                <p class="text-xs" style="color:#94a3b8;">Central de material e esterilização.</p>
-            </div>
-        </div>
-
         {% endfor %}
+        <p id="org-vazio" class="hidden text-sm" style="color:var(--c-muted)">Nenhum setor encontrado para o filtro atual.</p>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .org-setor-node:hover { box-shadow: 0 6px 20px rgba(13,27,62,0.1); transform: translateY(-1px); }
+    .org-nivel-btn.active { background: var(--c-emerald-pale,#d1fae5) !important; color:#065f46 !important; border-color:#a7f3d0 !important; }
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
     const el = document.getElementById('hrro-date');
-    if (!el) return;
-    const d = new Date();
-    const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
-    el.textContent = d.toLocaleDateString('pt-BR', opts);
+    if (el) {
+        const d = new Date();
+        const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+        el.textContent = d.toLocaleDateString('pt-BR', opts);
+    }
+})();
+
+(function () {
+    const buscaInput = document.getElementById('org-busca');
+    const filtros = document.getElementById('org-filtros');
+    const secoes = Array.from(document.querySelectorAll('.org-nivel-section'));
+    const vazio = document.getElementById('org-vazio');
+    if (!buscaInput || !filtros) return;
+
+    let nivelAtivo = '';
+
+    function aplicarFiltro() {
+        const termo = buscaInput.value.trim().toLowerCase();
+        let algumVisivel = false;
+
+        secoes.forEach((secao) => {
+            const nivelSecao = secao.dataset.nivel;
+            const nivelOk = nivelAtivo === '' || nivelAtivo === nivelSecao;
+            let cardsVisiveis = 0;
+
+            secao.querySelectorAll('.org-setor-node').forEach((card) => {
+                const texto = card.dataset.busca || '';
+                const match = !termo || texto.includes(termo);
+                const visivel = nivelOk && match;
+                card.style.display = visivel ? '' : 'none';
+                if (visivel) cardsVisiveis += 1;
+            });
+
+            secao.style.display = cardsVisiveis > 0 ? '' : 'none';
+            if (cardsVisiveis > 0) algumVisivel = true;
+        });
+
+        if (vazio) vazio.classList.toggle('hidden', algumVisivel || secoes.length === 0);
+    }
+
+    buscaInput.addEventListener('input', aplicarFiltro);
+
+    filtros.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.org-nivel-btn');
+        if (!btn) return;
+        filtros.querySelectorAll('.org-nivel-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        nivelAtivo = btn.dataset.nivel;
+        aplicarFiltro();
+    });
 })();
 </script>
 {% endblock %}

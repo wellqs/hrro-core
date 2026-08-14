@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ unit.codigo }} — {{ unit.nome }} — HRRO{% endblock %}
+
+{% block content %}
+
+<div class="mb-1">
+    <a href="{% url 'home' %}" class="inline-flex items-center gap-1.5 text-xs font-medium no-underline" style="color:var(--c-muted)">
+        <i class="bi bi-arrow-left"></i> Voltar ao organograma
+    </a>
+</div>
+
+<div class="rounded-2xl p-6" style="background:#fff;border:1px solid var(--c-border);border-left:4px solid {{ cor }};">
+    <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+            <div class="text-xs font-bold uppercase tracking-widest mb-1" style="color:{{ cor }}">{{ unit.codigo }}</div>
+            <h1 class="text-2xl font-bold" style="color:var(--c-text)">{{ unit.nome }}</h1>
+            <p class="text-sm mt-1" style="color:var(--c-muted)">{{ unit.get_tipo_display }} · {{ unit.get_nivel_display }}</p>
+        </div>
+        {% if unit.parent %}
+        <a href="{% url 'orgunit_detail' unit.parent.codigo %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold no-underline"
+           style="border-color:var(--c-border);color:var(--c-muted)">
+            <i class="bi bi-arrow-up"></i> Superior: {{ unit.parent.codigo }} — {{ unit.parent.nome }}
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if subordinados %}
+<div>
+    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Subordinados</p>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for sub in subordinados %}
+        <a href="{% url 'orgunit_detail' sub.codigo %}" class="no-underline transition-all duration-150"
+           style="border-left:3px solid var(--c-border);background:#fff;border-top:1px solid var(--c-border);border-right:1px solid var(--c-border);border-bottom:1px solid var(--c-border);border-radius:10px;padding:14px;display:block;">
+            <div class="text-xs font-bold mb-1" style="color:var(--c-text)">{{ sub.codigo }}</div>
+            <div class="text-xs leading-snug" style="color:var(--c-muted)">{{ sub.nome }}</div>
+            <div class="text-xs mt-2" style="color:var(--c-soft)">{{ sub.get_tipo_display }}</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="flex items-start gap-3 p-5 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;color:var(--c-muted);">
+    <i class="bi bi-cone-striped mt-0.5"></i>
+    <p class="text-sm">Página do setor em implantação. Indicadores, equipe e rotinas específicas de {{ unit.nome }} serão adicionados progressivamente.</p>
+</div>
+
+{% endblock %}

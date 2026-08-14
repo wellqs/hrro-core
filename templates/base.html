@@ -145,13 +145,22 @@
         #hrro-sidebar {
             width: var(--sidebar-w);
             min-width: var(--sidebar-w);
-            background: var(--c-navy);
+            background: linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 45%, var(--c-navy) 100%);
             color: #fff;
             transition: width 0.22s ease, min-width 0.22s ease;
             overflow: hidden;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+        #hrro-sidebar::before {
+            content: '';
+            position: absolute; top: -60px; left: -60px;
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(5,150,105,.18) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
         #hrro-sidebar.collapsed {
             width: var(--sidebar-col) !important;
@@ -164,7 +173,7 @@
             align-items: center;
             gap: 10px;
             padding: 18px 14px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
         }
         .s-brand-icon {
             width: 34px; height: 34px;
@@ -174,6 +183,7 @@
             flex-shrink: 0;
             font-size: 0.95rem;
             color: #fff;
+            box-shadow: 0 6px 16px -4px rgba(5,150,105,.55);
         }
         .s-brand-name  { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.2; }
         .s-brand-sub   { font-size: 0.6rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
@@ -183,7 +193,7 @@
             display: none;
             justify-content: center;
             padding: 14px 0 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
         }
         #hrro-sidebar.collapsed .s-brand          { display: none; }
         #hrro-sidebar.collapsed .s-brand-collapsed { display: flex; }
@@ -206,32 +216,36 @@
 
         /* Section headers */
         .s-section {
-            padding: 12px 14px 3px;
+            margin-top: 10px;
+            padding: 10px 14px 6px;
+            border-top: 1px solid rgba(255,255,255,0.06);
             font-size: 0.625rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: rgba(255,255,255,0.26);
+            color: rgba(255,255,255,0.28);
         }
+        .s-section:first-child { margin-top: 4px; border-top: none; }
         #hrro-sidebar.collapsed .s-section { display: none; }
 
         /* Nav links */
         .hrro-nav a {
             display: flex; align-items: center; gap: 10px;
-            padding: 9px 10px;
-            border-radius: 7px;
-            color: rgba(255,255,255,0.7);
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.72);
             text-decoration: none;
             white-space: nowrap;
-            transition: background 0.15s, color 0.15s;
+            transition: background 0.15s, color 0.15s, transform 0.15s;
             font-size: 0.84375rem;
             font-weight: 500;
             position: relative;
         }
-        .hrro-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .hrro-nav a:hover { background: rgba(255,255,255,0.07); color: #fff; transform: translateX(2px); }
         .hrro-nav a.active {
-            background: rgba(5,150,105,0.18);
+            background: rgba(5,150,105,0.16);
             color: #fff;
+            box-shadow: inset 0 0 0 1px rgba(5,150,105,.25);
         }
         .hrro-nav a.active::before {
             content: '';
@@ -240,11 +254,23 @@
             border-radius: 0 3px 3px 0;
         }
 
+        /* Chip colorido do ícone (harmoniza com as cores dos módulos no Painel) */
+        .nav-icon-chip {
+            display: flex; align-items: center; justify-content: center;
+            width: 27px; height: 27px;
+            border-radius: 7px;
+            flex-shrink: 0;
+            transition: filter 0.15s;
+        }
+        .hrro-nav a.active .nav-icon-chip,
+        .hrro-nav a:hover .nav-icon-chip { filter: brightness(1.2); }
+
         /* Nav retraído */
         #hrro-sidebar.collapsed .nav-label { display: none; }
         #hrro-sidebar.collapsed .hrro-nav a {
-            justify-content: center; padding: 10px 0; gap: 0;
+            justify-content: center; padding: 9px 0; gap: 0;
         }
+        #hrro-sidebar.collapsed .hrro-nav a:hover { transform: none; }
         #hrro-sidebar.collapsed .hrro-nav a.active::before { display: none; }
 
         /* Tooltip */
@@ -275,8 +301,10 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 0.6875rem; font-weight: 700;
             text-transform: uppercase; color: #fff; flex-shrink: 0;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.08);
         }
         .s-user-name { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+        .s-user-role { font-size: 0.625rem; color: rgba(255,255,255,0.35); margin-top: 1px; }
         .s-logout {
             background: rgba(255,255,255,0.08);
             border: none; border-radius: 6px;
@@ -318,41 +346,53 @@
         {% with current=request.resolver_match.url_name|default:'' %}
         <nav class="hrro-nav flex-1 px-2 space-y-0.5 overflow-y-auto pb-4">
 
-            <a href="{% url 'home' %}" data-label="Início"
+            <a href="{% url 'home' %}" data-label="Painel"
                class="{% if current == 'home' %}active{% endif %}">
-                <i class="bi bi-grid-1x2 flex-shrink-0" style="font-size:0.95rem;"></i>
-                <span class="nav-label">Início</span>
+                <span class="nav-icon-chip" style="background:rgba(5,150,105,.16);color:#34d399;">
+                    <i class="bi bi-diagram-3" style="font-size:0.9rem;"></i>
+                </span>
+                <span class="nav-label">Painel</span>
             </a>
 
             <div class="s-section">Módulos</div>
 
             <a href="{% url 'reception_home' %}" data-label="Recepção"
                class="{% if 'reception' in request.path %}active{% endif %}">
-                <i class="bi bi-person-check flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(59,130,246,.16);color:#60a5fa;">
+                    <i class="bi bi-person-check" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">Recepção</span>
             </a>
 
             <a href="{% url 'nir_entry' %}" data-label="NIR"
                class="{% if 'nir' in request.path %}active{% endif %}">
-                <i class="bi bi-hospital flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(99,102,241,.16);color:#818cf8;">
+                    <i class="bi bi-hospital" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">NIR</span>
             </a>
 
             <a href="{% url 'surgery_list' %}" data-label="Centro Cirúrgico"
                class="{% if 'surg' in request.path %}active{% endif %}">
-                <i class="bi bi-scissors flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(139,92,246,.16);color:#a78bfa;">
+                    <i class="bi bi-scissors" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">Centro Cirúrgico</span>
             </a>
 
             <a href="{% url 'nsp_landing' %}" data-label="NSP"
                class="{% if 'nsp' in request.path %}active{% endif %}">
-                <i class="bi bi-shield-check flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(20,184,166,.16);color:#2dd4bf;">
+                    <i class="bi bi-shield-check" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">NSP</span>
             </a>
 
             <a href="{% url 'fisioterapia:home' %}" data-label="Fisioterapia"
                class="{% if 'fisioterapia' in request.path %}active{% endif %}">
-                <i class="bi bi-heart-pulse flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(236,72,153,.16);color:#f472b6;">
+                    <i class="bi bi-heart-pulse" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">Fisioterapia</span>
             </a>
 
@@ -360,7 +400,9 @@
 
             <a href="{% url 'dashboard' %}" data-label="Dashboard"
                class="{% if current == 'dashboard' %}active{% endif %}">
-                <i class="bi bi-graph-up flex-shrink-0" style="font-size:0.95rem;"></i>
+                <span class="nav-icon-chip" style="background:rgba(14,165,233,.16);color:#38bdf8;">
+                    <i class="bi bi-graph-up" style="font-size:0.9rem;"></i>
+                </span>
                 <span class="nav-label">Dashboard</span>
             </a>
 
@@ -372,6 +414,9 @@
             <div class="s-avatar">{{ user.username|slice:":1" }}</div>
             <div class="s-user-info flex-1 min-w-0">
                 <div class="s-user-name truncate">{{ user.username }}</div>
+                <div class="s-user-role truncate">
+                    {% if user.is_superuser %}Administrador{% elif user.groups.first %}{{ user.groups.first.name }}{% else %}Colaborador{% endif %}
+                </div>
             </div>
             <form action="{% url 'logout' %}" method="post" class="s-user-info flex-shrink-0">
                 {% csrf_token %}
