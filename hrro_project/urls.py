@@ -5,8 +5,13 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Setor GFISIO (Gerência de Fisioterapia) — módulo implantado no organograma.
+    # Precisa vir antes do include de core.urls, cujo fallback genérico
+    # 'painel/setor/<slug:codigo>/' também casaria com /painel/setor/GFISIO/.
+    path('painel/setor/GFISIO/', include('app.fisioterapia.urls')),
+
     path('', include('core.urls')),
-    path('fisioterapia/', include('app.fisioterapia.urls')),
 ]
 
 if settings.DEBUG:

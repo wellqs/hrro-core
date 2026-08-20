@@ -1,127 +1,219 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Organograma — HRRO{% endblock %}
+{% block title %}Painel — HRRO{% endblock %}
 
 {% block content %}
 
 {# ── Cabeçalho ───────────────────────────────────────────────── #}
-<div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+<div class="flex items-start justify-between flex-wrap gap-4">
     <div>
-        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Painel</p>
-        <h1 class="text-2xl font-bold" style="color:var(--c-text)">
-            Bem-vindo, {{ user.get_full_name|default:user.username }}
+        <div class="inline-flex items-center gap-1.5 mb-1.5">
+            <i class="bi bi-hospital" style="color:var(--c-soft);font-size:0.75rem;"></i>
+            <span class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Hospital de Retaguarda de Rondônia</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold" style="color:var(--c-text)">
+            {{ saudacao }}, {{ user.first_name|default:user.username }}
         </h1>
-        <p class="text-sm mt-0.5" style="color:var(--c-muted)">Organograma institucional do HRRO.</p>
+        <p class="text-sm mt-1" style="color:var(--c-muted)">Aqui está um resumo das atividades do HRRO.</p>
     </div>
-    <div class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border" style="border-color:var(--c-border);background:#fff;color:var(--c-muted)">
+    <div class="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border flex-shrink-0" style="border-color:var(--c-border);background:#fff;color:var(--c-muted)">
         <i class="bi bi-calendar3"></i>
         <span id="hrro-date">—</span>
     </div>
 </div>
 
-{# ── Acesso rápido aos módulos ──────────────────────────────── #}
+{# ── Estatísticas ────────────────────────────────────────────── #}
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    {% for stat in painel_stats %}
+    <div class="card stat-card" style="padding:16px;">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center flex-shrink-0" style="width:40px;height:40px;border-radius:10px;background:{{ stat.color }}1a;color:{{ stat.color }};font-size:1.1rem;">
+                <i class="bi {{ stat.icon }}"></i>
+            </div>
+            <div class="min-w-0">
+                <div class="text-xl font-bold leading-tight" style="color:var(--c-text)">{{ stat.value }}</div>
+                <div class="text-xs font-semibold uppercase tracking-wide truncate" style="color:var(--c-soft)">{{ stat.label }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── Atenção + Avisos ───────────────────────────────────────── #}
+<div class="grid gap-4 lg:grid-cols-2">
+    <div class="card flex flex-col" style="padding:18px;border-left:3px solid #d97706;">
+        <div class="flex items-center gap-2 mb-3">
+            <i class="bi bi-exclamation-triangle" style="color:#d97706;"></i>
+            <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Atenção</p>
+        </div>
+        {% if painel_alertas %}
+        <ul class="space-y-2 mb-4 flex-1">
+            {% for alerta in painel_alertas %}
+            <li class="flex items-start gap-2 text-sm" style="color:var(--c-text)">
+                <span class="mt-1.5 flex-shrink-0" style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;"></span>
+                {{ alerta }}
+            </li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn btn-outline-primary self-start" style="padding:7px 14px;font-size:0.75rem;">Ver pendências</button>
+        {% else %}
+        <p class="text-sm flex-1" style="color:var(--c-muted)">Nenhuma pendência no momento.</p>
+        {% endif %}
+    </div>
+
+    <div class="card flex flex-col" style="padding:18px;">
+        <div class="flex items-center gap-2 mb-3">
+            <i class="bi bi-megaphone" style="color:var(--c-sky);"></i>
+            <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Avisos</p>
+        </div>
+        {% if painel_avisos %}
+        <ul class="space-y-3 mb-4 flex-1">
+            {% for aviso in painel_avisos %}
+            <li>
+                <div class="text-sm font-semibold" style="color:var(--c-text)">{{ aviso.titulo }}</div>
+                <div class="text-xs mt-0.5" style="color:var(--c-muted)">{{ aviso.mensagem }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn btn-outline-primary self-start" style="padding:7px 14px;font-size:0.75rem;">Ver todos os avisos</button>
+        {% else %}
+        <p class="text-sm flex-1" style="color:var(--c-muted)">Nenhum aviso no momento.</p>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Visão por módulo ───────────────────────────────────────── #}
 <div>
-    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Acesso Rápido</p>
-    <div class="flex flex-wrap gap-2">
+    <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:var(--c-soft)">Visão por Módulo</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
         {% if can_reception or user.is_superuser %}
-        <a href="{% url 'reception_home' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-person-check" style="color:#1d4ed8;"></i> Recepção
+        <a href="{% url 'reception_home' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#1d4ed81a;color:#1d4ed8;font-size:1rem;">
+                    <i class="bi bi-person-check"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.recepcao.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.recepcao.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">Recepção</div>
         </a>
         {% endif %}
 
         {% if can_nir or user.is_superuser %}
-        <a href="{% url 'nir_entry' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-hospital" style="color:#4338ca;"></i> NIR
+        <a href="{% url 'nir_entry' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#4338ca1a;color:#4338ca;font-size:1rem;">
+                    <i class="bi bi-hospital"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.nir.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.nir.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">NIR</div>
         </a>
         {% endif %}
 
-        <a href="{% url 'surgery_list' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-scissors" style="color:#6d28d9;"></i> Centro Cirúrgico
+        <a href="{% url 'surgery_list' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#6d28d91a;color:#6d28d9;font-size:1rem;">
+                    <i class="bi bi-scissors"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.cc.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.cc.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">Centro Cirúrgico</div>
         </a>
 
         {% if can_nsp or user.is_superuser %}
-        <a href="{% url 'nsp_landing' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-shield-check" style="color:#065f46;"></i> NSP
+        <a href="{% url 'nsp_landing' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#065f461a;color:#065f46;font-size:1rem;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.nsp.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.nsp.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">NSP</div>
         </a>
 
-        <a href="{% url 'indicator_dashboard' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-bar-chart-line" style="color:#0369a1;"></i> Indicadores
+        <a href="{% url 'indicator_dashboard' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#0369a11a;color:#0369a1;font-size:1rem;">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.indicadores.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.indicadores.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">Indicadores</div>
         </a>
         {% endif %}
 
         {% if can_fisio or user.is_superuser %}
-        <a href="{% url 'fisioterapia:home' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border text-xs font-semibold no-underline transition-colors"
-           style="border-color:var(--c-border);background:#fff;color:var(--c-text);">
-            <i class="bi bi-heart-pulse" style="color:#9d174d;"></i> Fisioterapia
+        <a href="{% url 'fisioterapia:home' %}" class="card module-card">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center justify-center flex-shrink-0" style="width:38px;height:38px;border-radius:10px;background:#9d174d1a;color:#9d174d;font-size:1rem;">
+                    <i class="bi bi-heart-pulse"></i>
+                </div>
+                <i class="bi bi-arrow-up-right module-card-arrow"></i>
+            </div>
+            <div class="mt-3 text-lg font-bold" style="color:var(--c-text)">{{ painel_modulos.fisio.valor }}</div>
+            <div class="text-xs" style="color:var(--c-muted)">{{ painel_modulos.fisio.legenda }}</div>
+            <div class="text-xs font-semibold uppercase tracking-wide mt-3" style="color:var(--c-soft)">Fisioterapia</div>
         </a>
         {% endif %}
 
     </div>
 </div>
 
-{# ── Organograma ────────────────────────────────────────────── #}
-<div>
-    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
-        <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Organograma Institucional</p>
+{# ── Atividade recente + Indicadores ────────────────────────── #}
+<div class="grid gap-4 lg:grid-cols-2">
+    <div class="card" style="padding:18px;">
+        <div class="flex items-center gap-2 mb-3">
+            <i class="bi bi-clock-history" style="color:var(--c-muted);"></i>
+            <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Atividade Recente</p>
+        </div>
+        {% if painel_atividades %}
+        <ul class="space-y-3">
+            {% for atividade in painel_atividades %}
+            <li class="flex items-start justify-between gap-3 text-sm">
+                <span style="color:var(--c-text)">{{ atividade.texto }}</span>
+                <span class="text-xs flex-shrink-0" style="color:var(--c-soft)">{{ atividade.tempo }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm" style="color:var(--c-muted)">Nenhuma atividade recente.</p>
+        {% endif %}
     </div>
 
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-        <div class="relative" style="width:220px;">
-            <i class="bi bi-search absolute" style="left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.8rem;"></i>
-            <input id="org-busca" type="text" placeholder="Buscar setor..."
-                   style="width:100%;padding:7px 10px 7px 30px;border:1.5px solid var(--c-border);border-radius:8px;font-size:0.8125rem;background:#fff;color:var(--c-text);">
+    <div class="card" style="padding:18px;">
+        <div class="flex items-center gap-2 mb-4">
+            <i class="bi bi-graph-up" style="color:var(--c-muted);"></i>
+            <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">Indicadores</p>
         </div>
-        <div class="flex flex-wrap gap-1.5 text-xs" id="org-filtros">
-            <button type="button" class="org-nivel-btn active" data-nivel=""
-                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">Todos</button>
-            {% for nivel in org_niveis %}
-            <button type="button" class="org-nivel-btn" data-nivel="{{ forloop.counter0 }}"
-                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">{{ nivel.label }}</button>
+        {% if painel_indicadores %}
+        <div class="space-y-4">
+            {% for ind in painel_indicadores %}
+            <div>
+                <div class="flex items-center justify-between mb-1.5 text-xs">
+                    <span class="font-medium" style="color:var(--c-text)">{{ ind.label }}</span>
+                    <span class="font-semibold" style="color:var(--c-muted)">{{ ind.valor }}%</span>
+                </div>
+                <div style="height:8px;border-radius:999px;background:{{ ind.color }}1f;overflow:hidden;">
+                    <div style="height:100%;width:{{ ind.valor }}%;border-radius:999px;background:{{ ind.color }};"></div>
+                </div>
+            </div>
             {% endfor %}
         </div>
-    </div>
-
-    <div id="org-root" class="space-y-6">
-        {% for nivel in org_niveis %}
-        <div class="org-nivel-section" data-nivel="{{ forloop.counter0 }}">
-            <div class="flex items-center gap-3 mb-3">
-                <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">{{ nivel.label }}</h2>
-                <span class="text-xs" style="color:#cbd5e1">{{ nivel.units|length }} setor(es)</span>
-            </div>
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {% for unit in nivel.units %}
-                <a href="{% url 'orgunit_detail' unit.codigo %}" class="org-setor-node no-underline transition-all duration-150"
-                   data-busca="{{ unit.codigo|lower }} {{ unit.nome|lower }}"
-                   style="border-left:3px solid {{ unit.cor }};background:#fff;border-top:1px solid var(--c-border);border-right:1px solid var(--c-border);border-bottom:1px solid var(--c-border);border-radius:10px;padding:14px;display:block;">
-                    <div class="text-xs font-bold mb-1" style="color:{{ unit.cor }}">{{ unit.codigo }}</div>
-                    <div class="text-xs leading-snug mb-2" style="color:var(--c-text)">{{ unit.nome }}</div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs" style="color:var(--c-soft)">{{ unit.get_tipo_display }}</span>
-                        {% if unit.parent %}
-                        <span class="text-xs" style="color:#cbd5e1">↑ {{ unit.parent.codigo }}</span>
-                        {% endif %}
-                    </div>
-                    {% if unit.subordinados_count %}
-                    <div class="text-xs mt-1" style="color:var(--c-soft)">{{ unit.subordinados_count }} subordinado(s)</div>
-                    {% endif %}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-        {% empty %}
-        <div class="flex items-start gap-3 p-5 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;color:var(--c-muted);">
-            <i class="bi bi-diagram-3 mt-0.5"></i>
-            <p class="text-sm">Organograma ainda não cadastrado. Os setores serão adicionados progressivamente.</p>
-        </div>
-        {% endfor %}
-        <p id="org-vazio" class="hidden text-sm" style="color:var(--c-muted)">Nenhum setor encontrado para o filtro atual.</p>
+        {% else %}
+        <p class="text-sm" style="color:var(--c-muted)">Nenhum indicador disponível.</p>
+        {% endif %}
     </div>
 </div>
 
@@ -129,8 +221,27 @@
 
 {% block extra_css %}
 <style>
-    .org-setor-node:hover { box-shadow: 0 6px 20px rgba(13,27,62,0.1); transform: translateY(-1px); }
-    .org-nivel-btn.active { background: var(--c-emerald-pale,#d1fae5) !important; color:#065f46 !important; border-color:#a7f3d0 !important; }
+    .stat-card, .module-card {
+        transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .stat-card:hover, .module-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(13,27,62,0.10);
+    }
+    .module-card {
+        display: block;
+        text-decoration: none;
+        padding: 16px;
+    }
+    .module-card-arrow {
+        color: var(--c-border);
+        font-size: 0.9rem;
+        transition: color .18s ease, transform .18s ease;
+    }
+    .module-card:hover .module-card-arrow {
+        color: var(--c-navy);
+        transform: translate(2px, -2px);
+    }
 </style>
 {% endblock %}
 
@@ -143,51 +254,6 @@
         const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
         el.textContent = d.toLocaleDateString('pt-BR', opts);
     }
-})();
-
-(function () {
-    const buscaInput = document.getElementById('org-busca');
-    const filtros = document.getElementById('org-filtros');
-    const secoes = Array.from(document.querySelectorAll('.org-nivel-section'));
-    const vazio = document.getElementById('org-vazio');
-    if (!buscaInput || !filtros) return;
-
-    let nivelAtivo = '';
-
-    function aplicarFiltro() {
-        const termo = buscaInput.value.trim().toLowerCase();
-        let algumVisivel = false;
-
-        secoes.forEach((secao) => {
-            const nivelSecao = secao.dataset.nivel;
-            const nivelOk = nivelAtivo === '' || nivelAtivo === nivelSecao;
-            let cardsVisiveis = 0;
-
-            secao.querySelectorAll('.org-setor-node').forEach((card) => {
-                const texto = card.dataset.busca || '';
-                const match = !termo || texto.includes(termo);
-                const visivel = nivelOk && match;
-                card.style.display = visivel ? '' : 'none';
-                if (visivel) cardsVisiveis += 1;
-            });
-
-            secao.style.display = cardsVisiveis > 0 ? '' : 'none';
-            if (cardsVisiveis > 0) algumVisivel = true;
-        });
-
-        if (vazio) vazio.classList.toggle('hidden', algumVisivel || secoes.length === 0);
-    }
-
-    buscaInput.addEventListener('input', aplicarFiltro);
-
-    filtros.addEventListener('click', (ev) => {
-        const btn = ev.target.closest('.org-nivel-btn');
-        if (!btn) return;
-        filtros.querySelectorAll('.org-nivel-btn').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        nivelAtivo = btn.dataset.nivel;
-        aplicarFiltro();
-    });
 })();
 </script>
 {% endblock %}

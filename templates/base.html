@@ -18,7 +18,9 @@
                             light:   '#1a2d55',
                             emerald: '#059669',
                             sky:     '#0284c7',
-                        }
+                        },
+                        brand: { 50:'#E6F1FB', 100:'#B5D4F4', 400:'#378ADD', 600:'#185FA5', 800:'#0C447C' },
+                        teal:  { 50:'#E1F5EE', 400:'#1D9E75', 600:'#0F6E56' },
                     }
                 }
             }
@@ -28,7 +30,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         /* ── Design Tokens ─────────────────────────────────────── */
@@ -141,287 +143,286 @@
         }
         .text-muted { color: var(--c-muted) !important; }
 
-        /* ── Sidebar ───────────────────────────────────────────── */
+        /* ── Sidebar (estilo SaúdeGestão RO) ─────────────────────── */
         #hrro-sidebar {
-            width: var(--sidebar-w);
-            min-width: var(--sidebar-w);
-            background: linear-gradient(180deg, var(--c-navy-dark) 0%, var(--c-navy) 45%, var(--c-navy) 100%);
-            color: #fff;
-            transition: width 0.22s ease, min-width 0.22s ease;
-            overflow: hidden;
+            width: 224px;
+            min-width: 224px;
+            background: #fff;
+            color: #1f2937;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            position: relative;
+            font-family: 'DM Sans', sans-serif;
+            border-right: 1px solid #f1f5f9;
         }
-        #hrro-sidebar::before {
-            content: '';
-            position: absolute; top: -60px; left: -60px;
-            width: 220px; height: 220px;
-            background: radial-gradient(circle, rgba(5,150,105,.18) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
+        #hrro-sidebar .s-brand {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        #hrro-sidebar.collapsed {
-            width: var(--sidebar-col) !important;
-            min-width: var(--sidebar-col) !important;
+        #hrro-sidebar .s-brand-icon {
+            width: 32px; height: 32px;
+            background: var(--brand-600, #185FA5);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
+        #hrro-sidebar .s-brand-name { font-size: 0.875rem; font-weight: 600; color: #1f2937; line-height: 1.2; }
+        #hrro-sidebar .s-brand-sub  { font-size: 0.75rem; color: #9ca3af; }
 
-        /* Brand */
-        .s-brand {
+        #hrro-sidebar nav { font-family: 'DM Sans', sans-serif; }
+        #hrro-sidebar .s-section {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 8px 4px;
+        }
+        #hrro-sidebar .sidebar-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #374151;
+            text-decoration: none;
+            transition: background .15s, border-color .15s;
+            border-left: 3px solid transparent;
+        }
+        #hrro-sidebar .sidebar-item:not(.active):hover { background: #f8f8f7; }
+        #hrro-sidebar .sidebar-item.active {
+            background: #E6F1FB;
+            color: #185FA5;
+            border-left: 3px solid #185FA5;
+            font-weight: 500;
+        }
+        #hrro-sidebar .sidebar-item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+        /* Organograma agrupado por setor (accordion) */
+        #hrro-sidebar .s-acc { margin-bottom: 2px; }
+        #hrro-sidebar .s-acc-toggle {
+            width: 100%;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none; background: none;
+            font-size: 0.8125rem; font-weight: 500; color: #4b5563;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        #hrro-sidebar .s-acc-toggle:hover { background: #f8f8f7; }
+        #hrro-sidebar .s-acc-toggle-label { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        #hrro-sidebar .s-acc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+        #hrro-sidebar .s-acc-dot.small { width: 6px; height: 6px; }
+        #hrro-sidebar .s-acc-chevron { width: 12px; height: 12px; color: #9ca3af; flex-shrink: 0; transition: transform .15s; }
+        #hrro-sidebar .s-acc.open .s-acc-chevron { transform: rotate(180deg); }
+        #hrro-sidebar .s-acc-body { padding-left: 12px; }
+        #hrro-sidebar .s-acc-body.hidden { display: none; }
+        #hrro-sidebar .s-acc-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem; color: #4b5563;
+            text-decoration: none;
+        }
+        #hrro-sidebar .s-acc-item:hover { background: #f8f8f7; }
+        #hrro-sidebar .s-acc-item.active { background: #E6F1FB; color: #185FA5; font-weight: 500; }
+        #hrro-sidebar .s-acc-code { font-family: 'DM Mono', monospace; font-weight: 600; flex-shrink: 0; }
+        #hrro-sidebar .s-acc-name { color: #9ca3af; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Rodapé usuário */
+        #hrro-sidebar .s-footer {
+            padding: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+        #hrro-sidebar .s-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: #E6F1FB;
+            color: #185FA5;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; flex-shrink: 0;
+        }
+        #hrro-sidebar .s-user-name { font-size: 0.75rem; font-weight: 500; color: #1f2937; }
+        #hrro-sidebar .s-user-role { font-size: 0.75rem; color: #9ca3af; }
+        #hrro-sidebar .s-logout {
+            background: none; border: none;
+            color: #6b7280; font-size: 0.75rem;
+            cursor: pointer; padding: 4px 0;
+            display: flex; align-items: center; gap: 4px;
+            transition: color .15s;
+        }
+        #hrro-sidebar .s-logout:hover { color: #374151; }
+
+        /* Badge fixo do usuário (topo direito, em todas as páginas autenticadas) */
+        #hrro-user-badge {
+            position: fixed;
+            top: 14px;
+            right: 18px;
+            z-index: 60;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 18px 14px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            gap: 8px;
+            background: #fff;
+            border: 1px solid var(--c-border);
+            border-radius: 999px;
+            padding: 5px 6px 5px 14px;
+            box-shadow: 0 4px 14px rgba(13,27,62,0.10);
+            font-family: 'DM Sans', sans-serif;
         }
-        .s-brand-icon {
-            width: 34px; height: 34px;
-            background: var(--c-emerald);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            font-size: 0.95rem;
-            color: #fff;
-            box-shadow: 0 6px 16px -4px rgba(5,150,105,.55);
-        }
-        .s-brand-name  { font-size: 0.875rem; font-weight: 700; letter-spacing: 0.04em; line-height: 1.2; }
-        .s-brand-sub   { font-size: 0.6rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 1px; }
-
-        /* Brand retraído */
-        .s-brand-collapsed {
-            display: none;
-            justify-content: center;
-            padding: 14px 0 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-        #hrro-sidebar.collapsed .s-brand          { display: none; }
-        #hrro-sidebar.collapsed .s-brand-collapsed { display: flex; }
-
-        /* Toggle row */
-        .s-toggle-row {
-            display: flex; align-items: center; justify-content: flex-end;
-            padding: 8px 10px;
-        }
-        #hrro-sidebar.collapsed .s-toggle-row { justify-content: center; }
-
-        #sidebar-toggle {
-            background: rgba(255,255,255,0.07);
-            border: none; border-radius: 6px;
-            color: rgba(255,255,255,0.55);
-            cursor: pointer; padding: 4px 6px;
-            transition: background 0.15s;
-        }
-        #sidebar-toggle:hover { background: rgba(255,255,255,0.14); color: #fff; }
-
-        /* Section headers */
-        .s-section {
-            margin-top: 10px;
-            padding: 10px 14px 6px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            font-size: 0.625rem;
+        #hrro-user-badge .ub-name {
+            font-size: 0.75rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: rgba(255,255,255,0.28);
-        }
-        .s-section:first-child { margin-top: 4px; border-top: none; }
-        #hrro-sidebar.collapsed .s-section { display: none; }
-
-        /* Nav links */
-        .hrro-nav a {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 10px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.72);
-            text-decoration: none;
+            color: var(--c-text);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
-            transition: background 0.15s, color 0.15s, transform 0.15s;
-            font-size: 0.84375rem;
-            font-weight: 500;
-            position: relative;
         }
-        .hrro-nav a:hover { background: rgba(255,255,255,0.07); color: #fff; transform: translateX(2px); }
-        .hrro-nav a.active {
-            background: rgba(5,150,105,0.16);
-            color: #fff;
-            box-shadow: inset 0 0 0 1px rgba(5,150,105,.25);
-        }
-        .hrro-nav a.active::before {
-            content: '';
-            position: absolute; left: 0; top: 6px; bottom: 6px;
-            width: 3px; background: var(--c-emerald);
-            border-radius: 0 3px 3px 0;
-        }
-
-        /* Chip colorido do ícone (harmoniza com as cores dos módulos no Painel) */
-        .nav-icon-chip {
+        #hrro-user-badge .ub-logout {
             display: flex; align-items: center; justify-content: center;
-            width: 27px; height: 27px;
-            border-radius: 7px;
-            flex-shrink: 0;
-            transition: filter 0.15s;
-        }
-        .hrro-nav a.active .nav-icon-chip,
-        .hrro-nav a:hover .nav-icon-chip { filter: brightness(1.2); }
-
-        /* Nav retraído */
-        #hrro-sidebar.collapsed .nav-label { display: none; }
-        #hrro-sidebar.collapsed .hrro-nav a {
-            justify-content: center; padding: 9px 0; gap: 0;
-        }
-        #hrro-sidebar.collapsed .hrro-nav a:hover { transform: none; }
-        #hrro-sidebar.collapsed .hrro-nav a.active::before { display: none; }
-
-        /* Tooltip */
-        #hrro-sidebar.collapsed .hrro-nav a:hover::after {
-            content: attr(data-label);
-            position: absolute;
-            left: calc(var(--sidebar-col) + 4px);
-            top: 50%; transform: translateY(-50%);
-            background: var(--c-navy-light);
-            color: #fff; font-size: 0.75rem; font-weight: 500;
-            padding: 5px 10px; border-radius: 6px;
-            white-space: nowrap; z-index: 9999;
-            pointer-events: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        /* Footer */
-        .s-footer {
-            display: flex; align-items: center; gap: 9px;
-            padding: 12px 12px;
-            border-top: 1px solid rgba(255,255,255,0.07);
-            flex-shrink: 0;
-        }
-        .s-avatar {
-            width: 30px; height: 30px;
+            width: 28px; height: 28px;
             border-radius: 50%;
-            background: var(--c-emerald);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.6875rem; font-weight: 700;
-            text-transform: uppercase; color: #fff; flex-shrink: 0;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.08);
+            background: #f1f5f9;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            flex-shrink: 0;
         }
-        .s-user-name { font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.9); }
-        .s-user-role { font-size: 0.625rem; color: rgba(255,255,255,0.35); margin-top: 1px; }
-        .s-logout {
-            background: rgba(255,255,255,0.08);
-            border: none; border-radius: 6px;
-            color: rgba(255,255,255,0.55);
-            padding: 4px 7px; cursor: pointer;
-            transition: background 0.15s;
-        }
-        .s-logout:hover { background: rgba(255,255,255,0.16); color: #fff; }
-        #hrro-sidebar.collapsed .s-footer { justify-content: center; padding: 10px 0; }
-        #hrro-sidebar.collapsed .s-user-info { display: none; }
+        #hrro-user-badge .ub-logout:hover { background: #fee2e2; color: #dc2626; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+
+{% if user.is_authenticated %}
+<div id="hrro-user-badge">
+    <span class="ub-name" title="{{ user.get_full_name|default:user.username }}">{{ user.get_full_name|default:user.username }}</span>
+    <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
+        {% csrf_token %}
+        <button type="submit" class="ub-logout" title="Sair do sistema">
+            <i class="bi bi-box-arrow-right" style="font-size:0.8rem;"></i>
+        </button>
+    </form>
+</div>
+{% endif %}
+
 <div class="flex min-h-screen">
 
     {% if request.resolver_match.url_name != 'login' %}
-    <!-- ── Sidebar ── -->
-    <aside id="hrro-sidebar" class="hidden md:flex collapsed">
+    <!-- ── Sidebar (estilo SaúdeGestão RO) ── -->
+    <aside id="hrro-sidebar" class="hidden md:flex">
 
-        <div class="s-brand">
-            <div class="s-brand-icon"><i class="bi bi-plus-lg"></i></div>
+        <div class="s-brand flex items-center gap-2">
+            <div class="s-brand-icon">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+            </div>
             <div>
                 <div class="s-brand-name">HRRO</div>
                 <div class="s-brand-sub">Sistema Hospitalar</div>
             </div>
         </div>
 
-        <div class="s-brand-collapsed">
-            <div class="s-brand-icon"><i class="bi bi-plus-lg"></i></div>
-        </div>
-
-        <div class="s-toggle-row">
-            <button id="sidebar-toggle" title="Expandir/Retrair">
-                <i class="bi bi-chevron-left" id="toggle-icon" style="font-size:0.75rem;"></i>
-            </button>
-        </div>
-
         {% with current=request.resolver_match.url_name|default:'' %}
-        <nav class="hrro-nav flex-1 px-2 space-y-0.5 overflow-y-auto pb-4">
+        <nav class="flex-1 overflow-y-auto py-2 px-2">
 
-            <a href="{% url 'home' %}" data-label="Painel"
-               class="{% if current == 'home' %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(5,150,105,.16);color:#34d399;">
-                    <i class="bi bi-diagram-3" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">Painel</span>
+            <a href="{% url 'home' %}"
+               class="sidebar-item {% if current == 'home' %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                Painel
             </a>
 
-            <div class="s-section">Módulos</div>
-
-            <a href="{% url 'reception_home' %}" data-label="Recepção"
-               class="{% if 'reception' in request.path %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(59,130,246,.16);color:#60a5fa;">
-                    <i class="bi bi-person-check" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">Recepção</span>
+            <a href="{% url 'organograma' %}"
+               class="sidebar-item {% if current == 'organograma' %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                Organograma
             </a>
 
-            <a href="{% url 'nir_entry' %}" data-label="NIR"
-               class="{% if 'nir' in request.path %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(99,102,241,.16);color:#818cf8;">
-                    <i class="bi bi-hospital" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">NIR</span>
+            <p class="s-section">Módulos</p>
+
+            <a href="{% url 'reception_home' %}"
+               class="sidebar-item {% if 'reception' in request.path %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Recepção
             </a>
 
-            <a href="{% url 'surgery_list' %}" data-label="Centro Cirúrgico"
-               class="{% if 'surg' in request.path %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(139,92,246,.16);color:#a78bfa;">
-                    <i class="bi bi-scissors" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">Centro Cirúrgico</span>
+            <a href="{% url 'nir_entry' %}"
+               class="sidebar-item {% if 'nir' in request.path %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M19 21H5m0 0H3m8-14h2m-2 4h2m-6 4h8"/></svg>
+                NIR
             </a>
 
-            <a href="{% url 'nsp_landing' %}" data-label="NSP"
-               class="{% if 'nsp' in request.path %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(20,184,166,.16);color:#2dd4bf;">
-                    <i class="bi bi-shield-check" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">NSP</span>
+            <a href="{% url 'surgery_list' %}"
+               class="sidebar-item {% if 'surg' in request.path %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6a3 3 0 100 6 3 3 0 000-6zM6 18a3 3 0 100-6 3 3 0 000 6zm12-9L6 21m12-12L9.5 6.5M18 9l-4.5 4.5"/></svg>
+                Centro Cirúrgico
             </a>
 
-            <a href="{% url 'fisioterapia:home' %}" data-label="Fisioterapia"
-               class="{% if 'fisioterapia' in request.path %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(236,72,153,.16);color:#f472b6;">
-                    <i class="bi bi-heart-pulse" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">Fisioterapia</span>
+            <a href="{% url 'nsp_landing' %}"
+               class="sidebar-item {% if 'nsp' in request.path %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                NSP
             </a>
 
-            <div class="s-section">Analytics</div>
+            <a href="{% url 'fisioterapia:home' %}"
+               class="sidebar-item {% if 'fisioterapia' in request.path %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                Fisioterapia
+            </a>
 
-            <a href="{% url 'dashboard' %}" data-label="Dashboard"
-               class="{% if current == 'dashboard' %}active{% endif %}">
-                <span class="nav-icon-chip" style="background:rgba(14,165,233,.16);color:#38bdf8;">
-                    <i class="bi bi-graph-up" style="font-size:0.9rem;"></i>
-                </span>
-                <span class="nav-label">Dashboard</span>
+            {% if sidebar_org_groups %}
+            <p class="s-section">Organograma</p>
+            {% for group in sidebar_org_groups %}
+            <div class="s-acc{% if group.active %} open{% endif %}">
+                <button type="button" class="s-acc-toggle" data-acc="acc-{{ group.id }}">
+                    <span class="s-acc-toggle-label">
+                        <span class="s-acc-dot" style="background:{{ group.color }}"></span>
+                        {{ group.label }}
+                    </span>
+                    <svg class="s-acc-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div id="acc-{{ group.id }}" class="s-acc-body{% if not group.active %} hidden{% endif %}">
+                    {% for unit in group.units %}
+                    <a href="{% url 'orgunit_detail' unit.codigo %}"
+                       class="s-acc-item {% if unit.codigo == sidebar_org_current %}active{% endif %}">
+                        <span class="s-acc-dot small" style="background:{{ group.color }}"></span>
+                        <span class="s-acc-code">{{ unit.codigo }}</span>
+                        <span class="s-acc-name truncate">{{ unit.nome }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <p class="s-section">Analytics</p>
+
+            <a href="{% url 'dashboard' %}"
+               class="sidebar-item {% if current == 'dashboard' %}active{% endif %}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
             </a>
 
         </nav>
         {% endwith %}
 
         {% if user.is_authenticated %}
-        <div class="s-footer">
+        <div class="s-footer flex items-center gap-2">
             <div class="s-avatar">{{ user.username|slice:":1" }}</div>
-            <div class="s-user-info flex-1 min-w-0">
+            <div class="flex-1 min-w-0">
                 <div class="s-user-name truncate">{{ user.username }}</div>
                 <div class="s-user-role truncate">
                     {% if user.is_superuser %}Administrador{% elif user.groups.first %}{{ user.groups.first.name }}{% else %}Colaborador{% endif %}
                 </div>
             </div>
-            <form action="{% url 'logout' %}" method="post" class="s-user-info flex-shrink-0">
+            <form action="{% url 'logout' %}" method="post" class="flex-shrink-0">
                 {% csrf_token %}
                 <button type="submit" class="s-logout" title="Sair">
-                    <i class="bi bi-box-arrow-right"></i>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 </button>
             </form>
         </div>
@@ -497,6 +498,18 @@
         const next = !sidebar.classList.contains('collapsed');
         apply(next);
         localStorage.setItem(KEY, next ? '1' : '0');
+    });
+})();
+
+(function () {
+    document.querySelectorAll('#hrro-sidebar .s-acc-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const body = document.getElementById(btn.dataset.acc);
+            const wrap = btn.closest('.s-acc');
+            if (!body || !wrap) return;
+            body.classList.toggle('hidden');
+            wrap.classList.toggle('open');
+        });
     });
 })();
 </script>

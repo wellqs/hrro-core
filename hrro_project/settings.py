@@ -67,6 +67,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.sector_access',
+                'core.context_processors.org_sidebar',
             ],
         },
     },
@@ -143,7 +144,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CONFIGURAÇÕES DE AUTENTICAÇÃO ---
 LOGIN_REDIRECT_URL = '/painel/'
-LOGOUT_REDIRECT_URL = '/login/'
+LOGOUT_REDIRECT_URL = 'landing'
 LOGIN_URL = '/login/'
 
 # Permite sobrescrever o host do banco via variável de ambiente (útil para debug local)

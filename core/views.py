@@ -25,7 +25,7 @@ from .models import (
     Sector, Indicator, IndicatorData,
     Patient, Bed, Hospitalization,
     PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry, AdverseEventReport,
-    OrgUnit,
+    OrgUnit, ORG_TIPO_COLORS,
 )
 from .forms import (
     SurgeryForm,
@@ -37,19 +37,6 @@ from .filters import SurgeryFilter
 from .censo_import import parse_censo_csv, import_censo, VACANT_LABELS
 
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
-
-# Cores por tipo de setor no organograma institucional (paleta HRRO)
-ORG_TIPO_COLORS = {
-    'direcao': '#0d1b3e',
-    'diretoria': '#0284c7',
-    'gerencia': '#4338ca',
-    'nucleo': '#059669',
-    'assistencial': '#9d174d',
-    'administrativo': '#475569',
-    'unidade': '#b91c1c',
-    'comissao': '#b45309',
-}
-
 
 
 def normalize_ascii(value: str) -> str:
@@ -88,24 +75,81 @@ class LandingView(TemplateView):
         return super().get(request, *args, **kwargs)
 
 
+def build_org_niveis_context():
+    units = (
+        OrgUnit.objects.filter(is_active=True)
+        .annotate(subordinados_count=Count('subordinados', filter=Q(subordinados__is_active=True)))
+        .select_related('parent')
+        .order_by('nivel', 'nome')
+    )
+    niveis = OrderedDict((nivel_value, {'label': nivel_label, 'units': []})
+                          for nivel_value, nivel_label in OrgUnit.NIVEL_CHOICES)
+    for unit in units:
+        unit.cor = ORG_TIPO_COLORS.get(unit.tipo, '#64748b')
+        niveis[unit.nivel]['units'].append(unit)
+    return {
+        'org_niveis': [v for v in niveis.values() if v['units']],
+        'org_tipos': OrgUnit.TIPO_CHOICES,
+    }
+
+
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        units = (
-            OrgUnit.objects.filter(is_active=True)
-            .annotate(subordinados_count=Count('subordinados', filter=Q(subordinados__is_active=True)))
-            .select_related('parent')
-            .order_by('nivel', 'nome')
-        )
-        niveis = OrderedDict((nivel_value, {'label': nivel_label, 'units': []})
-                              for nivel_value, nivel_label in OrgUnit.NIVEL_CHOICES)
-        for unit in units:
-            unit.cor = ORG_TIPO_COLORS.get(unit.tipo, '#64748b')
-            niveis[unit.nivel]['units'].append(unit)
-        context['org_niveis'] = [v for v in niveis.values() if v['units']]
-        context['org_tipos'] = OrgUnit.TIPO_CHOICES
+
+        hour = timezone.localtime().hour
+        if hour < 12:
+            context['saudacao'] = 'Bom dia'
+        elif hour < 18:
+            context['saudacao'] = 'Boa tarde'
+        else:
+            context['saudacao'] = 'Boa noite'
+
+        # Dados fictícios — protótipo do Painel. Substituir por consultas reais
+        # conforme cada módulo for integrado (servidores, pendências, avisos, atividade).
+        context['painel_stats'] = [
+            {'label': 'Servidores', 'value': '370', 'icon': 'bi-people', 'color': '#0284c7'},
+            {'label': 'Setores', 'value': '32', 'icon': 'bi-diagram-3', 'color': '#059669'},
+            {'label': 'Pendências', 'value': '12', 'icon': 'bi-exclamation-triangle', 'color': '#d97706'},
+            {'label': 'Indicadores', 'value': '94%', 'icon': 'bi-bar-chart-line', 'color': '#4338ca'},
+        ]
+        context['painel_alertas'] = [
+            '3 EPIs aguardando entrega',
+            '2 treinamentos vencendo',
+            '7 Contratos próximos do vencimento',
+        ]
+        context['painel_avisos'] = [
+            {'titulo': 'Manutenção do gerador', 'mensagem': 'Manutenção preventiva programada para amanhã 21/08/2026 às 14h.'},
+        ]
+        context['painel_atividades'] = [
+            {'texto': 'João atualizou o setor NIR', 'tempo': 'há 12 min'},
+            {'texto': 'Maria registrou um atendimento na Recepção', 'tempo': 'há 27 min'},
+            {'texto': 'Carlos alterou um documento de paciente', 'tempo': 'há 1h'},
+        ]
+        context['painel_indicadores'] = [
+            {'label': 'Ocupação', 'valor': 82, 'color': '#0284c7'},
+            {'label': 'Cirurgias', 'valor': 68, 'color': '#059669'},
+            {'label': 'Pendências', 'valor': 18, 'color': '#d97706'},
+        ]
+        context['painel_modulos'] = {
+            'recepcao': {'valor': '8', 'legenda': 'pacientes na fila agora'},
+            'nir': {'valor': '116/121', 'legenda': 'leitos ocupados'},
+            'cc': {'valor': '5', 'legenda': 'cirurgias agendadas hoje'},
+            'nsp': {'valor': '3', 'legenda': 'eventos adversos registrados no mês'},
+            'indicadores': {'valor': '9/10', 'legenda': 'metas dentro da faixa'},
+            'fisio': {'valor': '12', 'legenda': 'atendimentos hoje'},
+        }
+        return context
+
+
+class OrganogramaView(LoginRequiredMixin, TemplateView):
+    template_name = "core/organograma.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(build_org_niveis_context())
         return context
 
 

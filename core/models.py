@@ -142,6 +142,18 @@ class Sector(models.Model):
     def __str__(self): return self.name
 
 
+# Cores por tipo de setor no organograma institucional (paleta HRRO)
+ORG_TIPO_COLORS = {
+    'direcao': '#0d1b3e',
+    'diretoria': '#0284c7',
+    'gerencia': '#4338ca',
+    'nucleo': '#059669',
+    'assistencial': '#9d174d',
+    'administrativo': '#475569',
+    'unidade': '#b91c1c',
+    'comissao': '#b45309',
+}
+
 # Organograma institucional (hierarquia real de setores do hospital)
 class OrgUnit(models.Model):
     TIPO_CHOICES = [

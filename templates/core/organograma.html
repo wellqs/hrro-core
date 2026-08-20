@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organograma — HRRO{% endblock %}
+
+{% block content %}
+
+{# ── Cabeçalho ───────────────────────────────────────────────── #}
+<div class="flex items-center justify-between flex-wrap gap-3 mb-1">
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color:var(--c-soft)">Organograma</p>
+        <h1 class="text-2xl font-bold" style="color:var(--c-text)">Organograma Institucional</h1>
+        <p class="text-sm mt-0.5" style="color:var(--c-muted)">Estrutura hierárquica de setores do HRRO.</p>
+    </div>
+</div>
+
+{# ── Organograma ────────────────────────────────────────────── #}
+<div>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+        <div class="relative" style="width:220px;">
+            <i class="bi bi-search absolute" style="left:11px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.8rem;"></i>
+            <input id="org-busca" type="text" placeholder="Buscar setor..."
+                   style="width:100%;padding:7px 10px 7px 30px;border:1.5px solid var(--c-border);border-radius:8px;font-size:0.8125rem;background:#fff;color:var(--c-text);">
+        </div>
+        <div class="flex flex-wrap gap-1.5 text-xs" id="org-filtros">
+            <button type="button" class="org-nivel-btn active" data-nivel=""
+                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">Todos</button>
+            {% for nivel in org_niveis %}
+            <button type="button" class="org-nivel-btn" data-nivel="{{ forloop.counter0 }}"
+                    style="padding:6px 12px;border-radius:8px;border:1px solid var(--c-border);background:#fff;color:var(--c-muted);font-weight:600;cursor:pointer;">{{ nivel.label }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="org-root" class="space-y-6">
+        {% for nivel in org_niveis %}
+        <div class="org-nivel-section" data-nivel="{{ forloop.counter0 }}">
+            <div class="flex items-center gap-3 mb-3">
+                <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:var(--c-soft)">{{ nivel.label }}</h2>
+                <span class="text-xs" style="color:#cbd5e1">{{ nivel.units|length }} setor(es)</span>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {% for unit in nivel.units %}
+                <a href="{% url 'orgunit_detail' unit.codigo %}" class="org-setor-node no-underline transition-all duration-150"
+                   data-busca="{{ unit.codigo|lower }} {{ unit.nome|lower }}"
+                   style="border-left:3px solid {{ unit.cor }};background:#fff;border-top:1px solid var(--c-border);border-right:1px solid var(--c-border);border-bottom:1px solid var(--c-border);border-radius:10px;padding:14px;display:block;">
+                    <div class="text-xs font-bold mb-1" style="color:{{ unit.cor }}">{{ unit.codigo }}</div>
+                    <div class="text-xs leading-snug mb-2" style="color:var(--c-text)">{{ unit.nome }}</div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs" style="color:var(--c-soft)">{{ unit.get_tipo_display }}</span>
+                        {% if unit.parent %}
+                        <span class="text-xs" style="color:#cbd5e1">↑ {{ unit.parent.codigo }}</span>
+                        {% endif %}
+                    </div>
+                    {% if unit.subordinados_count %}
+                    <div class="text-xs mt-1" style="color:var(--c-soft)">{{ unit.subordinados_count }} subordinado(s)</div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="flex items-start gap-3 p-5 rounded-xl border border-dashed" style="border-color:var(--c-border);background:#f8fafc;color:var(--c-muted);">
+            <i class="bi bi-diagram-3 mt-0.5"></i>
+            <p class="text-sm">Organograma ainda não cadastrado. Os setores serão adicionados progressivamente.</p>
+        </div>
+        {% endfor %}
+        <p id="org-vazio" class="hidden text-sm" style="color:var(--c-muted)">Nenhum setor encontrado para o filtro atual.</p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .org-setor-node:hover { box-shadow: 0 6px 20px rgba(13,27,62,0.1); transform: translateY(-1px); }
+    .org-nivel-btn.active { background: var(--c-emerald-pale,#d1fae5) !important; color:#065f46 !important; border-color:#a7f3d0 !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const buscaInput = document.getElementById('org-busca');
+    const filtros = document.getElementById('org-filtros');
+    const secoes = Array.from(document.querySelectorAll('.org-nivel-section'));
+    const vazio = document.getElementById('org-vazio');
+    if (!buscaInput || !filtros) return;
+
+    let nivelAtivo = '';
+
+    function aplicarFiltro() {
+        const termo = buscaInput.value.trim().toLowerCase();
+        let algumVisivel = false;
+
+        secoes.forEach((secao) => {
+            const nivelSecao = secao.dataset.nivel;
+            const nivelOk = nivelAtivo === '' || nivelAtivo === nivelSecao;
+            let cardsVisiveis = 0;
+
+            secao.querySelectorAll('.org-setor-node').forEach((card) => {
+                const texto = card.dataset.busca || '';
+                const match = !termo || texto.includes(termo);
+                const visivel = nivelOk && match;
+                card.style.display = visivel ? '' : 'none';
+                if (visivel) cardsVisiveis += 1;
+            });
+
+            secao.style.display = cardsVisiveis > 0 ? '' : 'none';
+            if (cardsVisiveis > 0) algumVisivel = true;
+        });
+
+        if (vazio) vazio.classList.toggle('hidden', algumVisivel || secoes.length === 0);
+    }
+
+    buscaInput.addEventListener('input', aplicarFiltro);
+
+    filtros.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.org-nivel-btn');
+        if (!btn) return;
+        filtros.querySelectorAll('.org-nivel-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        nivelAtivo = btn.dataset.nivel;
+        aplicarFiltro();
+    });
+})();
+</script>
+{% endblock %}
