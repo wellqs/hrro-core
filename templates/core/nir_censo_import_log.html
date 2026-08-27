@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}NIR — Histórico de Importações{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-0.5">NIR · Núcleo Interno de Regulação</p>
+        <h1 class="text-2xl font-bold text-slate-800">Histórico de Importações do Censo</h1>
+    </div>
+    <a href="{% url 'nir_censo_upload' %}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50/60 border-b border-slate-100">
+                <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    <th class="px-5 py-3">Data/Hora</th>
+                    <th class="px-5 py-3">Origem</th>
+                    <th class="px-5 py-3">Executado por</th>
+                    <th class="px-5 py-3 text-center">Sincronizou?</th>
+                    <th class="px-5 py-3 text-center">Linhas</th>
+                    <th class="px-5 py-3 text-center">Leitos (novos/atual.)</th>
+                    <th class="px-5 py-3 text-center">Pacientes (novos/atual.)</th>
+                    <th class="px-5 py-3 text-center">Internações (criadas/encerradas)</th>
+                    <th class="px-5 py-3 text-center">Vagos</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for log in logs %}
+                <tr class="hover:bg-slate-50/60">
+                    <td class="px-5 py-3 whitespace-nowrap text-slate-700">{{ log.created_at|date:'d/m/Y H:i' }}</td>
+                    <td class="px-5 py-3 whitespace-nowrap">
+                        {% if log.source == 'google_sheets' %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
+                            <i class="bi bi-google"></i> Google Sheets
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 text-xs font-medium">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                        </span>
+                        {% endif %}
+                        <div class="text-xs text-slate-400 mt-0.5 font-mono">{{ log.source_detail }}</div>
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap text-slate-600">{{ log.triggered_by.get_full_name|default:log.triggered_by.username|default:'—' }}</td>
+                    <td class="px-5 py-3 text-center">
+                        {% if log.sync_hosp %}
+                        <span class="text-emerald-600"><i class="bi bi-check-circle-fill"></i></span>
+                        {% else %}
+                        <span class="text-slate-300"><i class="bi bi-dash-circle"></i></span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ log.total_rows }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ log.beds_created }} / {{ log.beds_updated }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ log.patients_created }} / {{ log.patients_updated }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ log.hosp_created }} / {{ log.hosp_closed }}</td>
+                    <td class="px-5 py-3 text-center text-slate-600">{{ log.vacant_beds }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-slate-400 py-8">Nenhuma importação registrada ainda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4 flex items-center justify-center gap-2 text-sm">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 no-underline">Anterior</a>
+    {% endif %}
+    <span class="text-slate-500">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 no-underline">Próxima</a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% endblock %}

@@ -10,10 +10,16 @@
         <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-0.5">NIR · Núcleo Interno de Regulação</p>
         <h1 class="text-2xl font-bold text-slate-800">Atualizar Censo Nominal</h1>
     </div>
-    <a href="{% url 'nir_panel' %}"
-       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
-        <i class="bi bi-arrow-left"></i> Voltar ao Painel
-    </a>
+    <div class="flex gap-2">
+        <a href="{% url 'nir_censo_import_log' %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
+            <i class="bi bi-clock-history"></i> Histórico de Importações
+        </a>
+        <a href="{% url 'nir_panel' %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors no-underline shadow-sm">
+            <i class="bi bi-arrow-left"></i> Voltar ao Painel
+        </a>
+    </div>
 </div>
 
 {# ── Resultado da importação ──────────────────────────────────────────── #}
@@ -137,10 +143,32 @@
 
     {# Card de instruções #}
     <div class="space-y-4">
+
+        {# Card de importação automática via Google Sheets #}
+        <div class="bg-white rounded-2xl border border-emerald-200 shadow-sm p-5 space-y-3">
+            <h3 class="text-sm font-semibold text-emerald-700 flex items-center gap-2">
+                <i class="bi bi-google text-emerald-500"></i> Importar do Google Sheets
+            </h3>
+            <p class="text-xs text-slate-500">
+                Busca o censo direto da planilha oficial do KANBAN, sem precisar baixar/subir CSV.
+            </p>
+            <form method="post" action="{% url 'nir_censo_sheets_import' %}" class="space-y-3">
+                {% csrf_token %}
+                <label class="flex items-start gap-2 text-xs text-slate-600 cursor-pointer">
+                    <input type="checkbox" name="sync_hosp_sheets" checked
+                           class="mt-0.5 h-4 w-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 flex-shrink-0">
+                    <span>Sincronizar internações (recomendado para a atualização diária)</span>
+                </label>
+                <button type="submit"
+                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-colors shadow-sm">
+                    <i class="bi bi-cloud-arrow-down"></i> Importar agora do Sheets
+                </button>
+            </form>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
             <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <i class="bi bi-info-circle text-violet-500"></i> Como usar
-            </h3>
             <ol class="space-y-3 text-xs text-slate-600">
                 <li class="flex gap-2">
                     <span class="flex-shrink-0 h-5 w-5 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs">1</span>

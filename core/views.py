@@ -23,7 +23,7 @@ import unicodedata
 from .models import (
     Surgery, RegulationData, SurgicalData, BillingData, CMEData, OPMEData, NursingChecklist,
     Sector, Indicator, IndicatorData,
-    Patient, Bed, Hospitalization,
+    Patient, Bed, Hospitalization, CensoImportLog,
     PatientExtra, PatientDocument, ReceptionAttendance, ReceptionQueueEntry, AdverseEventReport,
     OrgUnit, ORG_TIPO_COLORS,
 )
@@ -34,7 +34,8 @@ from .forms import (
 )
 from .forms import PatientForm, PatientSearchForm, ReceptionQueueForm, ReceptionOpenForm, HospitalizationForm, HospitalizationDischargeForm, PatientDocumentForm, NSPCollectForm, NSPEventoAdversoForm
 from .filters import SurgeryFilter
-from .censo_import import parse_censo_csv, import_censo, VACANT_LABELS
+from .censo_import import parse_censo_csv, parse_censo_rows, import_censo, VACANT_LABELS
+from .censo_sheets import fetch_censo_rows
 
 NIR_GROUP_NAME = "NIR (NUCLEO INTERNO DE REGULACAO)"
 
@@ -1250,6 +1251,35 @@ class PatientDocumentListView(LoginRequiredMixin, NIRPermissionMixin, FormView):
         context['page_title'] = f'Documentos de {patient.name}'
         return context
 
+def _log_censo_import(request, source, source_detail, sync_hosp, stats):
+    CensoImportLog.objects.create(
+        source=source,
+        source_detail=source_detail,
+        triggered_by=request.user if request.user.is_authenticated else None,
+        sync_hosp=sync_hosp,
+        total_rows=stats.get('total_rows', 0),
+        beds_created=stats.get('beds_created', 0),
+        beds_updated=stats.get('beds_updated', 0),
+        patients_created=stats.get('patients_created', 0),
+        patients_updated=stats.get('patients_updated', 0),
+        hosp_created=stats.get('hosp_created', 0),
+        hosp_closed=stats.get('hosp_closed', 0),
+        vacant_beds=stats.get('vacant_beds', 0),
+    )
+
+
+class NIRCensoImportLogView(LoginRequiredMixin, NIRPermissionMixin, ListView):
+    model = CensoImportLog
+    template_name = 'core/nir_censo_import_log.html'
+    context_object_name = 'logs'
+    paginate_by = 30
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Histórico de Importações do Censo'
+        return context
+
+
 class NIRCensoUploadView(LoginRequiredMixin, NIRPermissionMixin, View):
     template_name = 'core/nir_censo_upload.html'
 
@@ -1284,8 +1314,41 @@ class NIRCensoUploadView(LoginRequiredMixin, NIRPermissionMixin, View):
             messages.error(request, f'Erro durante a importação: {e}')
             return render(request, self.template_name)
 
+        _log_censo_import(request, source='csv', source_detail=csv_file.name, sync_hosp=sync_hosp, stats=stats)
+
         occupied = stats['hosp_created'] + stats['patients_updated']
         return render(request, self.template_name, {'stats': stats, 'filename': csv_file.name})
+
+
+class NIRCensoSheetsImportView(LoginRequiredMixin, NIRPermissionMixin, View):
+    template_name = 'core/nir_censo_upload.html'
+
+    def post(self, request):
+        sync_hosp = request.POST.get('sync_hosp_sheets') == 'on'
+
+        try:
+            raw_rows = fetch_censo_rows()
+        except Exception as e:
+            messages.error(request, f'Erro ao buscar a planilha do Google Sheets: {e}')
+            return render(request, self.template_name)
+
+        rows = parse_censo_rows(raw_rows)
+        if not rows:
+            messages.warning(request, 'Nenhum leito encontrado na planilha. Verifique a aba configurada.')
+            return render(request, self.template_name)
+
+        try:
+            stats = import_censo(rows, sync_hosp=sync_hosp)
+        except Exception as e:
+            messages.error(request, f'Erro durante a importação: {e}')
+            return render(request, self.template_name)
+
+        _log_censo_import(
+            request, source='google_sheets', source_detail='Google Sheets · Censo Nominal',
+            sync_hosp=sync_hosp, stats=stats,
+        )
+
+        return render(request, self.template_name, {'stats': stats, 'filename': 'Google Sheets · Censo Nominal'})
 
 
 class NIRHospitalizationHistoryView(LoginRequiredMixin, NIRPermissionMixin, ListView):

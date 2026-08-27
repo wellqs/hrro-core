@@ -76,11 +76,21 @@ def parse_censo_csv(file_obj, encoding="utf-8-sig"):
             text = raw
         reader = csv.reader(io.StringIO(text))
 
+    return parse_censo_rows(reader)
+
+
+def parse_censo_rows(rows_iterable):
+    """
+    Recebe qualquer iterável de linhas (listas de strings) — vindo de um
+    csv.reader ou de worksheet.get_all_values() do Google Sheets — e retorna
+    a mesma lista de dicts que parse_censo_csv produz a partir de um CSV.
+    """
     current_clinic = "CLÍNICA A"
     current_category = "NORMAL"
     rows = []
 
-    for row in reader:
+    for row in rows_iterable:
+        row = list(row)
         while len(row) < 30:
             row.append("")
 

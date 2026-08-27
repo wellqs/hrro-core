@@ -42,6 +42,8 @@ from .views import (
     NIRHospitalizationDischargeView,
     NIRHospitalizationHistoryView,
     NIRCensoUploadView,
+    NIRCensoSheetsImportView,
+    NIRCensoImportLogView,
     PatientDocumentListView,
     ExamsLandingView,
     PatientExamsView,
@@ -106,6 +108,8 @@ urlpatterns = [
 
     path('painel/setor/NIR/hospitalizations/', NIRHospitalizationHistoryView.as_view(), name='nir_hospitalization_history'),
     path('painel/setor/NIR/censo/upload/', NIRCensoUploadView.as_view(), name='nir_censo_upload'),
+    path('painel/setor/NIR/censo/importar-sheets/', NIRCensoSheetsImportView.as_view(), name='nir_censo_sheets_import'),
+    path('painel/setor/NIR/censo/historico-importacoes/', NIRCensoImportLogView.as_view(), name='nir_censo_import_log'),
     path('painel/setor/NIR/patient/<int:patient_id>/documents/', PatientDocumentListView.as_view(), name='patient_documents'),
 
     path('exams/', ExamsLandingView.as_view(), name='exams_landing'),

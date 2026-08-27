@@ -152,3 +152,16 @@ _db_host_env = os.getenv('DB_HOST')
 if _db_host_env:
     DATABASES['default']['HOST'] = _db_host_env
 
+# --- CENSO NOMINAL VIA GOOGLE SHEETS ---
+# Credencial de Service Account (JSON) usada para ler a planilha do Censo
+# Nominal sem expô-la publicamente. Veja core/censo_sheets.py.
+CENSO_SHEETS_CREDENTIALS_FILE = os.getenv(
+    'CENSO_SHEETS_CREDENTIALS_FILE',
+    str(BASE_DIR / 'secrets' / 'censo-sheets-credentials.json'),
+)
+CENSO_SHEETS_SPREADSHEET_ID = os.getenv(
+    'CENSO_SHEETS_SPREADSHEET_ID', '1WJQWs-kpM0MNH4zrRWd5TNA7JV6v9zg9_BxiwGrEWkw'
+)
+CENSO_SHEETS_TAB_GID = os.getenv('CENSO_SHEETS_TAB_GID', '302414699')
+CENSO_SHEETS_TAB_NAME = os.getenv('CENSO_SHEETS_TAB_NAME', '')
+

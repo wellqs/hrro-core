@@ -22,6 +22,8 @@ Thumbs.db
 # Se você tiver algum arquivo .ini ou .json com senhas, adicione aqui
 secrets.json
 *.pem
+/secrets/
+*credentials*.json
 
 # Arquivos de Backup do Banco de Dados
 *.sql

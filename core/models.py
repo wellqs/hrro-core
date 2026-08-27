@@ -84,6 +84,34 @@ class Hospitalization(models.Model):
         status = "Ativa" if self.discharge_date is None else "Encerrada"
         return f"Internação {status} de {self.patient.name} no leito {self.bed.identifier}"
 
+
+class CensoImportLog(models.Model):
+    SOURCE_CHOICES = [('csv', 'Upload de CSV'), ('google_sheets', 'Google Sheets')]
+
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, verbose_name="Origem")
+    source_detail = models.CharField(max_length=255, blank=True, verbose_name="Detalhe da origem")
+    triggered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Executado por")
+    sync_hosp = models.BooleanField(default=False, verbose_name="Sincronizou internações?")
+
+    total_rows = models.IntegerField(default=0, verbose_name="Linhas lidas")
+    beds_created = models.IntegerField(default=0, verbose_name="Leitos criados")
+    beds_updated = models.IntegerField(default=0, verbose_name="Leitos atualizados")
+    patients_created = models.IntegerField(default=0, verbose_name="Pacientes criados")
+    patients_updated = models.IntegerField(default=0, verbose_name="Pacientes atualizados")
+    hosp_created = models.IntegerField(default=0, verbose_name="Internações criadas")
+    hosp_closed = models.IntegerField(default=0, verbose_name="Internações encerradas")
+    vacant_beds = models.IntegerField(default=0, verbose_name="Leitos vagos")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Data/Hora da importação")
+
+    class Meta:
+        verbose_name = "Log de Importação do Censo"
+        verbose_name_plural = "Logs de Importação do Censo"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Importação {self.get_source_display()} em {self.created_at:%d/%m/%Y %H:%M}"
+
 # --- FIM DOS MODELOS NIR ---
 
 # Modelos Setoriais (Cirurgia)
